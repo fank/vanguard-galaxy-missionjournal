@@ -174,6 +174,50 @@ public class ActivityEventBuilderTests
         Assert.Null(evt.RewardsReputation);
     }
 
+    // --- Unified rewards snapshot ----------------------------------------
+
+    [Fact]
+    public void Build_Completed_UnifiedRewardsList_CoversEveryRewardType()
+    {
+        // Vanilla has 14 reward subtypes; the pre-existing typed keys only
+        // covered Credits/Experience/Reputation. Non-numeric rewards (item,
+        // skilltree, story follow-up, etc.) used to be silently dropped.
+        // The unified Rewards list surfaces them as generic snapshots.
+        var mission = TestMission.GenericWithRewards(
+            TestMission.Credits(1000),
+            TestMission.Experience(50),
+            TestMission.Skillpoint(1),
+            TestMission.Skilltree("Mining"),
+            TestMission.StoryMissionReward("tutorial_done"));
+
+        var evt = NewBuilder().Build(mission, ActivityEventType.Completed);
+
+        Assert.NotNull(evt.Rewards);
+        var rewards = evt.Rewards!.ToList();
+        Assert.Equal(5, rewards.Count);
+        Assert.Contains(rewards, r => r.Type == "Credits");
+        Assert.Contains(rewards, r => r.Type == "Experience");
+        Assert.Contains(rewards, r => r.Type == "Skillpoint"
+                                   && r.Fields is not null
+                                   && (int)r.Fields!["amount"]! == 1);
+        Assert.Contains(rewards, r => r.Type == "Skilltree"
+                                   && r.Fields is not null
+                                   && (string)r.Fields!["treeName"]! == "Mining");
+        Assert.Contains(rewards, r => r.Type == "StoryMission"
+                                   && r.Fields is not null
+                                   && (string)r.Fields!["missionId"]! == "tutorial_done");
+    }
+
+    [Fact]
+    public void Build_NonCompleted_RewardsIsNull()
+    {
+        var mission = TestMission.GenericWithRewards(TestMission.Credits(100));
+
+        var evt = NewBuilder().Build(mission, ActivityEventType.Accepted);
+
+        Assert.Null(evt.Rewards);
+    }
+
     // --- Null-safety in test runtime --------------------------------------
 
     [Fact]

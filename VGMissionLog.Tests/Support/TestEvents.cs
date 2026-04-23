@@ -43,6 +43,7 @@ internal static class TestEvents
             RewardsCredits:        null,
             RewardsExperience:     null,
             RewardsReputation:     null,
+            Rewards:               null,
             PlayerLevel:           1,
             PlayerShipName:        null,
             PlayerShipLevel:       null,

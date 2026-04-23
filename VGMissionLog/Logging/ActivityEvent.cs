@@ -53,6 +53,7 @@ public sealed record ActivityEvent(
     long? RewardsCredits,
     long? RewardsExperience,
     IReadOnlyList<RepReward>? RewardsReputation,
+    IReadOnlyList<MissionRewardSnapshot>? Rewards,
     int PlayerLevel,
     string? PlayerShipName,
     int? PlayerShipLevel,

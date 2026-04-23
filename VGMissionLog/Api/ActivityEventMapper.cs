@@ -66,6 +66,7 @@ internal static class ActivityEventMapper
             }
             d["rewardsReputation"] = reps;
         }
+        if (evt.Rewards != null) d["rewards"] = MapRewards(evt.Rewards);
 
         // Player snapshot
         if (evt.PlayerShipName        != null) d["playerShipName"]        = evt.PlayerShipName;
@@ -75,6 +76,22 @@ internal static class ActivityEventMapper
         if (evt.Steps != null) d["steps"] = MapSteps(evt.Steps);
 
         return d;
+    }
+
+    private static IReadOnlyList<IReadOnlyDictionary<string, object?>> MapRewards(
+        IReadOnlyList<MissionRewardSnapshot> rewards)
+    {
+        var result = new List<IReadOnlyDictionary<string, object?>>(rewards.Count);
+        foreach (var r in rewards)
+        {
+            var dict = new Dictionary<string, object?>(capacity: 2)
+            {
+                ["type"] = r.Type,
+            };
+            if (r.Fields != null && r.Fields.Count > 0) dict["fields"] = r.Fields;
+            result.Add(dict);
+        }
+        return result;
     }
 
     private static IReadOnlyList<IReadOnlyDictionary<string, object?>> MapSteps(

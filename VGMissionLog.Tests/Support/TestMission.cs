@@ -124,6 +124,30 @@ internal static class TestMission
         return r;
     }
 
+    public static Source.MissionSystem.Rewards.Skillpoint Skillpoint(int amount)
+    {
+        var r = (Source.MissionSystem.Rewards.Skillpoint)RuntimeHelpers.GetUninitializedObject(
+            typeof(Source.MissionSystem.Rewards.Skillpoint));
+        r.amount = amount;
+        return r;
+    }
+
+    public static Source.MissionSystem.Rewards.Skilltree Skilltree(string name)
+    {
+        var r = (Source.MissionSystem.Rewards.Skilltree)RuntimeHelpers.GetUninitializedObject(
+            typeof(Source.MissionSystem.Rewards.Skilltree));
+        r.treeName = name;
+        return r;
+    }
+
+    public static Source.MissionSystem.Rewards.StoryMission StoryMissionReward(string missionId)
+    {
+        var r = (Source.MissionSystem.Rewards.StoryMission)RuntimeHelpers.GetUninitializedObject(
+            typeof(Source.MissionSystem.Rewards.StoryMission));
+        r.missionId = missionId;
+        return r;
+    }
+
     /// <summary>
     /// Build a Reputation reward with a null faction — we can't construct
     /// a real Faction in xUnit because <c>Faction</c>'s static constructor

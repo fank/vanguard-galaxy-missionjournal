@@ -103,6 +103,7 @@ internal sealed class ActivityEventBuilder
             RewardsCredits    = null,
             RewardsExperience = null,
             RewardsReputation = null,
+            Rewards           = null,
             // Steps from the acceptance snapshot carry over — the mission
             // object that would let us re-read them is gone by archive time.
         };
@@ -146,6 +147,7 @@ internal sealed class ActivityEventBuilder
             RewardsCredits:        extracted.Credits,
             RewardsExperience:     extracted.Experience,
             RewardsReputation:     extracted.Reputation,
+            Rewards:               extracted.All,
             PlayerLevel:           ReadPlayerLevel(player),
             PlayerShipName:        null,              // TBD — ship probe
             PlayerShipLevel:       null,
@@ -169,7 +171,8 @@ internal sealed class ActivityEventBuilder
     private readonly record struct ExtractedRewards(
         long? Credits,
         long? Experience,
-        IReadOnlyList<RepReward>? Reputation);
+        IReadOnlyList<RepReward>? Reputation,
+        IReadOnlyList<MissionRewardSnapshot>? All);
 
     private static ExtractedRewards ExtractRewards(Mission mission)
     {
@@ -180,9 +183,14 @@ internal sealed class ActivityEventBuilder
         var hasCredits    = false;
         var hasExperience = false;
         List<RepReward>? reputation = null;
+        var all = new List<MissionRewardSnapshot>(rewards.Count);
 
         foreach (var reward in rewards)
         {
+            if (reward is null) continue;
+
+            // Typed fast-path: summed/normalized numerics for the three
+            // top-level reward keys (back-compat with the pre-unified schema).
             switch (reward)
             {
                 case Credits c:
@@ -199,13 +207,24 @@ internal sealed class ActivityEventBuilder
                     reputation.Add(new RepReward(factionId, rep.amount));
                     break;
             }
+
+            // Unified list: every reward gets a snapshot. Item / Ship /
+            // Crew / Skilltree / Skillpoint / WorkshopCredit / StoryMission /
+            // MissionFollowUp / POICoordinates / UmbralControl /
+            // ConquestStrength are captured here (previously silently dropped).
+            all.Add(SnapshotReward(reward));
         }
 
         return new ExtractedRewards(
             Credits:    hasCredits    ? credits    : (long?)null,
             Experience: hasExperience ? experience : (long?)null,
-            Reputation: reputation);
+            Reputation: reputation,
+            All:        all.Count == 0 ? null : all);
     }
+
+    private static MissionRewardSnapshot SnapshotReward(MissionReward reward) =>
+        new(Type:   reward.GetType().Name,
+            Fields: ReadPrimitiveFields(reward));
 
     // --- mission instance id ---
 
@@ -278,29 +297,40 @@ internal sealed class ActivityEventBuilder
             Fields:     ReadPrimitiveFields(objective));
     }
 
-    /// <summary>Reflect across an objective's public fields + instance
+    /// <summary>Reflect across a target's public fields + instance
     /// properties and emit any that are primitive-ish. Enums go through
     /// ToString(). <see cref="Faction"/> / <see cref="InventoryItemType"/>
     /// / <see cref="MapElement"/> references are resolved to their stable
     /// identifier (guid / id / name) via the cached backing-field
-    /// readers. Anything else is skipped.</summary>
-    private static IReadOnlyDictionary<string, object?>? ReadPrimitiveFields(MissionObjective objective)
+    /// readers. Anything else is skipped. Used for both objectives and
+    /// rewards — both are open sets of vanilla subclasses with small
+    /// amounts of primitive state worth surfacing.</summary>
+    private static IReadOnlyDictionary<string, object?>? ReadPrimitiveFields(object target)
     {
         try
         {
             var dict = new Dictionary<string, object?>(capacity: 8);
-            var type = objective.GetType();
+            var type = target.GetType();
 
             foreach (var field in type.GetFields(BindingFlags.Instance | BindingFlags.Public))
             {
-                TryAdd(dict, field.Name, SafeGet(() => field.GetValue(objective)));
+                TryAdd(dict, field.Name, SafeGet(() => field.GetValue(target)));
             }
             foreach (var prop in type.GetProperties(BindingFlags.Instance | BindingFlags.Public))
             {
-                // Skip indexers and write-only; skip statusText (handled separately)
+                // Skip indexers and write-only; skip display-text getters we
+                // either handle separately (statusText) or know are
+                // computed/translation-dependent (rewardText/rewardIcon/rewardColor).
                 if (prop.GetIndexParameters().Length > 0 || !prop.CanRead) continue;
-                if (prop.Name == "statusText") continue;
-                TryAdd(dict, prop.Name, SafeGet(() => prop.GetValue(objective)));
+                switch (prop.Name)
+                {
+                    case "statusText":
+                    case "rewardText":
+                    case "rewardIcon":
+                    case "rewardColor":
+                        continue;
+                }
+                TryAdd(dict, prop.Name, SafeGet(() => prop.GetValue(target)));
             }
             return dict.Count == 0 ? null : dict;
         }
