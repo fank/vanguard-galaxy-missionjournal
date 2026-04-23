@@ -52,7 +52,7 @@ public class Plugin : BaseUnityPlugin
         if (Cfg.Verbose.Value)
         {
             ActivityLog.OnAppend += evt =>
-                Log.LogDebug($"[vgml] {evt.Type} {evt.MissionSubclass} storyId={evt.StoryId} @ {evt.GameSeconds:F1}s");
+                Log.LogDebug($"{evt.Type} {evt.MissionSubclass} storyId={evt.StoryId} @ {evt.GameSeconds:F1}s");
         }
 
         // --- wire every patch's static slots ----------------------------
