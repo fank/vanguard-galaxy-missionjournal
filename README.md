@@ -41,7 +41,7 @@ MaxEvents = 2000
 | **Offered**   | —                                                                               | **deferred** — post-MVP; Accepted covers the signal consumers actually want |
 | **ObjectiveProgressed** | —                                                                     | **deferred** — post-MVP; additive schema extension |
 
-Every captured event carries: event id, in-game timestamp + wall-clock, storyId, mission name + raw subclass name (`mission.GetType().Name`), outcome (for terminals), source station / system / faction, rewards (credits / experience / reputation on Completed), and a player-state snapshot. Consumers bucket by subclass name if they want mission-type categories; VGMissionLog does not classify.
+Every captured event carries: event id, in-game timestamp + wall-clock, storyId, a session-local mission instance id (for correlating events across the accept→complete lifecycle when `storyId` is empty), mission name + raw subclass name (`mission.GetType().Name`), outcome (for terminals), source station / system / faction, a full snapshot of the step/objective tree (type + progress per objective), rewards (typed credits/XP/rep sums plus a unified list covering all 14 vanilla reward subtypes on Completed), and a player-state snapshot. Consumers bucket by subclass / objective type if they want categories; VGMissionLog does not classify.
 
 See [`docs/api.md`](docs/api.md) for the full event schema and method reference.
 

@@ -122,8 +122,9 @@ Every event comes back as `IReadOnlyDictionary<string, object?>`. Keys are camel
 | `type` | `string` | One of `"Accepted"`, `"Completed"`, `"Failed"`, `"Abandoned"`. |
 | `gameSeconds` | `double` | In-game clock at capture. |
 | `realUtc` | `string` | ISO-8601 wall-clock at capture. |
-| `storyId` | `string` | Vanilla `Mission.storyId`. Empty string when the game provides none. |
-| `missionSubclass` | `string` | Raw `mission.GetType().Name`. Your best signal for what kind of mission this was. |
+| `storyId` | `string` | Vanilla `Mission.storyId`. **Empty for most missions** — vanilla only populates it for authored story arcs (Tutorial, Puppeteers). Use `missionInstanceId` for correlating events otherwise. |
+| `missionInstanceId` | `string` | Session-local GUID synthesized per `Mission` instance. Every lifecycle event from the same mission shares this id, so you can link `Accepted` → `Completed`/`Failed`/`Abandoned` even when `storyId` is empty. **Caveat:** the id does *not* survive save/load — vanilla rebuilds mission objects on load, so a mission accepted in one session and finished in another will have different ids on each event. |
+| `missionSubclass` | `string` | Raw `mission.GetType().Name`. One of `"Mission"` (parametric missions from `MissionGenerator` — salvage, courier, trade, etc.), `"BountyMission"`, `"IndustryMission"`, `"PatrolMission"`, `"StoryMission"`. The vast majority of gameplay spawns base `"Mission"`; only typed subclasses opt in. |
 | `missionLevel` | `int` | Currently always `0` — see [Known gaps](#known-gaps). |
 | `playerLevel` | `int` | Commander level at capture. `0` in tests / when `GamePlayer.current` is null. |
 
@@ -143,12 +144,46 @@ Every event comes back as `IReadOnlyDictionary<string, object?>`. Keys are camel
 | `targetStationId` | `string` | *Not yet populated — see [Known gaps](#known-gaps).* |
 | `targetStationName` | `string` | *Not yet populated.* |
 | `targetSystemId` | `string` | *Not yet populated.* |
-| `rewardsCredits` | `long` | Completed events only. |
-| `rewardsExperience` | `long` | Completed events only. |
+| `rewardsCredits` | `long` | Completed events only. Summed across all Credits entries. |
+| `rewardsExperience` | `long` | Completed events only. Summed across all Experience entries. Most generator missions don't grant XP — absence is normal. |
 | `rewardsReputation` | `IReadOnlyList<IReadOnlyDictionary<string, object?>>` | Completed events. Each entry has `faction` (string) and `amount` (int). |
+| `rewards` | `IReadOnlyList<IReadOnlyDictionary<string, object?>>` | Completed events. Unified list covering all 14 vanilla reward subtypes (Credits, Experience, Reputation, Item, Ship, Crew, Skilltree, Skillpoint, WorkshopCredit, StoryMission, MissionFollowUp, POICoordinates, UmbralControl, ConquestStrength). See [Rewards list](#rewards-list). |
+| `steps` | `IReadOnlyList<IReadOnlyDictionary<string, object?>>` | Mission's step/objective tree at capture time. See [Steps and objectives](#steps-and-objectives). |
 | `playerShipName` | `string` | *Not yet populated.* |
 | `playerShipLevel` | `int` | *Not yet populated.* |
 | `playerCurrentSystemId` | `string` | Where the player was when the event fired — may differ from `sourceSystemId` (e.g. Complete at the target POI). |
+
+### Steps and objectives
+
+`steps[]` is the mission's step tree captured verbatim at the event's transition. Each step is a dict:
+
+| Key | Type | Meaning |
+|---|---|---|
+| `description` | `string` | Vanilla's display description (omitted when the step has none). |
+| `isComplete` | `bool` | `MissionStep.isComplete` — true when all required objectives pass. |
+| `requireAllObjectives` | `bool` | `true` → every objective must complete; `false` → any one does. |
+| `hidden` | `bool` | Vanilla flag for branch-stub / guard steps the UI hides. Consumers usually skip these. |
+| `objectives` | list | See below. |
+
+Each objective is a dict:
+
+| Key | Type | Meaning |
+|---|---|---|
+| `type` | `string` | Raw `objective.GetType().Name` — `"KillEnemies"`, `"TravelToPOI"`, `"Mining"`, `"TradeOffer"`, `"CollectCredits"`, `"CollectItemTypes"`, `"Crafting"`, `"Reputation"`, `"ProtectUnit"`, `"Salvage"`, `"TriggerObjective"`, `"StationsInfected"`, `"SystemsConquered"`, `"ConquestFactionEliminated"`, `"ConquestFleetStrength"`, `"CreditOffer"`, `"DroneTrigger"`, `"Item"`. |
+| `isComplete` | `bool` | `objective.IsComplete()`. |
+| `statusText` | `string` | Vanilla's translated progress string (e.g. `"Kill 3/5 Pirates"`). Optional — omitted when the localizer isn't ready or the objective throws on read. |
+| `fields` | dict | Best-effort primitive field dump (camelCase keys). For `KillEnemies`: `requiredAmount`, `currentAmount`, `shipType`, `enemyFaction` (resolved to faction identifier). For `TravelToPOI`: `targetPOI`. For `Mining`: `requiredAmount`, `currentAmount`, `itemType` (identifier), `miningFaction`. Etc. What you get depends on what the concrete subclass exposes — anything non-primitive / non-Faction / non-InventoryItemType / non-MapElement is skipped. |
+
+### Rewards list
+
+`rewards[]` carries one entry per `MissionReward` on the mission. Each entry:
+
+| Key | Type | Meaning |
+|---|---|---|
+| `type` | `string` | Raw `reward.GetType().Name` — `"Credits"`, `"Experience"`, `"Reputation"`, `"Item"`, `"Ship"`, `"Crew"`, `"Skilltree"`, `"Skillpoint"`, `"WorkshopCredit"`, `"StoryMission"`, `"MissionFollowUp"`, `"POICoordinates"`, `"UmbralControl"`, `"ConquestStrength"`. |
+| `fields` | dict | Best-effort primitive field dump. `Credits`/`Experience`/`Skillpoint`/`WorkshopCredit`/`UmbralControl`/`ConquestStrength` → `amount`. `Item` → `item` (identifier) + `amount`. `Ship` → `ship` (identifier). `Crew` → whatever `CrewMemberData` exposes primitively. `Skilltree` → `treeName`. `StoryMission` → `missionId`. `Reputation` → `amount` + `faction` (identifier). Optional — omitted when extraction yields nothing. |
+
+The typed top-level `rewardsCredits` / `rewardsExperience` / `rewardsReputation` keys are kept for convenience (numeric sums, common case) but `rewards[]` is the authoritative source.
 
 ### Example
 
@@ -159,6 +194,7 @@ Every event comes back as `IReadOnlyDictionary<string, object?>`. Keys are camel
   "gameSeconds": 18347.2,
   "realUtc": "2026-04-23T20:31:12.0000000Z",
   "storyId": "",
+  "missionInstanceId": "9c2e…",
   "missionSubclass": "BountyMission",
   "missionLevel": 0,
   "playerLevel": 12,
@@ -171,7 +207,28 @@ Every event comes back as `IReadOnlyDictionary<string, object?>`. Keys are camel
   "sourceFaction": "BountyGuild",
   "rewardsCredits": 1500,
   "rewardsExperience": 200,
-  "rewardsReputation": [{ "faction": "BountyGuild", "amount": 5 }]
+  "rewardsReputation": [{ "faction": "BountyGuild", "amount": 5 }],
+  "rewards": [
+    { "type": "Credits",    "fields": { "amount": 1500 } },
+    { "type": "Experience", "fields": { "amount": 200 } },
+    { "type": "Reputation", "fields": { "amount": 5, "faction": "BountyGuild" } }
+  ],
+  "steps": [
+    {
+      "description": "Destroy the pirate fleet",
+      "isComplete": true,
+      "requireAllObjectives": true,
+      "hidden": false,
+      "objectives": [
+        {
+          "type": "KillEnemies",
+          "isComplete": true,
+          "statusText": "Pirates destroyed: 5/5",
+          "fields": { "requiredAmount": 5, "currentAmount": 5, "enemyFaction": "Pirates", "shipType": "Fighter" }
+        }
+      ]
+    }
+  ]
 }
 ```
 
@@ -201,7 +258,8 @@ These are documented limitations of the current shipping version. Consumers shou
 - **Sector and target-station/system fields are never populated.** Vanilla's accessor graph is deeper than what's currently scouted. Fields are reserved in the schema; additive future.
 - **Player ship fields are never populated.** Same reason.
 - **Reputation rewards carry only the faction identifier.** Display metadata (name, colour) isn't persisted; resolve from your own faction data if you need it.
-- **No `Offered` or `ObjectiveProgressed` events.** Accepted is load-bearing; Offered varies too much by source (board, bar, broker) to hook reliably at this stage.
+- **`missionInstanceId` is session-local.** Resets across save/load because vanilla rebuilds mission instances on load. Accept→Complete in the same session works; across sessions you need `storyId` (if set) or your own joining logic.
+- **No `Offered` or `ObjectiveProgressed` events.** Accepted is load-bearing; Offered varies too much by source (board, bar, broker) to hook reliably at this stage. `steps[]` captured on each terminal event lets consumers reconstruct objective progress without needing a `ObjectiveProgressed` stream.
 
 ## Retention
 
