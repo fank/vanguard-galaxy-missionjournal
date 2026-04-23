@@ -5,6 +5,7 @@ using BepInEx.Logging;
 using HarmonyLib;
 using Source.Util;
 using UnityEngine;
+using VGMissionLog.Api;
 using VGMissionLog.Logging;
 using VGMissionLog.Patches;
 using VGMissionLog.Persistence;
@@ -99,6 +100,11 @@ public class Plugin : BaseUnityPlugin
         // --- safety-net quit-flush (spec R3.2) --------------------------
         Application.quitting += OnApplicationQuitting;
 
+        // --- public facade (spec R4.2) ----------------------------------
+        // Late-assigned last so consumers reflection-probing during our
+        // startup never see a half-wired handle.
+        MissionLogApi.Current = new MissionLogQueryAdapter(ActivityLog);
+
         var patchCount = _harmony.GetPatchedMethods().Count();
         Log.LogInfo($"{PluginName} v{PluginVersion} loaded ({patchCount} patched method(s))");
     }
@@ -124,6 +130,9 @@ public class Plugin : BaseUnityPlugin
 
     private void OnDestroy()
     {
+        // Null the facade first so consumers reflection-probing after
+        // teardown can't call into a torn-down adapter.
+        MissionLogApi.Current = null;
         Application.quitting -= OnApplicationQuitting;
         _harmony?.UnpatchSelf();
     }
