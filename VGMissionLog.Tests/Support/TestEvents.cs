@@ -44,5 +44,6 @@ internal static class TestEvents
             PlayerLevel:           1,
             PlayerShipName:        null,
             PlayerShipLevel:       null,
-            PlayerCurrentSystemId: null);
+            PlayerCurrentSystemId: null,
+            Steps:                 null);
 }

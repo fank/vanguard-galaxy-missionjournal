@@ -187,6 +187,59 @@ public class ActivityEventBuilderTests
         Assert.Null(evt.PlayerCurrentSystemId);
     }
 
+    // --- Step / objective snapshot ---------------------------------------
+
+    [Fact]
+    public void Build_NoSteps_YieldsNullStepsList()
+    {
+        // A bare Mission from GetUninitializedObject has steps=null.
+        // The builder treats null as "unreadable", emitting null so the
+        // mapper omits the key.
+        var evt = NewBuilder().Build(TestMission.Generic(), ActivityEventType.Accepted);
+
+        Assert.Null(evt.Steps);
+    }
+
+    [Fact]
+    public void Build_WithStep_CapturesObjectiveType()
+    {
+        // One step, one KillEnemies objective with requiredAmount=5.
+        var kill = TestMission.Kill();
+        kill.requiredAmount = 5;
+        kill.shipType = "Pirate";
+        var mission = TestMission.WithObjectives(kill);
+
+        var evt = NewBuilder().Build(mission, ActivityEventType.Accepted);
+
+        Assert.NotNull(evt.Steps);
+        var steps = evt.Steps!.ToList();
+        Assert.Single(steps);
+        var step = steps[0];
+        Assert.Single(step.Objectives);
+        var obj = step.Objectives[0];
+        Assert.Equal("KillEnemies", obj.Type);
+        Assert.False(obj.IsComplete);                       // currentAmount=0, required=5
+        Assert.NotNull(obj.Fields);
+        Assert.Equal(5,        obj.Fields!["requiredAmount"]);
+        Assert.Equal("Pirate", obj.Fields!["shipType"]);
+    }
+
+    [Fact]
+    public void Build_MultipleSteps_PreservesOrder()
+    {
+        var s1 = TestMission.BuildStep(TestMission.Travel());
+        var s2 = TestMission.BuildStep(TestMission.Kill());
+        var mission = TestMission.WithSteps(s1, s2);
+
+        var evt = NewBuilder().Build(mission, ActivityEventType.Accepted);
+
+        Assert.NotNull(evt.Steps);
+        var steps = evt.Steps!.ToList();
+        Assert.Equal(2, steps.Count);
+        Assert.Equal("TravelToPOI", steps[0].Objectives[0].Type);
+        Assert.Equal("KillEnemies", steps[1].Objectives[0].Type);
+    }
+
     [Fact]
     public void Build_NullMission_Throws()
     {

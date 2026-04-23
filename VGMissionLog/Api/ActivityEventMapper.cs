@@ -71,7 +71,46 @@ internal static class ActivityEventMapper
         if (evt.PlayerShipLevel       != null) d["playerShipLevel"]       = evt.PlayerShipLevel;
         if (evt.PlayerCurrentSystemId != null) d["playerCurrentSystemId"] = evt.PlayerCurrentSystemId;
 
+        if (evt.Steps != null) d["steps"] = MapSteps(evt.Steps);
+
         return d;
+    }
+
+    private static IReadOnlyList<IReadOnlyDictionary<string, object?>> MapSteps(
+        IReadOnlyList<MissionStepSnapshot> steps)
+    {
+        var result = new List<IReadOnlyDictionary<string, object?>>(steps.Count);
+        foreach (var step in steps)
+        {
+            var stepDict = new Dictionary<string, object?>(capacity: 5)
+            {
+                ["isComplete"]           = step.IsComplete,
+                ["requireAllObjectives"] = step.RequireAllObjectives,
+                ["hidden"]               = step.Hidden,
+                ["objectives"]           = MapObjectives(step.Objectives),
+            };
+            if (step.Description != null) stepDict["description"] = step.Description;
+            result.Add(stepDict);
+        }
+        return result;
+    }
+
+    private static IReadOnlyList<IReadOnlyDictionary<string, object?>> MapObjectives(
+        IReadOnlyList<MissionObjectiveSnapshot> objectives)
+    {
+        var result = new List<IReadOnlyDictionary<string, object?>>(objectives.Count);
+        foreach (var obj in objectives)
+        {
+            var objDict = new Dictionary<string, object?>(capacity: 4)
+            {
+                ["type"]       = obj.Type,
+                ["isComplete"] = obj.IsComplete,
+            };
+            if (obj.StatusText != null) objDict["statusText"] = obj.StatusText;
+            if (obj.Fields != null && obj.Fields.Count > 0) objDict["fields"] = obj.Fields;
+            result.Add(objDict);
+        }
+        return result;
     }
 
     public static IReadOnlyList<IReadOnlyDictionary<string, object?>> ToDicts(

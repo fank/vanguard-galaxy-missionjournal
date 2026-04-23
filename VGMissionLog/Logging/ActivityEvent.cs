@@ -44,4 +44,5 @@ public sealed record ActivityEvent(
     int PlayerLevel,
     string? PlayerShipName,
     int? PlayerShipLevel,
-    string? PlayerCurrentSystemId);
+    string? PlayerCurrentSystemId,
+    IReadOnlyList<MissionStepSnapshot>? Steps);

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
+using Behaviour.Item;
 using Source.Galaxy;
 using Source.MissionSystem;
 using Source.MissionSystem.Rewards;
@@ -39,6 +40,18 @@ internal sealed class ActivityEventBuilder
     private static readonly FieldInfo _missionRewardsField =
         typeof(Mission).GetField("<rewards>k__BackingField", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
         ?? throw new InvalidOperationException("Mission.<rewards>k__BackingField not found — vanilla layout changed?");
+
+    private static readonly FieldInfo _missionStepsField =
+        typeof(Mission).GetField("<steps>k__BackingField", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
+        ?? throw new InvalidOperationException("Mission.<steps>k__BackingField not found — vanilla layout changed?");
+
+    private static readonly FieldInfo _stepObjectivesField =
+        typeof(MissionStep).GetField("<objectives>k__BackingField", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
+        ?? throw new InvalidOperationException("MissionStep.<objectives>k__BackingField not found — vanilla layout changed?");
+
+    private static readonly FieldInfo _itemTypeIdentifierField =
+        typeof(InventoryItemType).GetField("<identifier>k__BackingField", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
+        ?? throw new InvalidOperationException("InventoryItemType.<identifier>k__BackingField not found — vanilla layout changed?");
 
     private static readonly FieldInfo _mapElementGuidField =
         typeof(MapElement).GetField("<guid>k__BackingField", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
@@ -80,6 +93,8 @@ internal sealed class ActivityEventBuilder
             RewardsCredits    = null,
             RewardsExperience = null,
             RewardsReputation = null,
+            // Steps from the acceptance snapshot carry over — the mission
+            // object that would let us re-read them is gone by archive time.
         };
 
     /// <summary>Build an event for the given mission + lifecycle transition.
@@ -123,7 +138,8 @@ internal sealed class ActivityEventBuilder
             PlayerLevel:           ReadPlayerLevel(player),
             PlayerShipName:        null,              // TBD — ship probe
             PlayerShipLevel:       null,
-            PlayerCurrentSystemId: ReadGuid(player?.currentPointOfInterest?.system));
+            PlayerCurrentSystemId: ReadGuid(player?.currentPointOfInterest?.system),
+            Steps:                 ExtractSteps(mission));
     }
 
     // --- outcome derivation ---
@@ -178,6 +194,147 @@ internal sealed class ActivityEventBuilder
             Credits:    hasCredits    ? credits    : (long?)null,
             Experience: hasExperience ? experience : (long?)null,
             Reputation: reputation);
+    }
+
+    // --- step / objective extraction ---
+
+    /// <summary>Snapshot <c>mission.steps</c>. Returns null if the steps
+    /// list is inaccessible (reflection-read error) or missing; returns an
+    /// empty list if the mission has no steps defined. Consumer-facing
+    /// semantics: null = "we couldn't read this", empty = "vanilla has no
+    /// steps", non-empty = "here's what we saw".</summary>
+    private static IReadOnlyList<MissionStepSnapshot>? ExtractSteps(Mission mission)
+    {
+        try
+        {
+            var steps = _missionStepsField.GetValue(mission) as List<MissionStep>;
+            if (steps is null) return null;
+            var result = new List<MissionStepSnapshot>(steps.Count);
+            foreach (var step in steps)
+            {
+                if (step is null) continue;
+                result.Add(SnapshotStep(step));
+            }
+            return result;
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
+    private static MissionStepSnapshot SnapshotStep(MissionStep step)
+    {
+        var objectives = _stepObjectivesField.GetValue(step) as List<MissionObjective>;
+        var snapshots  = new List<MissionObjectiveSnapshot>(objectives?.Count ?? 0);
+        if (objectives != null)
+        {
+            foreach (var objective in objectives)
+            {
+                if (objective is null) continue;
+                snapshots.Add(SnapshotObjective(objective));
+            }
+        }
+
+        bool isComplete;
+        try { isComplete = step.isComplete; } catch { isComplete = false; }
+
+        return new MissionStepSnapshot(
+            Description:          step.description,
+            IsComplete:           isComplete,
+            RequireAllObjectives: step.requireAllObjectives,
+            Hidden:               step.hidden,
+            Objectives:           snapshots);
+    }
+
+    private static MissionObjectiveSnapshot SnapshotObjective(MissionObjective objective)
+    {
+        bool isComplete;
+        try { isComplete = objective.IsComplete(); } catch { isComplete = false; }
+
+        string? statusText;
+        try { statusText = objective.statusText; } catch { statusText = null; }
+
+        return new MissionObjectiveSnapshot(
+            Type:       objective.GetType().Name,
+            IsComplete: isComplete,
+            StatusText: statusText,
+            Fields:     ReadPrimitiveFields(objective));
+    }
+
+    /// <summary>Reflect across an objective's public fields + instance
+    /// properties and emit any that are primitive-ish. Enums go through
+    /// ToString(). <see cref="Faction"/> / <see cref="InventoryItemType"/>
+    /// / <see cref="MapElement"/> references are resolved to their stable
+    /// identifier (guid / id / name) via the cached backing-field
+    /// readers. Anything else is skipped.</summary>
+    private static IReadOnlyDictionary<string, object?>? ReadPrimitiveFields(MissionObjective objective)
+    {
+        try
+        {
+            var dict = new Dictionary<string, object?>(capacity: 8);
+            var type = objective.GetType();
+
+            foreach (var field in type.GetFields(BindingFlags.Instance | BindingFlags.Public))
+            {
+                TryAdd(dict, field.Name, SafeGet(() => field.GetValue(objective)));
+            }
+            foreach (var prop in type.GetProperties(BindingFlags.Instance | BindingFlags.Public))
+            {
+                // Skip indexers and write-only; skip statusText (handled separately)
+                if (prop.GetIndexParameters().Length > 0 || !prop.CanRead) continue;
+                if (prop.Name == "statusText") continue;
+                TryAdd(dict, prop.Name, SafeGet(() => prop.GetValue(objective)));
+            }
+            return dict.Count == 0 ? null : dict;
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
+    private static object? SafeGet(Func<object?> fn)
+    {
+        try { return fn(); } catch { return null; }
+    }
+
+    private static void TryAdd(Dictionary<string, object?> dict, string name, object? value)
+    {
+        if (value is null) return;
+        var camel = ToCamelCase(name);
+        if (dict.ContainsKey(camel)) return;
+
+        switch (value)
+        {
+            case string s:
+                dict[camel] = s;
+                return;
+            case bool or int or long or float or double or short or byte:
+                dict[camel] = value;
+                return;
+            case Enum e:
+                dict[camel] = e.ToString();
+                return;
+            case Faction f:
+                var fid = ReadFactionId(f);
+                if (fid != null) dict[camel] = fid;
+                return;
+            case InventoryItemType it:
+                var iid = SafeGet(() => _itemTypeIdentifierField.GetValue(it)) as string;
+                if (iid != null) dict[camel] = iid;
+                return;
+            case MapElement me:
+                var gid = ReadGuid(me);
+                if (gid != null) dict[camel] = gid;
+                return;
+        }
+    }
+
+    private static string ToCamelCase(string s)
+    {
+        if (string.IsNullOrEmpty(s) || char.IsLower(s[0])) return s;
+        return char.ToLowerInvariant(s[0]) + s.Substring(1);
     }
 
     // --- reflection-backed field readers (null-safe) ---
