@@ -64,6 +64,30 @@ internal sealed class ActivityEventBuilder
     /// Rewards are extracted from <c>mission.rewards</c> only on
     /// <see cref="ActivityEventType.Completed"/>; on other event types those
     /// fields remain null in the event.</summary>
+    /// <summary>
+    /// Synthesize a <see cref="ActivityEventType.Completed"/> event by
+    /// cloning an earlier event for the same storyId. Used by
+    /// <see cref="Patches.MissionArchivePatch"/> as a backstop when
+    /// <see cref="Patches.MissionCompletePatch"/> failed to fire (rare:
+    /// vanilla edge-paths like the dev tutorial-skip, or a swallowed
+    /// exception in our own postfix). Rewards are left null because we
+    /// didn't see the transition where they'd be captured; everything
+    /// else — mission type, source station/system/faction, facility —
+    /// carries over from the cloned event.
+    /// </summary>
+    public ActivityEvent BuildSynthesizedCompleted(ActivityEvent cloneSource) =>
+        cloneSource with
+        {
+            EventId           = Guid.NewGuid().ToString(),
+            Type              = ActivityEventType.Completed,
+            GameSeconds       = _clock.GameSeconds,
+            RealUtc           = _clock.UtcNow.ToString("O"),
+            Outcome           = Outcome.Completed,
+            RewardsCredits    = null,
+            RewardsExperience = null,
+            RewardsReputation = null,
+        };
+
     public ActivityEvent Build(Mission mission, ActivityEventType type)
     {
         if (mission is null) throw new ArgumentNullException(nameof(mission));
