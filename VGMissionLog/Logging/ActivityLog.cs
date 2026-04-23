@@ -216,6 +216,129 @@ internal sealed class ActivityLog
         return result;
     }
 
+    // --- R2.3 aggregate queries --------------------------------------------
+    //
+    // Counts always consider the source-side of an event (mission type,
+    // source system, source faction). Events with null/empty sources are
+    // not counted toward any bucket — we prefer an honest "sourceless" gap
+    // over synthesizing a catch-all bucket consumers have to know about.
+
+    public IReadOnlyDictionary<MissionType, int> CountByType(
+        double sinceGameSeconds = 0.0,
+        double untilGameSeconds = double.MaxValue)
+    {
+        var result = new Dictionary<MissionType, int>();
+        foreach (var evt in _events)
+        {
+            if (!InTimeWindow(evt.GameSeconds, sinceGameSeconds, untilGameSeconds)) continue;
+            result.TryGetValue(evt.MissionType, out var n);
+            result[evt.MissionType] = n + 1;
+        }
+        return result;
+    }
+
+    /// <summary>Counts only terminal events (those carrying an Outcome).</summary>
+    public IReadOnlyDictionary<Outcome, int> CountByOutcome(
+        double sinceGameSeconds = 0.0,
+        double untilGameSeconds = double.MaxValue)
+    {
+        var result = new Dictionary<Outcome, int>();
+        foreach (var evt in _events)
+        {
+            if (evt.Outcome is null) continue;
+            if (!InTimeWindow(evt.GameSeconds, sinceGameSeconds, untilGameSeconds)) continue;
+            var outcome = evt.Outcome.Value;
+            result.TryGetValue(outcome, out var n);
+            result[outcome] = n + 1;
+        }
+        return result;
+    }
+
+    public IReadOnlyDictionary<string, int> CountBySystem(
+        double sinceGameSeconds = 0.0,
+        double untilGameSeconds = double.MaxValue)
+    {
+        var result = new Dictionary<string, int>();
+        foreach (var evt in _events)
+        {
+            if (string.IsNullOrEmpty(evt.SourceSystemId)) continue;
+            if (!InTimeWindow(evt.GameSeconds, sinceGameSeconds, untilGameSeconds)) continue;
+            var key = evt.SourceSystemId!;
+            result.TryGetValue(key, out var n);
+            result[key] = n + 1;
+        }
+        return result;
+    }
+
+    public IReadOnlyDictionary<string, int> CountByFaction(
+        double sinceGameSeconds = 0.0,
+        double untilGameSeconds = double.MaxValue)
+    {
+        var result = new Dictionary<string, int>();
+        foreach (var evt in _events)
+        {
+            if (string.IsNullOrEmpty(evt.SourceFaction)) continue;
+            if (!InTimeWindow(evt.GameSeconds, sinceGameSeconds, untilGameSeconds)) continue;
+            var key = evt.SourceFaction!;
+            result.TryGetValue(key, out var n);
+            result[key] = n + 1;
+        }
+        return result;
+    }
+
+    /// <summary>
+    /// Top-N most-active source systems within <paramref name="maxJumps"/> of
+    /// the pivot, sorted by event count descending. Ties broken by system
+    /// id (ordinal) for determinism. Each entry is (systemId, count, jumps).
+    /// </summary>
+    public IReadOnlyList<(string SystemId, int Count, int Jumps)> MostActiveSystemsInRange(
+        string pivotSystemId,
+        Func<string, string, int> jumpDistance,
+        int maxJumps,
+        int topN,
+        double sinceGameSeconds = 0.0,
+        double untilGameSeconds = double.MaxValue)
+    {
+        if (jumpDistance is null) throw new ArgumentNullException(nameof(jumpDistance));
+        if (topN <= 0 || maxJumps < 0) return Array.Empty<(string, int, int)>();
+
+        // One dictionary pass; resolve jump distance lazily per unique system
+        // so a long timeline in few systems doesn't re-query the graph N times.
+        var counts        = new Dictionary<string, int>();
+        var jumpsBySystem = new Dictionary<string, int>();
+
+        foreach (var evt in _events)
+        {
+            if (string.IsNullOrEmpty(evt.SourceSystemId)) continue;
+            if (!InTimeWindow(evt.GameSeconds, sinceGameSeconds, untilGameSeconds)) continue;
+
+            var sys = evt.SourceSystemId!;
+            if (!jumpsBySystem.TryGetValue(sys, out var jumps))
+            {
+                jumps = jumpDistance(pivotSystemId, sys);
+                jumpsBySystem[sys] = jumps;
+            }
+            if (jumps < 0 || jumps > maxJumps) continue;
+
+            counts.TryGetValue(sys, out var n);
+            counts[sys] = n + 1;
+        }
+
+        var sorted = new List<(string SystemId, int Count, int Jumps)>(counts.Count);
+        foreach (var (sys, count) in counts)
+        {
+            sorted.Add((sys, count, jumpsBySystem[sys]));
+        }
+        sorted.Sort((a, b) =>
+        {
+            var cmp = b.Count.CompareTo(a.Count); // descending count
+            return cmp != 0 ? cmp : string.CompareOrdinal(a.SystemId, b.SystemId);
+        });
+
+        if (sorted.Count > topN) sorted.RemoveRange(topN, sorted.Count - topN);
+        return sorted;
+    }
+
     public void Append(ActivityEvent evt)
     {
         if (evt is null) throw new ArgumentNullException(nameof(evt));
