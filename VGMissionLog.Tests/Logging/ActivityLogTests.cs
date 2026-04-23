@@ -141,6 +141,31 @@ public class ActivityLogTests
     }
 
     [Fact]
+    public void OnAppend_FiresForEachSuccessfulAppend()
+    {
+        var log = new ActivityLog();
+        var seen = new System.Collections.Generic.List<string>();
+        log.OnAppend += e => seen.Add(e.EventId);
+
+        log.Append(TestEvents.Baseline(eventId: "a"));
+        log.Append(TestEvents.Baseline(eventId: "b"));
+
+        Assert.Equal(new[] { "a", "b" }, seen);
+    }
+
+    [Fact]
+    public void OnAppend_SubscriberException_DoesNotInterruptAppend()
+    {
+        var log = new ActivityLog();
+        log.OnAppend += _ => throw new System.InvalidOperationException("subscriber boom");
+
+        log.Append(TestEvents.Baseline(eventId: "a"));
+        log.Append(TestEvents.Baseline(eventId: "b"));
+
+        Assert.Equal(2, log.TotalEventCount);
+    }
+
+    [Fact]
     public void Eviction_RemovesEventFromAllIndexes()
     {
         var log = new ActivityLog(maxEvents: 2);

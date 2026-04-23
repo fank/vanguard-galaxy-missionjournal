@@ -40,6 +40,14 @@ internal sealed class ActivityLog
         _onFirstEviction = onFirstEviction;
     }
 
+    /// <summary>
+    /// Fired after every successful <see cref="Append"/>. Plugin.Awake
+    /// wires this to a BepInEx Debug-level logger when the
+    /// <c>Logging.Verbose</c> config flag is on (ML-T6b). Swallowed if it
+    /// throws — subscriber failures must not interrupt event capture.
+    /// </summary>
+    public event Action<ActivityEvent>? OnAppend;
+
     public int MaxEvents => _maxEvents;
 
     public int TotalEventCount => _events.Count;
@@ -349,6 +357,7 @@ internal sealed class ActivityLog
             EvictOldest();
             NotifyFirstEvictionOnce();
         }
+        try { OnAppend?.Invoke(evt); } catch { /* subscriber failures must not interrupt capture */ }
     }
 
     /// <summary>

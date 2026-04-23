@@ -6,6 +6,7 @@ using HarmonyLib;
 using Source.Util;
 using UnityEngine;
 using VGMissionLog.Api;
+using VGMissionLog.Config;
 using VGMissionLog.Logging;
 using VGMissionLog.Patches;
 using VGMissionLog.Persistence;
@@ -27,6 +28,7 @@ public class Plugin : BaseUnityPlugin
     internal IClock               Clock       { get; private set; } = null!;
     internal LogIO                Io          { get; private set; } = null!;
     internal ActivityEventBuilder Builder     { get; private set; } = null!;
+    internal MissionLogConfig     Cfg         { get; private set; } = null!;
 
     private Harmony _harmony = null!;
 
@@ -35,14 +37,23 @@ public class Plugin : BaseUnityPlugin
         Instance = this;
         Log      = Logger;
 
+        // --- config (spec R4.5) -----------------------------------------
+        Cfg = new MissionLogConfig(Config);
+
         // --- singletons -------------------------------------------------
         Clock       = new GameClock();
         Io          = new LogIO(() => DateTime.UtcNow);
         ActivityLog = new ActivityLog(
-            maxEvents:        Logging.ActivityLog.DefaultMaxEvents,
+            maxEvents:        Cfg.MaxEvents.Value,
             onFirstEviction:  cap => Log.LogWarning(
                 $"Activity log hit cap of {cap} events — oldest entries are now being evicted FIFO"));
         Builder     = new ActivityEventBuilder(Clock);
+
+        if (Cfg.Verbose.Value)
+        {
+            ActivityLog.OnAppend += evt =>
+                Log.LogDebug($"[vgml] {evt.Type} {evt.MissionType} storyId={evt.StoryId} @ {evt.GameSeconds:F1}s");
+        }
 
         // --- wire every patch's static slots ----------------------------
         MissionAcceptPatch.Builder   = Builder;
