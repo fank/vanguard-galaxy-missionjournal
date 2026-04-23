@@ -73,6 +73,51 @@ public class LogSchemaTests
     }
 
     [Fact]
+    public void Serialization_EmitsEnumsAsStrings()
+    {
+        // Regression for the sidecar-API drift bug: ActivityEventType and
+        // Outcome used to serialize as integers (Newtonsoft default), while
+        // the public API dict emits strings. Tooling reading the JSON saw
+        // type:1/outcome:0 instead of "Accepted"/"Completed".
+        var evt = TestEvents.Baseline(eventId: "e1", type: ActivityEventType.Completed)
+            with { Outcome = Outcome.Completed };
+        var schema = new LogSchema(LogSchema.CurrentVersion, new[] { evt });
+
+        var json = JsonConvert.SerializeObject(schema, LogSchema.SerializerSettings);
+
+        Assert.Contains("\"type\": \"Completed\"",    json);
+        Assert.Contains("\"outcome\": \"Completed\"", json);
+        Assert.DoesNotContain("\"type\": 2",          json);
+        Assert.DoesNotContain("\"outcome\": 0",       json);
+    }
+
+    [Fact]
+    public void Deserialization_AcceptsIntegerEnums_ForV1BackCompat()
+    {
+        // Old v1 sidecars were written with integer enums. StringEnumConverter
+        // with AllowIntegerValues=true (default) must still read them so a
+        // pre-fix sidecar round-trips without quarantine.
+        const string legacy =
+            "{\"version\":1,\"events\":[{" +
+            "\"eventId\":\"e1\"," +
+            "\"type\":1," +          // Accepted
+            "\"gameSeconds\":1.0," +
+            "\"realUtc\":\"2026-04-23T00:00:00.0000000Z\"," +
+            "\"storyId\":\"\"," +
+            "\"missionSubclass\":\"Mission\"," +
+            "\"missionLevel\":0," +
+            "\"outcome\":1," +       // Failed
+            "\"playerLevel\":1" +
+            "}]}";
+
+        var schema = JsonConvert.DeserializeObject<LogSchema>(legacy, LogSchema.SerializerSettings)!;
+        var evt = schema.Events[0];
+
+        Assert.Equal(ActivityEventType.Accepted, evt.Type);
+        Assert.Equal(Outcome.Failed, evt.Outcome);
+    }
+
+    [Fact]
     public void Serialization_UsesCamelCase()
     {
         var evt = TestEvents.Baseline(eventId: "e1", sourceSystemId: "sys-zoran");

@@ -1,4 +1,5 @@
 using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Serialization;
 using VGMissionLog.Logging;
 
@@ -45,5 +46,12 @@ internal sealed record LogSchema(
         ContractResolver  = new CamelCasePropertyNamesContractResolver(),
         Formatting        = Formatting.Indented,
         NullValueHandling = NullValueHandling.Ignore,
+        // Enums as strings on the wire ("Accepted"/"Completed"/…) so external
+        // tooling reading the sidecar sees human-readable values and the
+        // on-disk shape matches what the public API dictionary exposes (via
+        // ActivityEventMapper, which uses enum.ToString()). PascalCase matches
+        // the C# enum names; AllowIntegerValues stays true (default) so older
+        // v1 sidecars written with integer enums still round-trip on read.
+        Converters        = { new StringEnumConverter() },
     };
 }
