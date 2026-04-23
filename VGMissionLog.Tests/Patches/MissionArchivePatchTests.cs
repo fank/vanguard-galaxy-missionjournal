@@ -47,6 +47,91 @@ public class MissionArchivePatchTests
 
     // --- BuildSynthesizedCompleted dedup/clone behaviour ------------------
 
+    // --- Archive race: Complete's Prefix/Postfix dedup -------------------
+
+    /// <summary>
+    /// Regression for the real-save bug: Harmony postfix order on the chain
+    /// CompleteMission → RemoveMission → ArchiveMission means Archive's
+    /// postfix fires before Complete's. Without coordination, Archive's
+    /// backstop sees "no Completed event yet" and synthesizes a duplicate.
+    /// The fix: Complete's Prefix publishes the storyId to an in-flight
+    /// set that Archive checks.
+    /// </summary>
+    [Fact]
+    public void ArchiveDuringActiveCompletion_SkipsSynth()
+    {
+        var clock   = new FakeClock { GameSeconds = 100.0 };
+        var builder = new ActivityEventBuilder(clock, () => null);
+        var log     = new ActivityLog();
+        log.Append(TestEvents.Baseline(eventId: "acc", storyId: "story-1",
+                                        type: ActivityEventType.Accepted));
+
+        // Wire patches to the same log/builder/logger.
+        MissionCompletePatch.Builder = builder;
+        MissionCompletePatch.Log     = log;
+        MissionCompletePatch.BepLog  = new BepInEx.Logging.ManualLogSource("test");
+        MissionArchivePatch.Builder  = builder;
+        MissionArchivePatch.Log      = log;
+        MissionArchivePatch.BepLog   = new BepInEx.Logging.ManualLogSource("test");
+        MissionCompletePatch.InFlightStoryIds.Clear();
+
+        // Simulate Harmony's actual ordering: Complete's Prefix runs first,
+        // then the inner call chain runs (with Archive's Postfix firing as
+        // RemoveMission returns), then Complete's Postfix.
+        var mission = TestMission.Generic("story-1");
+        InvokeCompletePrefix(mission);
+        InvokeArchivePostfix("story-1");        // should be suppressed
+        InvokeCompletePostfix(mission);          // emits the one true Completed
+
+        var completedEvents = log.AllEvents
+            .Where(e => e.Type == ActivityEventType.Completed
+                     && e.StoryId == "story-1")
+            .ToList();
+        Assert.Single(completedEvents);
+        // InFlight set is cleaned up so a later archive of the same id can
+        // still trigger the legitimate backstop path.
+        Assert.DoesNotContain("story-1", MissionCompletePatch.InFlightStoryIds);
+    }
+
+    [Fact]
+    public void ArchiveOutsideActiveCompletion_StillSynths()
+    {
+        // The backstop's legit use-case: a path (dev cheat, swallowed
+        // exception) that calls ArchiveMission without going through
+        // CompleteMission. The storyId is not in the in-flight set, so we
+        // do synth a Completed from the most recent prior event.
+        var clock   = new FakeClock { GameSeconds = 100.0 };
+        var builder = new ActivityEventBuilder(clock, () => null);
+        var log     = new ActivityLog();
+        log.Append(TestEvents.Baseline(eventId: "acc", storyId: "story-dev",
+                                        type: ActivityEventType.Accepted));
+
+        MissionArchivePatch.Builder = builder;
+        MissionArchivePatch.Log     = log;
+        MissionArchivePatch.BepLog  = new BepInEx.Logging.ManualLogSource("test");
+        MissionCompletePatch.InFlightStoryIds.Clear();
+
+        InvokeArchivePostfix("story-dev");
+
+        Assert.Contains(log.AllEvents,
+            e => e.Type == ActivityEventType.Completed && e.StoryId == "story-dev");
+    }
+
+    private static void InvokeCompletePrefix(Source.MissionSystem.Mission mission) =>
+        typeof(MissionCompletePatch)
+            .GetMethod("Prefix", BindingFlags.Static | BindingFlags.NonPublic)!
+            .Invoke(null, new object?[] { mission });
+
+    private static void InvokeCompletePostfix(Source.MissionSystem.Mission mission) =>
+        typeof(MissionCompletePatch)
+            .GetMethod("Postfix", BindingFlags.Static | BindingFlags.NonPublic)!
+            .Invoke(null, new object?[] { mission });
+
+    private static void InvokeArchivePostfix(string id) =>
+        typeof(MissionArchivePatch)
+            .GetMethod("Postfix", BindingFlags.Static | BindingFlags.NonPublic)!
+            .Invoke(null, new object?[] { id });
+
     [Fact]
     public void BuildSynthesizedCompleted_ClonesFieldsAndBumpsTypeAndOutcome()
     {

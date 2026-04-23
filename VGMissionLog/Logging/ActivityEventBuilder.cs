@@ -324,10 +324,11 @@ internal sealed class ActivityEventBuilder
                 if (prop.GetIndexParameters().Length > 0 || !prop.CanRead) continue;
                 switch (prop.Name)
                 {
-                    case "statusText":
-                    case "rewardText":
+                    case "statusText":    // objective user-visible (handled separately)
+                    case "rewardText":    // reward user-visible (translation-dependent)
                     case "rewardIcon":
                     case "rewardColor":
+                    case "coreName":      // MissionObjective base getter returning "Core" verbatim — pure noise
                         continue;
                 }
                 TryAdd(dict, prop.Name, SafeGet(() => prop.GetValue(target)));
