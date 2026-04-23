@@ -57,6 +57,50 @@ public class ActivityLogTests
     }
 
     [Fact]
+    public void Append_UnboundedSentinel_NeverEvicts_AndLeavesCallbackQuiet()
+    {
+        var callbackInvocations = 0;
+        var log = new ActivityLog(
+            maxEvents: ActivityLog.Unbounded,
+            onFirstEviction: _ => callbackInvocations++);
+
+        Assert.True(log.IsUnbounded);
+
+        // Append well past any plausible default cap.
+        for (var i = 0; i < 5_000; i++)
+            log.Append(TestEvents.Baseline(eventId: $"e{i}"));
+
+        Assert.Equal(5_000, log.TotalEventCount);
+        Assert.Equal("e0",      log.AllEvents[0].EventId);           // oldest still present
+        Assert.Equal("e4999",   log.AllEvents[^1].EventId);
+        Assert.Equal(0, callbackInvocations);                         // no eviction fired
+    }
+
+    [Fact]
+    public void LoadFrom_Unbounded_DoesNotTrim()
+    {
+        var log = new ActivityLog(maxEvents: ActivityLog.Unbounded);
+        var many = Enumerable.Range(0, 3_000)
+            .Select(i => TestEvents.Baseline(eventId: $"e{i}"))
+            .ToArray();
+
+        log.LoadFrom(many);
+
+        Assert.Equal(3_000, log.TotalEventCount);
+        Assert.Equal("e0", log.AllEvents[0].EventId);
+    }
+
+    [Theory]
+    [InlineData(0)]
+    [InlineData(-1)]
+    [InlineData(int.MinValue)]
+    public void Ctor_NonPositiveMaxEvents_IsUnbounded(int maxEvents)
+    {
+        var log = new ActivityLog(maxEvents: maxEvents);
+        Assert.True(log.IsUnbounded);
+    }
+
+    [Fact]
     public void LoadFrom_ClearsExistingThenRebuilds()
     {
         var log = new ActivityLog();

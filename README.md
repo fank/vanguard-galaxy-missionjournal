@@ -24,6 +24,7 @@ Verbose = false
 
 [Persistence]
 ## Soft cap on retained events per save (FIFO eviction). Each event is ~500 bytes serialised.
+## Set to 0 to disable the cap entirely — sidecar size then grows without bound for the save's lifetime.
 # Default: 2000
 MaxEvents = 2000
 ```

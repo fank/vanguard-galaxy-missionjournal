@@ -25,6 +25,11 @@ internal sealed class ActivityLog
 {
     public const int DefaultMaxEvents = 2000;
 
+    /// <summary>Sentinel for <c>maxEvents</c>: no cap, no FIFO eviction, no
+    /// first-eviction warning. Sidecar size is then unbounded — the caller
+    /// accepts that a long-running save produces an ever-growing JSON file.</summary>
+    public const int Unbounded = 0;
+
     private readonly int _maxEvents;
     private readonly Action<int>? _onFirstEviction;
     private bool _evictionNotified;
@@ -36,9 +41,15 @@ internal sealed class ActivityLog
 
     public ActivityLog(int maxEvents = DefaultMaxEvents, Action<int>? onFirstEviction = null)
     {
-        _maxEvents = maxEvents > 0 ? maxEvents : DefaultMaxEvents;
+        // <= 0 is the "unbounded" sentinel (see <see cref="Unbounded"/>). Stored
+        // as 0 so the IsUnbounded check is a single comparison.
+        _maxEvents = maxEvents > 0 ? maxEvents : Unbounded;
         _onFirstEviction = onFirstEviction;
     }
+
+    /// <summary>True when the log has no cap; <see cref="Append"/> never evicts
+    /// and <see cref="LoadFrom"/> never trims.</summary>
+    public bool IsUnbounded => _maxEvents == Unbounded;
 
     /// <summary>
     /// Fired after every successful <see cref="Append"/>. Plugin.Awake
@@ -356,7 +367,7 @@ internal sealed class ActivityLog
         if (evt is null) throw new ArgumentNullException(nameof(evt));
         _events.Add(evt);
         IndexEvent(evt);
-        if (_events.Count > _maxEvents)
+        if (!IsUnbounded && _events.Count > _maxEvents)
         {
             EvictOldest();
             NotifyFirstEvictionOnce();
@@ -386,7 +397,7 @@ internal sealed class ActivityLog
             IndexEvent(evt);
         }
 
-        while (_events.Count > _maxEvents)
+        while (!IsUnbounded && _events.Count > _maxEvents)
         {
             EvictOldest();
         }

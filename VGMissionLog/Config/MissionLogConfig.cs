@@ -28,6 +28,8 @@ internal sealed class MissionLogConfig
             key:      "MaxEvents",
             defaultValue: ActivityLog.DefaultMaxEvents,
             description: "Soft cap on retained events per save (FIFO eviction). Each " +
-                         "event is ~500 bytes serialised; 2000 × 500 B ≈ 1 MB per sidecar.");
+                         "event is ~500 bytes serialised; 2000 × 500 B ≈ 1 MB per sidecar. " +
+                         "Set to 0 to disable the cap entirely — sidecar size then grows " +
+                         "without bound for the lifetime of the save.");
     }
 }
