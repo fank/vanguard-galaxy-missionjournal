@@ -42,85 +42,33 @@ MaxEvents = 2000
 
 Every captured event carries: event id, in-game timestamp + wall-clock, storyId, mission name + raw subclass name (`mission.GetType().Name`), outcome (for terminals), source station / system / faction, rewards (credits / experience / reputation on Completed), and a player-state snapshot. Consumers bucket by subclass name if they want mission-type categories; VGMissionLog does not classify.
 
-See [`docs/02-requirements.md`](docs/02-requirements.md) for the full per-event shape.
+See [`docs/api.md`](docs/api.md) for the full event schema and method reference.
 
-## Querying from another mod
+## For modders
 
-VGMissionLog exposes `VGMissionLog.Api.MissionLogApi.Current` — a static facade returning `null` when the plugin isn't loaded.
-
-### Typed reference (recommended)
-
-Drop `VGMissionLog.dll` into your consumer plugin's `libs/` folder and add a `<Reference>` in your csproj. Your calls are then just ordinary C#:
+Querying mission history from your own plugin takes about ten lines. Quick sketch:
 
 ```csharp
-using BepInEx;
-using BepInEx.Bootstrap;
 using VGMissionLog.Api;
 
-[BepInPlugin("my.consumer", "My Consumer", "1.0.0")]
-[BepInDependency("vgmissionlog", BepInDependency.DependencyFlags.SoftDependency)]
-public class MyPlugin : BaseUnityPlugin
-{
-    private void Awake()
-    {
-        // Soft-dep guard: skip the typed path entirely when VGMissionLog
-        // isn't installed. Putting the usage in a separate method keeps the
-        // JIT from resolving VGMissionLog types until this branch is taken.
-        if (Chainloader.PluginInfos.ContainsKey("vgmissionlog"))
-            UseMissionLog();
-    }
-
-    private void UseMissionLog()
-    {
-        if (MissionLogApi.Current is not { } api) return;
-
-        foreach (var evt in api.GetEventsInSystem("sys-guid-here"))
-        {
-            var storyId = (string)evt["storyId"]!;
-            var type    = (string)evt["type"]!;
-            // ...
-        }
-    }
-}
+if (MissionLogApi.Current is { } api)
+    foreach (var evt in api.GetRecentEvents(10))
+        Logger.LogInfo($"{evt["type"]} {evt["missionSubclass"]}");
 ```
 
-Events come back as `IReadOnlyList<IReadOnlyDictionary<string, object?>>` with camelCase string keys — consumers access fields by key rather than by property. See [`IMissionLogQuery`](VGMissionLog/Api/IMissionLogQuery.cs) for the full method list.
+Full integration guide (typed reference, reflection fallback, soft-dep guard), method reference, event field schema, and sidecar format: **[`docs/api.md`](docs/api.md)**.
 
-### Reflection fallback (zero compile-time dep)
+## Known gaps
 
-If you prefer not to reference `VGMissionLog.dll` at all (scripting-style mods, dynamic-language consumers), the same facade works via reflection:
+- **No Offered or ObjectiveProgressed events.** Vanilla's offer paths vary too much by source (board, bar, broker) to hook reliably; Accepted is load-bearing. Both are additive if added later.
+- **A few snapshot fields are never populated** — `missionLevel`, sector IDs, target station/system, player ship. Vanilla's accessor graph is deeper than what's currently scouted; fields are reserved in the schema.
+- **One sidecar per save.** No cross-save aggregation.
 
-```csharp
-var facade = Type.GetType("VGMissionLog.Api.MissionLogApi, VGMissionLog");
-var query  = facade?.GetProperty("Current")?.GetValue(null);
-if (query is null) return;  // plugin not installed
-
-var method = query.GetType().GetMethod("GetEventsInSystem",
-    new[] { typeof(string), typeof(double), typeof(double) });
-var events = (IReadOnlyList<IReadOnlyDictionary<string, object?>>)
-    method!.Invoke(query, new object[] { "sys-guid-here", 0.0, double.MaxValue })!;
-```
-
-## Known limitations (MVP)
-
-- **No Offered events.** Vanilla's offer paths vary by source (board regeneration, bar salesman spawn, broker dispatch) and are harder to hook reliably. Accepted is load-bearing for consumer queries; Offered is deferred to post-MVP as an additive enhancement.
-- **No ObjectiveProgressed events.** Partial mission progress (step completion) isn't captured at v1. Follows the same additive-schema path when it lands.
-- **`missionLevel` is always 0.** Vanilla's `Mission.level` getter chains through `GamePlayer.current`, which makes it safe to read at runtime but causes test-time reflection issues. Shipping 0 until a safer accessor is wired.
-- **Sector / target-station / player-ship snapshots are null.** Same reason — vanilla's accessor graph is deeper than we've fully scouted. Additive fields; consumers already treat them as nullable.
-- **Reputation rewards use the captured faction identifier only.** Faction name and display metadata aren't persisted — consumers resolve display strings from their own faction data if needed.
-- **One sidecar per save.** No cross-save aggregation; each save's log is independent and shares the save file's lifecycle.
+Full list: [`docs/api.md#known-gaps`](docs/api.md#known-gaps).
 
 ## Safety invariants
 
-VGMissionLog is a **pure observer**. The Harmony patch set is postfix-only, with one allowed prefix on save-load (per spec R5.1). Every patch body is wrapped in try/catch and warn-logs on failure — vanilla execution must survive our internal state. If the sidecar is missing or corrupt, the log starts empty and vanilla loads normally; the corrupt file is quarantined with a UTC timestamp for forensic inspection.
-
-## Docs
-
-- [`docs/01-background.md`](docs/01-background.md) — why this mod exists, risk isolation rationale.
-- [`docs/02-requirements.md`](docs/02-requirements.md) — what must be captured, event schema, query API surface, persistence contract.
-- [`docs/03-architecture.md`](docs/03-architecture.md) — proposed design: Harmony hooks, classification logic, storage shape, versioning.
-- [`docs/04-implementation-plan.md`](docs/04-implementation-plan.md) — ordered atomic tasks an implementation agent can execute top-to-bottom.
-- [`docs/04a-scout-memo.md`](docs/04a-scout-memo.md) — vanilla method signatures, call-chain ordering, publicized-stub access patterns.
+VGMissionLog is a **pure observer**. The Harmony patch set is postfix-only, with one allowed prefix on save-load for timing. Every patch body is wrapped in try/catch and warn-logs on failure — vanilla execution must survive our internal state. If the sidecar is missing or corrupt, the log starts empty and vanilla loads normally; the corrupt file is quarantined with a UTC timestamp for forensic inspection.
 
 ## Build
 

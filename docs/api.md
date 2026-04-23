@@ -1,0 +1,211 @@
+# Consumer API
+
+Everything a modder needs to read mission history from VGMissionLog. If you want to integrate, start here.
+
+## Integration
+
+Two paths, same behaviour. Pick one.
+
+### Typed reference (recommended)
+
+Drop `VGMissionLog.dll` into your plugin's `libs/` folder and add a `<Reference>` in your csproj. Then soft-dep on the plugin GUID and put API usage behind a presence-check so your mod still loads when VGMissionLog isn't installed:
+
+```csharp
+using BepInEx;
+using BepInEx.Bootstrap;
+using VGMissionLog.Api;
+
+[BepInPlugin("my.consumer", "My Consumer", "1.0.0")]
+[BepInDependency("vgmissionlog", BepInDependency.DependencyFlags.SoftDependency)]
+public class MyPlugin : BaseUnityPlugin
+{
+    private void Awake()
+    {
+        if (Chainloader.PluginInfos.ContainsKey("vgmissionlog"))
+            UseMissionLog();
+    }
+
+    // Separate method so the JIT doesn't resolve VGMissionLog types
+    // until this branch is actually taken (important when the plugin
+    // isn't installed — referenced assembly would otherwise fail to load).
+    private void UseMissionLog()
+    {
+        if (MissionLogApi.Current is not { } api) return;
+        foreach (var evt in api.GetRecentEvents(10))
+            Logger.LogInfo($"{evt["type"]} {evt["missionSubclass"]}");
+    }
+}
+```
+
+### Reflection fallback
+
+For scripting-style mods that can't add a compile-time reference:
+
+```csharp
+var facade = Type.GetType("VGMissionLog.Api.MissionLogApi, VGMissionLog");
+var api    = facade?.GetProperty("Current")?.GetValue(null);
+if (api is null) return;  // plugin not installed
+
+var method = api.GetType().GetMethod("GetRecentEvents", new[] { typeof(int) });
+var events = (IReadOnlyList<IReadOnlyDictionary<string, object?>>)
+    method!.Invoke(api, new object[] { 10 })!;
+```
+
+Both paths hand back the same dictionary shape described under [Event schema](#event-schema) below.
+
+## `MissionLogApi.Current`
+
+Static property on `VGMissionLog.Api.MissionLogApi`. Returns an `IMissionLogQuery` once the plugin has finished loading, or `null` when:
+
+- The plugin isn't installed.
+- BepInEx has loaded the plugin assembly but `Awake` hasn't run yet (rare — consumers that query from their own `Awake` should use the `Chainloader.PluginInfos` guard shown above).
+- The plugin is being torn down (`OnDestroy` nulls the facade before Harmony unpatches).
+
+Always null-check.
+
+## `IMissionLogQuery`
+
+All query methods return primitive shapes — either dictionaries keyed by camelCase strings, or `IReadOnlyDictionary<string, int>` for counts. No internal record types leak through the interface, so reflection consumers never need to touch VGMissionLog types.
+
+### Properties
+
+| Property | Type | Meaning |
+|---|---|---|
+| `SchemaVersion` | `int` | Current sidecar / event schema version. Feature-gate method calls that were added in a later version. |
+| `TotalEventCount` | `int` | Size of the in-memory log. |
+| `OldestEventGameSeconds` | `double?` | In-game seconds of the oldest retained event. `null` when the log is empty. |
+| `NewestEventGameSeconds` | `double?` | Same for the most-recent event. |
+
+### Filter methods
+
+All filters support an optional time window on `gameSeconds` (default: entire log). Events outside the window are excluded. Returns are fresh lists — safe to iterate without defensive copies.
+
+| Method | Purpose |
+|---|---|
+| `GetEventsInSystem(systemId, since?, until?)` | Events whose `sourceSystemId` matches. Events without a source system (synthesized archive backstops) don't match. |
+| `GetEventsByFaction(factionId, since?, until?)` | Events whose `sourceFaction` matches. |
+| `GetEventsByMissionSubclass(subclass, since?, until?)` | Exact match on raw `mission.GetType().Name` — e.g. `"BountyMission"`, `"PatrolMission"`, `"IndustryMission"`, `"Mission"`. Case-sensitive. |
+| `GetEventsByOutcome(outcome, since?, until?)` | `outcome` is `"Completed"` / `"Failed"` / `"Abandoned"`. Non-terminal events never match. Invalid string → empty (no throw). |
+| `GetEventsForStoryId(storyId)` | Full per-mission timeline in insertion order (typically Accepted → Completed/Failed/Abandoned). |
+| `GetRecentEvents(count)` | Up to `count` events, most-recent first. |
+
+### Proximity
+
+VGMissionLog doesn't walk the galaxy graph itself — you pass a delegate that reports jumps between two systems.
+
+```csharp
+int JumpDistance(string fromSystemId, string toSystemId) => /* -1 if unreachable */;
+var nearby = api.GetEventsWithinJumps("sys-zoran", maxJumps: 3, JumpDistance);
+```
+
+`GetEventsWithinJumps(pivotSystemId, maxJumps, jumpDistance, since?, until?)` returns events whose source system is within `maxJumps` of the pivot. Sourceless and unreachable events are excluded.
+
+### Aggregates
+
+| Method | Keys | Values |
+|---|---|---|
+| `CountByMissionSubclass(since?, until?)` | Raw subclass name (`"BountyMission"` etc.) | Event count |
+| `CountByOutcome(since?, until?)` | `"Completed"` / `"Failed"` / `"Abandoned"` | Event count (only terminal events) |
+| `CountBySystem(since?, until?)` | System id | Event count (sourceless events excluded) |
+| `CountByFaction(since?, until?)` | Faction id | Event count (factionless events excluded) |
+| `MostActiveSystemsInRange(pivotSystemId, jumpDistance, maxJumps, topN, since?, until?)` | — | List of `{ systemId, count, jumps }` dicts, sorted by count desc with system-id ordinal tiebreaker. |
+
+## Event schema
+
+Every event comes back as `IReadOnlyDictionary<string, object?>`. Keys are camelCase. Null-valued keys are **omitted**, not stored as `null`, so always `ContainsKey` before casting optional fields.
+
+### Always present
+
+| Key | Type | Notes |
+|---|---|---|
+| `eventId` | `string` | Fresh GUID per event. Stable across reloads. |
+| `type` | `string` | One of `"Accepted"`, `"Completed"`, `"Failed"`, `"Abandoned"`. |
+| `gameSeconds` | `double` | In-game clock at capture. |
+| `realUtc` | `string` | ISO-8601 wall-clock at capture. |
+| `storyId` | `string` | Vanilla `Mission.storyId`. Empty string when the game provides none. |
+| `missionSubclass` | `string` | Raw `mission.GetType().Name`. Your best signal for what kind of mission this was. |
+| `missionLevel` | `int` | Currently always `0` — see [Known gaps](#known-gaps). |
+| `playerLevel` | `int` | Commander level at capture. `0` in tests / when `GamePlayer.current` is null. |
+
+### Optional (present only when non-null)
+
+| Key | Type | Present on |
+|---|---|---|
+| `missionName` | `string` | When the mission has a display name. |
+| `outcome` | `string` | Terminal events only. `"Completed"` / `"Failed"` / `"Abandoned"`. |
+| `sourceStationId` | `string` | Source POI GUID, when the mission has a source station. |
+| `sourceStationName` | `string` | Snapshot at capture time — won't change if vanilla later renames it. |
+| `sourceSystemId` | `string` | System containing the source station. |
+| `sourceSystemName` | `string` | Snapshot. |
+| `sourceSectorId` | `string` | *Not yet populated — see [Known gaps](#known-gaps).* |
+| `sourceSectorName` | `string` | *Not yet populated.* |
+| `sourceFaction` | `string` | Faction identifier (e.g. `"BountyGuild"`). |
+| `targetStationId` | `string` | *Not yet populated — see [Known gaps](#known-gaps).* |
+| `targetStationName` | `string` | *Not yet populated.* |
+| `targetSystemId` | `string` | *Not yet populated.* |
+| `rewardsCredits` | `long` | Completed events only. |
+| `rewardsExperience` | `long` | Completed events only. |
+| `rewardsReputation` | `IReadOnlyList<IReadOnlyDictionary<string, object?>>` | Completed events. Each entry has `faction` (string) and `amount` (int). |
+| `playerShipName` | `string` | *Not yet populated.* |
+| `playerShipLevel` | `int` | *Not yet populated.* |
+| `playerCurrentSystemId` | `string` | Where the player was when the event fired — may differ from `sourceSystemId` (e.g. Complete at the target POI). |
+
+### Example
+
+```json
+{
+  "eventId": "4f1b…",
+  "type": "Completed",
+  "gameSeconds": 18347.2,
+  "realUtc": "2026-04-23T20:31:12.0000000Z",
+  "storyId": "",
+  "missionSubclass": "BountyMission",
+  "missionLevel": 0,
+  "playerLevel": 12,
+  "missionName": "Pirate Hunt",
+  "outcome": "Completed",
+  "sourceStationId": "…",
+  "sourceStationName": "Zoran Bounty Office",
+  "sourceSystemId": "…",
+  "sourceSystemName": "Zoran",
+  "sourceFaction": "BountyGuild",
+  "rewardsCredits": 1500,
+  "rewardsExperience": 200,
+  "rewardsReputation": [{ "faction": "BountyGuild", "amount": 5 }]
+}
+```
+
+## Sidecar format
+
+If you'd rather read the log without loading VGMissionLog (offline analysis, external tooling), the sidecar JSON uses the same shape. File lives at `<GameDir>/Saves/<saveName>.save.vgmissionlog.json`:
+
+```json
+{
+  "version": 1,
+  "events": [
+    { "eventId": "…", "type": "Accepted", ... },
+    ...
+  ]
+}
+```
+
+- Written atomically via tmp+rename, so partial files are never observed.
+- Corrupt / unsupported-version files are quarantined to `<saveName>.save.vgmissionlog.corrupt.<UTC>.json` and replaced by an empty log — VGMissionLog never blocks vanilla's load on a bad sidecar.
+- `version` bumps on breaking schema changes. Additive changes (new optional fields, new lifecycle events) stay at the current version.
+
+## Known gaps
+
+These are documented limitations of the current shipping version. Consumers should treat the affected keys as always-absent for now.
+
+- **`missionLevel` is always `0`.** Vanilla's `Mission.level` getter chains through `GamePlayer.current`, which makes it unsafe to read outside the main thread. A safer accessor is on the roadmap.
+- **Sector and target-station/system fields are never populated.** Vanilla's accessor graph is deeper than what's currently scouted. Fields are reserved in the schema; additive future.
+- **Player ship fields are never populated.** Same reason.
+- **Reputation rewards carry only the faction identifier.** Display metadata (name, colour) isn't persisted; resolve from your own faction data if you need it.
+- **No `Offered` or `ObjectiveProgressed` events.** Accepted is load-bearing; Offered varies too much by source (board, bar, broker) to hook reliably at this stage.
+
+## Stability
+
+- **Method signatures on `IMissionLogQuery`** are part of the public API contract. Breaking changes require a major-version bump and release notes.
+- **New methods are additive** — adding a method doesn't bump major. Gate on `SchemaVersion` if you want to call a newer method conditionally.
+- **Event dictionary keys** follow the same rules: additions are non-breaking, renames / removals are breaking.
+- **The sidecar `version` field** tracks only on-disk format changes. An additive API change doesn't necessarily bump it.
