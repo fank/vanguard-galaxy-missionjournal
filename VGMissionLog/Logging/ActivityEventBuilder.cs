@@ -5,7 +5,6 @@ using Source.Galaxy;
 using Source.MissionSystem;
 using Source.MissionSystem.Rewards;
 using Source.Player;
-using VGMissionLog.Classification;
 
 namespace VGMissionLog.Logging;
 
@@ -28,8 +27,7 @@ namespace VGMissionLog.Logging;
 /// Auto-property getters (<c>Mission.rewards</c>, <c>MapElement.guid</c>,
 /// <c>Faction.identifier</c>, <c>Faction.name</c>) are replaced by
 /// <c>throw null;</c> IL in the publicized stub, so we reflect-read the
-/// compiler-synthesised backing fields — same pattern
-/// <see cref="ArchetypeInferrer"/> uses. Reflection cost is trivial;
+/// compiler-synthesised backing fields. Reflection cost is trivial;
 /// each mission lifecycle transition emits at most one event.</para>
 /// </summary>
 internal sealed class ActivityEventBuilder
@@ -60,10 +58,6 @@ internal sealed class ActivityEventBuilder
         _gamePlayerProvider = gamePlayerProvider ?? (() => GamePlayer.current);
     }
 
-    /// <summary>Build an event for the given mission + lifecycle transition.
-    /// Rewards are extracted from <c>mission.rewards</c> only on
-    /// <see cref="ActivityEventType.Completed"/>; on other event types those
-    /// fields remain null in the event.</summary>
     /// <summary>
     /// Synthesize a <see cref="ActivityEventType.Completed"/> event by
     /// cloning an earlier event for the same storyId. Used by
@@ -72,8 +66,8 @@ internal sealed class ActivityEventBuilder
     /// vanilla edge-paths like the dev tutorial-skip, or a swallowed
     /// exception in our own postfix). Rewards are left null because we
     /// didn't see the transition where they'd be captured; everything
-    /// else — mission type, source station/system/faction, facility —
-    /// carries over from the cloned event.
+    /// else — subclass, source station/system/faction — carries over
+    /// from the cloned event.
     /// </summary>
     public ActivityEvent BuildSynthesizedCompleted(ActivityEvent cloneSource) =>
         cloneSource with
@@ -88,6 +82,10 @@ internal sealed class ActivityEventBuilder
             RewardsReputation = null,
         };
 
+    /// <summary>Build an event for the given mission + lifecycle transition.
+    /// Rewards are extracted from <c>mission.rewards</c> only on
+    /// <see cref="ActivityEventType.Completed"/>; on other event types those
+    /// fields remain null in the event.</summary>
     public ActivityEvent Build(Mission mission, ActivityEventType type)
     {
         if (mission is null) throw new ArgumentNullException(nameof(mission));
@@ -104,12 +102,10 @@ internal sealed class ActivityEventBuilder
             Type:                  type,
             GameSeconds:           _clock.GameSeconds,
             RealUtc:               _clock.UtcNow.ToString("O"),
-            StoryId:               string.IsNullOrEmpty(mission.storyId) ? $"anon:{Guid.NewGuid():N}" : mission.storyId,
+            StoryId:               mission.storyId ?? string.Empty,
             MissionName:           mission.name,     // public field
-            MissionType:           MissionClassifier.Classify(mission),
-            MissionSubclass:       MissionClassifier.SubclassName(mission),
+            MissionSubclass:       mission.GetType().Name,
             MissionLevel:          0,                 // TBD — computed getter depends on GamePlayer.current; MVP ships null-equivalent
-            Archetype:             ArchetypeInferrer.Infer(mission),
             Outcome:               DeriveOutcome(type),
             SourceStationId:       ReadGuid(sourcePoi),
             SourceStationName:     ReadName(sourcePoi),
@@ -121,7 +117,6 @@ internal sealed class ActivityEventBuilder
             TargetStationId:       null,              // TBD — deliver-target extraction (ML-T4h area)
             TargetStationName:     null,
             TargetSystemId:        null,
-            FacilityOrigin:        FacilityOriginInferrer.Infer(mission),
             RewardsCredits:        extracted.Credits,
             RewardsExperience:     extracted.Experience,
             RewardsReputation:     extracted.Reputation,

@@ -13,27 +13,27 @@ public class ActivityLogQueryTests
         //           t=20 accept patrol in Helion (Police),
         //           t=30 complete bounty (m-bounty, Zoran, BountyGuild),
         //           t=40 fail patrol (m-patrol, Helion, Police),
-        //           t=50 accept a vganima broker mission (Zoran, no faction).
+        //           t=50 accept a vganima-authored parametric mission (Zoran, no faction).
         var log = new ActivityLog();
         log.Append(TestEvents.Baseline(eventId: "accept-b",  storyId: "m-bounty", gameSeconds: 10,
             type: ActivityEventType.Accepted,
-            missionType: MissionType.Bounty,
+            missionSubclass: "BountyMission",
             sourceSystemId: "sys-zoran",  sourceFaction: "BountyGuild"));
         log.Append(TestEvents.Baseline(eventId: "accept-p",  storyId: "m-patrol", gameSeconds: 20,
             type: ActivityEventType.Accepted,
-            missionType: MissionType.Patrol,
+            missionSubclass: "PatrolMission",
             sourceSystemId: "sys-helion", sourceFaction: "Police"));
         log.Append(TestEvents.Baseline(eventId: "complete-b", storyId: "m-bounty", gameSeconds: 30,
             type: ActivityEventType.Completed,
-            missionType: MissionType.Bounty,
+            missionSubclass: "BountyMission",
             sourceSystemId: "sys-zoran",  sourceFaction: "BountyGuild") with { Outcome = Outcome.Completed });
         log.Append(TestEvents.Baseline(eventId: "fail-p",     storyId: "m-patrol", gameSeconds: 40,
             type: ActivityEventType.Failed,
-            missionType: MissionType.Patrol,
+            missionSubclass: "PatrolMission",
             sourceSystemId: "sys-helion", sourceFaction: "Police") with { Outcome = Outcome.Failed });
         log.Append(TestEvents.Baseline(eventId: "accept-v",   storyId: "vganima_llm_abc", gameSeconds: 50,
             type: ActivityEventType.Accepted,
-            missionType: MissionType.ThirdParty("vganima"),
+            missionSubclass: "Mission",
             sourceSystemId: "sys-zoran"));
         return log;
     }
@@ -84,25 +84,18 @@ public class ActivityLogQueryTests
     }
 
     [Fact]
-    public void GetEventsByMissionType_ExactMatchOnBounty()
+    public void GetEventsByMissionSubclass_ExactMatchOnBountyMission()
     {
         var log = BuildSample();
 
-        var bounty = log.GetEventsByMissionType(MissionType.Bounty);
+        var bounty = log.GetEventsByMissionSubclass("BountyMission");
         Assert.Equal(new[] { "accept-b", "complete-b" }, bounty.Select(e => e.EventId));
     }
 
     [Fact]
-    public void GetEventsByMissionType_ThirdPartyPrefixExactMatch()
+    public void GetEventsByMissionSubclass_UnknownSubclass_ReturnsEmpty()
     {
-        var log = BuildSample();
-
-        var vganima = log.GetEventsByMissionType(MissionType.ThirdParty("vganima"));
-        Assert.Equal(new[] { "accept-v" }, vganima.Select(e => e.EventId));
-
-        // A different prefix should not match.
-        var other = log.GetEventsByMissionType(MissionType.ThirdParty("someOtherMod"));
-        Assert.Empty(other);
+        Assert.Empty(BuildSample().GetEventsByMissionSubclass("NoSuchMission"));
     }
 
     [Fact]

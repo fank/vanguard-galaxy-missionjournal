@@ -34,7 +34,7 @@ public class LogSchemaTests
             eventId: "abc",
             storyId: "m1",
             gameSeconds: 123.45,
-            missionType: MissionType.ThirdParty("vganima"),
+            missionSubclass: "BountyMission",
             sourceSystemId: "sys-zoran",
             sourceFaction:  "BountyGuild")
             with { Outcome = Outcome.Completed, RewardsCredits = 5000 };
@@ -46,14 +46,14 @@ public class LogSchemaTests
 
         Assert.Single(back.Events);
         var roundtripped = back.Events[0];
-        Assert.Equal("abc",                             roundtripped.EventId);
-        Assert.Equal("m1",                              roundtripped.StoryId);
-        Assert.Equal(123.45,                            roundtripped.GameSeconds);
-        Assert.Equal(MissionType.ThirdParty("vganima"), roundtripped.MissionType);
-        Assert.Equal("sys-zoran",                       roundtripped.SourceSystemId);
-        Assert.Equal("BountyGuild",                     roundtripped.SourceFaction);
-        Assert.Equal(Outcome.Completed,                 roundtripped.Outcome);
-        Assert.Equal(5000L,                             roundtripped.RewardsCredits);
+        Assert.Equal("abc",              roundtripped.EventId);
+        Assert.Equal("m1",               roundtripped.StoryId);
+        Assert.Equal(123.45,             roundtripped.GameSeconds);
+        Assert.Equal("BountyMission",    roundtripped.MissionSubclass);
+        Assert.Equal("sys-zoran",        roundtripped.SourceSystemId);
+        Assert.Equal("BountyGuild",      roundtripped.SourceFaction);
+        Assert.Equal(Outcome.Completed,  roundtripped.Outcome);
+        Assert.Equal(5000L,              roundtripped.RewardsCredits);
     }
 
     [Fact]

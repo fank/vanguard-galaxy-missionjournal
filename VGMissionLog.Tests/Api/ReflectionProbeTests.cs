@@ -27,7 +27,7 @@ public class ReflectionProbeTests : IDisposable
         _log = new ActivityLog();
         _log.Append(TestEvents.Baseline(
             eventId: "evt-1", storyId: "m-probe", gameSeconds: 42.0,
-            type: ActivityEventType.Accepted, missionType: MissionType.Bounty,
+            type: ActivityEventType.Accepted, missionSubclass: "BountyMission",
             sourceSystemId: "sys-zoran", sourceFaction: "BountyGuild"));
         MissionLogApi.Current = new MissionLogQueryAdapter(_log);
     }
@@ -87,24 +87,24 @@ public class ReflectionProbeTests : IDisposable
         var firstDict = FirstOrDefault<IReadOnlyDictionary<string, object?>>(list);
         Assert.NotNull(firstDict);
 
-        Assert.Equal("evt-1",     firstDict!["eventId"]);
-        Assert.Equal("Accepted",  firstDict["type"]);
-        Assert.Equal("Bounty",    firstDict["missionType"]);
-        Assert.Equal("sys-zoran", firstDict["sourceSystemId"]);
-        Assert.Equal(42.0,        firstDict["gameSeconds"]);
+        Assert.Equal("evt-1",        firstDict!["eventId"]);
+        Assert.Equal("Accepted",     firstDict["type"]);
+        Assert.Equal("BountyMission", firstDict["missionSubclass"]);
+        Assert.Equal("sys-zoran",    firstDict["sourceSystemId"]);
+        Assert.Equal(42.0,           firstDict["gameSeconds"]);
     }
 
     [Fact]
-    public void CountByType_ReturnsStringToInt_ViaReflection()
+    public void CountByMissionSubclass_ReturnsStringToInt_ViaReflection()
     {
         var current = GetCurrentViaReflection()!;
         var method  = current.GetType().GetMethod(
-            "CountByType", new[] { typeof(double), typeof(double) });
+            "CountByMissionSubclass", new[] { typeof(double), typeof(double) });
 
         var result = method!.Invoke(current, new object[] { 0.0, double.MaxValue });
         var dict   = (IReadOnlyDictionary<string, int>)result!;
 
-        Assert.Equal(1, dict["Bounty"]);
+        Assert.Equal(1, dict["BountyMission"]);
     }
 
     // --- helpers ----------------------------------------------------------

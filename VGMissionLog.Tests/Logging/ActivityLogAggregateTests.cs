@@ -15,32 +15,32 @@ public class ActivityLogAggregateTests
         var log = new ActivityLog();
         // 3 bounty (Zoran/BountyGuild — 1 accepted, 1 completed, 1 failed)
         log.Append(TestEvents.Baseline(eventId: "b1", gameSeconds: 10,
-            type: ActivityEventType.Accepted, missionType: MissionType.Bounty,
+            type: ActivityEventType.Accepted, missionSubclass: "BountyMission",
             sourceSystemId: "sys-zoran",  sourceFaction: "BountyGuild"));
         log.Append(TestEvents.Baseline(eventId: "b2", gameSeconds: 20,
-            type: ActivityEventType.Completed, missionType: MissionType.Bounty,
+            type: ActivityEventType.Completed, missionSubclass: "BountyMission",
             sourceSystemId: "sys-zoran",  sourceFaction: "BountyGuild")
             with { Outcome = Outcome.Completed });
         log.Append(TestEvents.Baseline(eventId: "b3", gameSeconds: 30,
-            type: ActivityEventType.Failed, missionType: MissionType.Bounty,
+            type: ActivityEventType.Failed, missionSubclass: "BountyMission",
             sourceSystemId: "sys-zoran",  sourceFaction: "BountyGuild")
             with { Outcome = Outcome.Failed });
         // 2 patrol (Helion/Police — accepted + abandoned)
         log.Append(TestEvents.Baseline(eventId: "p1", gameSeconds: 40,
-            type: ActivityEventType.Accepted, missionType: MissionType.Patrol,
+            type: ActivityEventType.Accepted, missionSubclass: "PatrolMission",
             sourceSystemId: "sys-helion", sourceFaction: "Police"));
         log.Append(TestEvents.Baseline(eventId: "p2", gameSeconds: 50,
-            type: ActivityEventType.Abandoned, missionType: MissionType.Patrol,
+            type: ActivityEventType.Abandoned, missionSubclass: "PatrolMission",
             sourceSystemId: "sys-helion", sourceFaction: "Police")
             with { Outcome = Outcome.Abandoned });
-        // 1 vganima third-party (Zoran, no faction)
+        // 1 parametric base Mission (Zoran, no faction)
         log.Append(TestEvents.Baseline(eventId: "v1", gameSeconds: 60,
             type: ActivityEventType.Accepted,
-            missionType: MissionType.ThirdParty("vganima"),
+            missionSubclass: "Mission",
             sourceSystemId: "sys-zoran"));
         // 1 sourceless event (should not contribute to system/faction counts)
         log.Append(TestEvents.Baseline(eventId: "orphan", gameSeconds: 70,
-            type: ActivityEventType.Accepted, missionType: MissionType.Generic));
+            type: ActivityEventType.Accepted, missionSubclass: "Mission"));
         return log;
     }
 
@@ -53,34 +53,33 @@ public class ActivityLogAggregateTests
     private static int JumpDistance(string from, string to) =>
         Edges.TryGetValue((from, to), out var d) ? d : -1;
 
-    // --- CountByType --------------------------------------------------------
+    // --- CountByMissionSubclass --------------------------------------------
 
     [Fact]
-    public void CountByType_PopulatesBucketsIncludingThirdParty()
+    public void CountByMissionSubclass_PopulatesBucketsByRawTypeName()
     {
-        var counts = BuildVariedLog().CountByType();
+        var counts = BuildVariedLog().CountByMissionSubclass();
 
-        Assert.Equal(3, counts[MissionType.Bounty]);
-        Assert.Equal(2, counts[MissionType.Patrol]);
-        Assert.Equal(1, counts[MissionType.Generic]);
-        Assert.Equal(1, counts[MissionType.ThirdParty("vganima")]);
-        Assert.False(counts.ContainsKey(MissionType.Story));
+        Assert.Equal(3, counts["BountyMission"]);
+        Assert.Equal(2, counts["PatrolMission"]);
+        Assert.Equal(2, counts["Mission"]); // v1 + orphan
+        Assert.False(counts.ContainsKey("IndustryMission"));
     }
 
     [Fact]
-    public void CountByType_WindowedExcludesOutsideEvents()
+    public void CountByMissionSubclass_WindowedExcludesOutsideEvents()
     {
-        var counts = BuildVariedLog().CountByType(sinceGameSeconds: 25, untilGameSeconds: 55);
+        var counts = BuildVariedLog().CountByMissionSubclass(sinceGameSeconds: 25, untilGameSeconds: 55);
 
-        Assert.Equal(1, counts[MissionType.Bounty]);   // only b3 @ 30
-        Assert.Equal(2, counts[MissionType.Patrol]);   // p1 @ 40, p2 @ 50
-        Assert.False(counts.ContainsKey(MissionType.ThirdParty("vganima")));
+        Assert.Equal(1, counts["BountyMission"]);   // only b3 @ 30
+        Assert.Equal(2, counts["PatrolMission"]);   // p1 @ 40, p2 @ 50
+        Assert.False(counts.ContainsKey("Mission"));
     }
 
     [Fact]
-    public void CountByType_EmptyLog_ReturnsEmpty()
+    public void CountByMissionSubclass_EmptyLog_ReturnsEmpty()
     {
-        Assert.Empty(new ActivityLog().CountByType());
+        Assert.Empty(new ActivityLog().CountByMissionSubclass());
     }
 
     // --- CountByOutcome -----------------------------------------------------

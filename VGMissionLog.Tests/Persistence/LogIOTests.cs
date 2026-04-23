@@ -128,15 +128,15 @@ public class LogIOTests : IDisposable
         var events = new[]
         {
             TestEvents.Baseline(eventId: "a", storyId: "m1", gameSeconds: 1.0,
-                type: ActivityEventType.Accepted, missionType: MissionType.Bounty,
+                type: ActivityEventType.Accepted, missionSubclass: "BountyMission",
                 sourceSystemId: "sys-zoran", sourceFaction: "BountyGuild"),
             TestEvents.Baseline(eventId: "b", storyId: "m1", gameSeconds: 2.0,
-                type: ActivityEventType.Completed, missionType: MissionType.Bounty,
+                type: ActivityEventType.Completed, missionSubclass: "BountyMission",
                 sourceSystemId: "sys-zoran", sourceFaction: "BountyGuild")
                 with { Outcome = Outcome.Completed, RewardsCredits = 1500, RewardsExperience = 200 },
             TestEvents.Baseline(eventId: "c", storyId: "vganima_llm_x", gameSeconds: 3.0,
                 type: ActivityEventType.Accepted,
-                missionType: MissionType.ThirdParty("vganima"),
+                missionSubclass: "Mission",
                 sourceSystemId: "sys-helion"),
         };
 
@@ -147,7 +147,7 @@ public class LogIOTests : IDisposable
         Assert.Equal(3, result.Schema!.Events.Length);
         Assert.Equal(new[] { "a", "b", "c" },
                      Array.ConvertAll(result.Schema.Events, e => e.EventId));
-        Assert.Equal(MissionType.ThirdParty("vganima"), result.Schema.Events[2].MissionType);
+        Assert.Equal("Mission", result.Schema.Events[2].MissionSubclass);
         Assert.Equal(1500L, result.Schema.Events[1].RewardsCredits);
     }
 

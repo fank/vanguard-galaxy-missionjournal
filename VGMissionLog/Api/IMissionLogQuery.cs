@@ -11,8 +11,8 @@ namespace VGMissionLog.Api;
 /// <see cref="IReadOnlyDictionary{TKey,TValue}"/> of primitives — so
 /// reflection-based consumers (VGAnima, future stats dashboards, etc.)
 /// can call through <see cref="MissionLogApi.Current"/> without
-/// referencing <c>VGMissionLog</c>'s internal record types
-/// (<see cref="Logging.ActivityEvent"/>, <see cref="Logging.MissionType"/>).</para>
+/// referencing <c>VGMissionLog</c>'s internal record type
+/// (<see cref="Logging.ActivityEvent"/>).</para>
 ///
 /// <para>Event dictionaries use the same camelCase keys the JSON sidecar
 /// uses (<c>eventId</c>, <c>gameSeconds</c>, <c>storyId</c>, etc.), so
@@ -48,14 +48,14 @@ public interface IMissionLogQuery
         double sinceGameSeconds = 0.0,
         double untilGameSeconds = double.MaxValue);
 
-    /// <summary>Filter by mission type. <paramref name="missionTypeKind"/>
-    /// is one of <c>"Bounty"</c> / <c>"Patrol"</c> / <c>"Industry"</c> /
-    /// <c>"Story"</c> / <c>"Generic"</c> / <c>"ThirdParty"</c>. When
-    /// <c>"ThirdParty"</c>, pass the non-null <paramref name="prefix"/>
-    /// to filter on a specific mod (e.g. <c>"vganima"</c>).</summary>
-    IReadOnlyList<IReadOnlyDictionary<string, object?>> GetEventsByMissionType(
-        string missionTypeKind,
-        string? prefix = null,
+    /// <summary>Filter by raw mission subclass name. The subclass is the
+    /// value of <c>mission.GetType().Name</c> captured at event build
+    /// time — typically <c>"BountyMission"</c>, <c>"PatrolMission"</c>,
+    /// <c>"IndustryMission"</c>, or <c>"Mission"</c> for the base type.
+    /// Match is ordinal / case-sensitive; consumers bucket further if
+    /// they wish (the log does not classify).</summary>
+    IReadOnlyList<IReadOnlyDictionary<string, object?>> GetEventsByMissionSubclass(
+        string missionSubclass,
         double sinceGameSeconds = 0.0,
         double untilGameSeconds = double.MaxValue);
 
@@ -86,9 +86,10 @@ public interface IMissionLogQuery
 
     // --- R2.3 aggregates -------------------------------------------------
 
-    /// <summary>Keys are the mission-type's string form ("Bounty", "Patrol",
-    /// …, or "ThirdParty(prefix)" for third-party missions).</summary>
-    IReadOnlyDictionary<string, int> CountByType(
+    /// <summary>Keys are the raw mission subclass name
+    /// (<c>mission.GetType().Name</c> at build time — e.g.
+    /// <c>"BountyMission"</c>, <c>"Mission"</c>).</summary>
+    IReadOnlyDictionary<string, int> CountByMissionSubclass(
         double sinceGameSeconds = 0.0,
         double untilGameSeconds = double.MaxValue);
 

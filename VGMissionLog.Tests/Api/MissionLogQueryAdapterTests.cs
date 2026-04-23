@@ -22,15 +22,15 @@ public class MissionLogQueryAdapterTests
     {
         var log = new ActivityLog();
         log.Append(TestEvents.Baseline(eventId: "b1", storyId: "m1", gameSeconds: 10,
-            type: ActivityEventType.Accepted,  missionType: MissionType.Bounty,
+            type: ActivityEventType.Accepted,  missionSubclass: "BountyMission",
             sourceSystemId: "sys-zoran", sourceFaction: "BountyGuild"));
         log.Append(TestEvents.Baseline(eventId: "b2", storyId: "m1", gameSeconds: 20,
-            type: ActivityEventType.Completed, missionType: MissionType.Bounty,
+            type: ActivityEventType.Completed, missionSubclass: "BountyMission",
             sourceSystemId: "sys-zoran", sourceFaction: "BountyGuild")
             with { Outcome = Outcome.Completed, RewardsCredits = 1500 });
         log.Append(TestEvents.Baseline(eventId: "v1", storyId: "vganima_llm_x", gameSeconds: 30,
             type: ActivityEventType.Accepted,
-            missionType: MissionType.ThirdParty("vganima"),
+            missionSubclass: "Mission",
             sourceSystemId: "sys-helion"));
         return log;
     }
@@ -63,7 +63,7 @@ public class MissionLogQueryAdapterTests
 
         var b1 = results.First(r => (string)r["eventId"]! == "b1");
         Assert.Equal("Accepted",           b1["type"]);
-        Assert.Equal("Bounty",             b1["missionType"]);
+        Assert.Equal("BountyMission",      b1["missionSubclass"]);
         Assert.Equal("sys-zoran",          b1["sourceSystemId"]);
         Assert.Equal("BountyGuild",        b1["sourceFaction"]);
         Assert.Equal(10.0,                 b1["gameSeconds"]);
@@ -93,39 +93,25 @@ public class MissionLogQueryAdapterTests
         Assert.Equal(1500L,       completed["rewardsCredits"]);
     }
 
-    [Fact]
-    public void EventDict_ThirdPartyMissionType_FlatStringWithPrefix()
-    {
-        var adapter = new MissionLogQueryAdapter(SampleLog());
-
-        var vg = adapter.GetEventsInSystem("sys-helion").Single();
-
-        Assert.Equal("ThirdParty(vganima)", vg["missionType"]);
-    }
-
     // --- Filter methods ---------------------------------------------------
 
     [Fact]
-    public void GetEventsByMissionType_Bounty_MatchesExactly()
+    public void GetEventsByMissionSubclass_ExactStringMatch()
     {
         var adapter = new MissionLogQueryAdapter(SampleLog());
 
-        var bounties = adapter.GetEventsByMissionType("Bounty");
+        var bounties = adapter.GetEventsByMissionSubclass("BountyMission");
 
         Assert.Equal(new[] { "b1", "b2" },
                      bounties.Select(r => (string)r["eventId"]!).ToArray());
     }
 
     [Fact]
-    public void GetEventsByMissionType_ThirdParty_RequiresMatchingPrefix()
+    public void GetEventsByMissionSubclass_UnknownSubclass_ReturnsEmpty()
     {
         var adapter = new MissionLogQueryAdapter(SampleLog());
 
-        var hits = adapter.GetEventsByMissionType("ThirdParty", prefix: "vganima");
-        Assert.Single(hits);
-
-        var miss = adapter.GetEventsByMissionType("ThirdParty", prefix: "someOtherMod");
-        Assert.Empty(miss);
+        Assert.Empty(adapter.GetEventsByMissionSubclass("NoSuchMission"));
     }
 
     [Fact]
@@ -188,14 +174,14 @@ public class MissionLogQueryAdapterTests
     }
 
     [Fact]
-    public void CountByType_UsesStringKeys_ForMissionType()
+    public void CountByMissionSubclass_UsesRawTypeNameKeys()
     {
         var adapter = new MissionLogQueryAdapter(SampleLog());
 
-        var counts = adapter.CountByType();
+        var counts = adapter.CountByMissionSubclass();
 
-        Assert.Equal(2, counts["Bounty"]);
-        Assert.Equal(1, counts["ThirdParty(vganima)"]);
+        Assert.Equal(2, counts["BountyMission"]);
+        Assert.Equal(1, counts["Mission"]);
     }
 
     [Fact]

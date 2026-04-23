@@ -8,39 +8,32 @@ namespace VGMissionLog.Api;
 /// neutral <c>IReadOnlyDictionary&lt;string, object?&gt;</c> shape the
 /// public API exposes. Keys mirror the JSON sidecar's camelCase schema.
 ///
-/// <para><see cref="MissionType"/> is flattened to a string
-/// (<c>"Bounty"</c>, or <c>"ThirdParty(vganima)"</c> via its ToString
-/// override) so consumers don't need the struct type.</para>
-///
 /// <para>Reputation rewards are emitted as
 /// <c>IReadOnlyList&lt;IReadOnlyDictionary&lt;string, object?&gt;&gt;</c>
-/// for the same no-consumer-type-dep reason.</para>
+/// so consumers don't need the internal record type.</para>
 /// </summary>
 internal static class ActivityEventMapper
 {
     public static IReadOnlyDictionary<string, object?> ToDict(ActivityEvent evt)
     {
-        // Always-present keys: identity, lifecycle type, timestamps, classification
-        // results that the builder always computes. Nullable keys below are
-        // omitted when null — consistent with the JSON sidecar's
-        // NullValueHandling.Ignore, so wire-level and API-level shapes match.
-        var d = new Dictionary<string, object?>(capacity: 32)
+        // Always-present keys: identity, lifecycle type, timestamps, raw
+        // game-provided subclass/level. Nullable keys below are omitted when
+        // null — consistent with the JSON sidecar's NullValueHandling.Ignore,
+        // so wire-level and API-level shapes match.
+        var d = new Dictionary<string, object?>(capacity: 24)
         {
             ["eventId"]         = evt.EventId,
             ["type"]            = evt.Type.ToString(),
             ["gameSeconds"]     = evt.GameSeconds,
             ["realUtc"]         = evt.RealUtc,
             ["storyId"]         = evt.StoryId,
-            ["missionType"]     = evt.MissionType.ToString(),
             ["missionSubclass"] = evt.MissionSubclass,
             ["missionLevel"]    = evt.MissionLevel,
             ["playerLevel"]     = evt.PlayerLevel,
         };
 
-        if (evt.MissionName    != null) d["missionName"]    = evt.MissionName;
-        if (evt.Archetype      != null) d["archetype"]      = evt.Archetype.Value.ToString();
-        if (evt.Outcome        != null) d["outcome"]        = evt.Outcome.Value.ToString();
-        if (evt.FacilityOrigin != null) d["facilityOrigin"] = evt.FacilityOrigin.Value.ToString();
+        if (evt.MissionName != null) d["missionName"] = evt.MissionName;
+        if (evt.Outcome     != null) d["outcome"]     = evt.Outcome.Value.ToString();
 
         // Source
         if (evt.SourceStationId   != null) d["sourceStationId"]    = evt.SourceStationId;

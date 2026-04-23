@@ -23,14 +23,14 @@ namespace VGMissionLog.Tests.Support;
 ///
 /// <see cref="RuntimeHelpers.GetUninitializedObject"/> skips the instance
 /// ctor entirely, yielding a runtime-typed bare instance with all fields
-/// zeroed (null for refs, default for values). That's enough for
-/// <see cref="Classification.MissionClassifier"/> pattern-match assertions,
-/// which only inspect the concrete type and the <c>storyId</c> field.
+/// zeroed (null for refs, default for values). That's enough for the
+/// builder's pattern-match and field-read paths, which only inspect the
+/// concrete type, <c>storyId</c>, and a handful of public/backing fields.
 ///
 /// In production, vanilla constructs Mission instances properly; our
 /// Harmony postfixes receive them as fully-populated parameters. This
-/// helper exists only so Phase-2 classifier tests can isolate the typing
-/// logic from vanilla's Unity-side initialization.
+/// helper exists only so the builder tests can isolate the wiring logic
+/// from vanilla's Unity-side initialization.
 /// </summary>
 internal static class TestMission
 {

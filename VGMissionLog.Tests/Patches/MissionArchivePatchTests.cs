@@ -58,7 +58,7 @@ public class MissionArchivePatchTests
             storyId: "m1",
             gameSeconds: 50.0,
             type: ActivityEventType.Accepted,
-            missionType: MissionType.Bounty,
+            missionSubclass: "BountyMission",
             sourceSystemId: "sys-zoran",
             sourceFaction:  "BountyGuild")
             with { RewardsCredits = null };
@@ -69,11 +69,11 @@ public class MissionArchivePatchTests
         Assert.Equal(ActivityEventType.Completed, synth.Type);
         Assert.Equal(Outcome.Completed,            synth.Outcome);
         Assert.Equal(150.0,                        synth.GameSeconds);
-        Assert.Equal("m1",                         synth.StoryId);        // cloned
-        Assert.Equal(MissionType.Bounty,           synth.MissionType);    // cloned
-        Assert.Equal("sys-zoran",                  synth.SourceSystemId); // cloned
-        Assert.Equal("BountyGuild",                synth.SourceFaction);  // cloned
-        Assert.NotEqual(accepted.EventId,          synth.EventId);        // fresh
+        Assert.Equal("m1",                         synth.StoryId);           // cloned
+        Assert.Equal("BountyMission",              synth.MissionSubclass);   // cloned
+        Assert.Equal("sys-zoran",                  synth.SourceSystemId);    // cloned
+        Assert.Equal("BountyGuild",                synth.SourceFaction);     // cloned
+        Assert.NotEqual(accepted.EventId,          synth.EventId);           // fresh
         // Rewards are null — we didn't see the transition that would populate them.
         Assert.Null(synth.RewardsCredits);
         Assert.Null(synth.RewardsExperience);

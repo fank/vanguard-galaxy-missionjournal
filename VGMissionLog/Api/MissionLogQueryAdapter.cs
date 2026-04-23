@@ -32,13 +32,11 @@ internal sealed class MissionLogQueryAdapter : IMissionLogQuery
         string factionId, double sinceGameSeconds = 0.0, double untilGameSeconds = double.MaxValue) =>
         ActivityEventMapper.ToDicts(_log.GetEventsByFaction(factionId, sinceGameSeconds, untilGameSeconds));
 
-    public IReadOnlyList<IReadOnlyDictionary<string, object?>> GetEventsByMissionType(
-        string missionTypeKind, string? prefix = null,
-        double sinceGameSeconds = 0.0, double untilGameSeconds = double.MaxValue)
-    {
-        var mt = new MissionType(missionTypeKind, prefix);
-        return ActivityEventMapper.ToDicts(_log.GetEventsByMissionType(mt, sinceGameSeconds, untilGameSeconds));
-    }
+    public IReadOnlyList<IReadOnlyDictionary<string, object?>> GetEventsByMissionSubclass(
+        string missionSubclass,
+        double sinceGameSeconds = 0.0, double untilGameSeconds = double.MaxValue) =>
+        ActivityEventMapper.ToDicts(_log.GetEventsByMissionSubclass(
+            missionSubclass, sinceGameSeconds, untilGameSeconds));
 
     public IReadOnlyList<IReadOnlyDictionary<string, object?>> GetEventsByOutcome(
         string outcome, double sinceGameSeconds = 0.0, double untilGameSeconds = double.MaxValue)
@@ -60,14 +58,9 @@ internal sealed class MissionLogQueryAdapter : IMissionLogQuery
         ActivityEventMapper.ToDicts(_log.GetEventsWithinJumps(
             pivotSystemId, maxJumps, jumpDistance, sinceGameSeconds, untilGameSeconds));
 
-    public IReadOnlyDictionary<string, int> CountByType(
-        double sinceGameSeconds = 0.0, double untilGameSeconds = double.MaxValue)
-    {
-        var raw = _log.CountByType(sinceGameSeconds, untilGameSeconds);
-        var result = new Dictionary<string, int>(raw.Count);
-        foreach (var (mt, n) in raw) result[mt.ToString()] = n;
-        return result;
-    }
+    public IReadOnlyDictionary<string, int> CountByMissionSubclass(
+        double sinceGameSeconds = 0.0, double untilGameSeconds = double.MaxValue) =>
+        _log.CountByMissionSubclass(sinceGameSeconds, untilGameSeconds);
 
     public IReadOnlyDictionary<string, int> CountByOutcome(
         double sinceGameSeconds = 0.0, double untilGameSeconds = double.MaxValue)

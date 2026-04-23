@@ -85,19 +85,22 @@ internal sealed class ActivityLog
         FilterByTime(IndexedBySourceFaction(factionId), sinceGameSeconds, untilGameSeconds);
 
     /// <summary>
-    /// Exact <see cref="MissionType"/> match (structural equality on Kind +
-    /// Prefix). <c>MissionType.ThirdParty("vganima")</c> matches only vganima
-    /// events, not other third-party prefixes.
+    /// Exact <see cref="ActivityEvent.MissionSubclass"/> match (ordinal
+    /// string comparison). The subclass string is the raw
+    /// <c>mission.GetType().Name</c> captured at event build time —
+    /// typically <c>"BountyMission"</c>, <c>"PatrolMission"</c>,
+    /// <c>"IndustryMission"</c>, or <c>"Mission"</c> for the base type.
+    /// Consumers bucket further if they wish.
     /// </summary>
-    public IReadOnlyList<ActivityEvent> GetEventsByMissionType(
-        MissionType missionType,
+    public IReadOnlyList<ActivityEvent> GetEventsByMissionSubclass(
+        string missionSubclass,
         double sinceGameSeconds = 0.0,
         double untilGameSeconds = double.MaxValue)
     {
         var result = new List<ActivityEvent>();
         foreach (var evt in _events)
         {
-            if (evt.MissionType == missionType &&
+            if (string.Equals(evt.MissionSubclass, missionSubclass, StringComparison.Ordinal) &&
                 InTimeWindow(evt.GameSeconds, sinceGameSeconds, untilGameSeconds))
             {
                 result.Add(evt);
@@ -231,16 +234,18 @@ internal sealed class ActivityLog
     // not counted toward any bucket — we prefer an honest "sourceless" gap
     // over synthesizing a catch-all bucket consumers have to know about.
 
-    public IReadOnlyDictionary<MissionType, int> CountByType(
+    /// <summary>Keys are the raw <see cref="ActivityEvent.MissionSubclass"/>
+    /// strings (e.g. <c>"BountyMission"</c>, <c>"Mission"</c>).</summary>
+    public IReadOnlyDictionary<string, int> CountByMissionSubclass(
         double sinceGameSeconds = 0.0,
         double untilGameSeconds = double.MaxValue)
     {
-        var result = new Dictionary<MissionType, int>();
+        var result = new Dictionary<string, int>(StringComparer.Ordinal);
         foreach (var evt in _events)
         {
             if (!InTimeWindow(evt.GameSeconds, sinceGameSeconds, untilGameSeconds)) continue;
-            result.TryGetValue(evt.MissionType, out var n);
-            result[evt.MissionType] = n + 1;
+            result.TryGetValue(evt.MissionSubclass, out var n);
+            result[evt.MissionSubclass] = n + 1;
         }
         return result;
     }

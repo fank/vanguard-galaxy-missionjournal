@@ -25,7 +25,6 @@ public class ActivityEventBuilderTests
         Assert.Equal(ActivityEventType.Accepted, evt.Type);
         Assert.Equal(1234.5,                      evt.GameSeconds);
         Assert.Equal("Pirate Hunt",               evt.MissionName);
-        Assert.Equal(MissionType.Bounty,          evt.MissionType);
         Assert.Equal("BountyMission",             evt.MissionSubclass);
     }
 
@@ -52,31 +51,26 @@ public class ActivityEventBuilderTests
         Assert.NotEqual(a1.EventId, a2.EventId);
     }
 
-    // --- Classification integration --------------------------------------
+    // --- Story id passthrough --------------------------------------------
 
     [Fact]
-    public void Build_ClassifiesThirdPartyVganima_FromStoryId()
+    public void Build_StoryIdPresent_PassesThrough()
     {
         var mission = TestMission.Generic("vganima_llm_xyz");
 
         var evt = NewBuilder().Build(mission, ActivityEventType.Accepted);
 
-        Assert.Equal(MissionType.ThirdParty("vganima"), evt.MissionType);
         Assert.Equal("vganima_llm_xyz", evt.StoryId);
     }
 
     [Fact]
-    public void Build_GenericMission_SynthesizesAnonStoryId()
+    public void Build_StoryIdAbsent_YieldsEmptyString()
     {
-        // R1.2 says storyId is synthesised when absent. Pooling all anonymous
-        // events under "" would collide per-mission timelines; use a unique
-        // "anon:<guid>" so each anonymous mission stays independently indexable.
-        var evt1 = NewBuilder().Build(TestMission.Generic(), ActivityEventType.Accepted);
-        var evt2 = NewBuilder().Build(TestMission.Generic(), ActivityEventType.Accepted);
+        // The game does not hand us a storyId for parametric missions; we
+        // do not fabricate one. Empty string is the honest representation.
+        var evt = NewBuilder().Build(TestMission.Generic(), ActivityEventType.Accepted);
 
-        Assert.StartsWith("anon:", evt1.StoryId);
-        Assert.StartsWith("anon:", evt2.StoryId);
-        Assert.NotEqual(evt1.StoryId, evt2.StoryId);
+        Assert.Equal(string.Empty, evt.StoryId);
     }
 
     // --- Outcome derivation ----------------------------------------------
@@ -198,15 +192,5 @@ public class ActivityEventBuilderTests
     {
         Assert.Throws<System.ArgumentNullException>(() =>
             NewBuilder().Build(null!, ActivityEventType.Accepted));
-    }
-
-    // --- FacilityOrigin integration ---------------------------------------
-
-    [Fact]
-    public void Build_BountyMission_GetsBountyBoardFacilityOrigin()
-    {
-        var evt = NewBuilder().Build(TestMission.Bounty(), ActivityEventType.Accepted);
-
-        Assert.Equal(FacilityOrigin.BountyBoard, evt.FacilityOrigin);
     }
 }

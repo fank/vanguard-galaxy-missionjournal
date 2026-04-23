@@ -11,6 +11,12 @@ namespace VGMissionLog.Logging;
 /// Display-name fields (Mission/Station/System/Sector names) are snapshots:
 /// vanilla may rename or destroy a station later, but the log must render
 /// historical events as they were (spec R1.3).
+///
+/// <para><b>No classification.</b> We record what the game gives us —
+/// <see cref="MissionSubclass"/> is the raw <c>mission.GetType().Name</c>
+/// ("BountyMission", "PatrolMission", "IndustryMission", "Mission", …).
+/// Consumers that want to bucket missions into categories do so themselves
+/// from this raw string; the monitor does not editorialize.</para>
 /// </summary>
 public sealed record ActivityEvent(
     string EventId,
@@ -19,10 +25,8 @@ public sealed record ActivityEvent(
     string RealUtc,
     string StoryId,
     string? MissionName,
-    MissionType MissionType,
     string MissionSubclass,
     int MissionLevel,
-    ActivityArchetype? Archetype,
     Outcome? Outcome,
     string? SourceStationId,
     string? SourceStationName,
@@ -34,7 +38,6 @@ public sealed record ActivityEvent(
     string? TargetStationId,
     string? TargetStationName,
     string? TargetSystemId,
-    FacilityOrigin? FacilityOrigin,
     long? RewardsCredits,
     long? RewardsExperience,
     IReadOnlyList<RepReward>? RewardsReputation,
