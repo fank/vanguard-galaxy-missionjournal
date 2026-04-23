@@ -1,9 +1,11 @@
 using System.Collections.Generic;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using Source.Galaxy;
 using Source.Item;
 using Source.MissionSystem;
 using Source.MissionSystem.Objectives;
+using Source.MissionSystem.Rewards;
 
 namespace VGMissionLog.Tests.Support;
 
@@ -99,6 +101,60 @@ internal static class TestMission
 
     private static T Uninit<T>() where T : MissionObjective =>
         (T)RuntimeHelpers.GetUninitializedObject(typeof(T));
+
+    // --- Reward factories ---------------------------------------------------
+    //
+    // The MissionReward subclasses have simple public fields (amount,
+    // faction) but their ctors go through the same publicized-stub
+    // `throw null;` IL as Mission subclasses, so we reach for
+    // GetUninitializedObject. Fields are set by assigning to the bare
+    // instance since they're public.
+
+    public static Credits Credits(int amount)
+    {
+        var r = (Credits)RuntimeHelpers.GetUninitializedObject(typeof(Credits));
+        r.amount = amount;
+        return r;
+    }
+
+    public static Experience Experience(int amount)
+    {
+        var r = (Experience)RuntimeHelpers.GetUninitializedObject(typeof(Experience));
+        r.amount = amount;
+        return r;
+    }
+
+    /// <summary>
+    /// Build a Reputation reward with a null faction — we can't construct
+    /// a real Faction in xUnit because <c>Faction</c>'s static constructor
+    /// self-references <c>Source.Galaxy.Factions.Gold/Red/Blue/…</c>,
+    /// whose ctors NRE in the publicized-stub / no-Unity-runtime
+    /// environment. Builder tests assert the "unknown" fallback when
+    /// <c>rep.faction</c> is null; full rep-extraction coverage lives in
+    /// ML-T7b's in-game manual E2E.
+    /// </summary>
+    public static Source.MissionSystem.Rewards.Reputation Reputation(int amount)
+    {
+        var rep = (Source.MissionSystem.Rewards.Reputation)RuntimeHelpers.GetUninitializedObject(
+            typeof(Source.MissionSystem.Rewards.Reputation));
+        rep.amount = amount;
+        // rep.faction stays null; see doc comment above.
+        return rep;
+    }
+
+    /// <summary>Populate a mission's <c>rewards</c> with a list of the
+    /// given MissionReward instances. Same backing-field pattern as
+    /// WithObjectives / WithSteps.</summary>
+    public static Mission WithRewards(this Mission mission, params MissionReward[] rewards)
+    {
+        SetBackingField(typeof(Mission), mission, "rewards",
+            new List<MissionReward>(rewards));
+        return mission;
+    }
+
+    /// <summary>Shortcut: Generic + rewards for Complete-event tests.</summary>
+    public static Mission GenericWithRewards(params MissionReward[] rewards) =>
+        Generic().WithRewards(rewards);
 
     private static void SetBackingField(System.Type declaringType, object instance, string propertyName, object? value)
     {
