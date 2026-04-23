@@ -174,6 +174,33 @@ public class ActivityEventBuilderTests
         Assert.Null(evt.RewardsReputation);
     }
 
+    // --- Item identifier resolution (clone vs singleton) -----------------
+
+    // Vanilla sets InventoryItemType.identifier = name on the prefab during
+    // the Resources.LoadAll initialization (InventoryItemType.cs:717). The
+    // backing field is NOT [SerializeField], so Object.Instantiate drops it
+    // on clones — every Item-reward instance (created via
+    // ItemBuilder.CreateItemType → Object.Instantiate) has identifier=null
+    // at runtime but keeps `name` with Unity's "(Clone)" suffix appended.
+    //
+    // We can't construct a real UnityEngine.Object in xUnit to exercise
+    // ResolveItemIdentifier end-to-end (the native-side allocation needs
+    // the Unity runtime). Test the clone-suffix stripping directly — that's
+    // the one non-obvious piece of logic; the surrounding reads are
+    // straightforward reflection delegates.
+
+    [Theory]
+    [InlineData("Body Armor(Clone)",        "Body Armor")]
+    [InlineData("Body Armor (Clone)",       "Body Armor")]        // leading space
+    [InlineData("Combat Exoskeleton(Clone)(Clone)", "Combat Exoskeleton")] // stacked
+    [InlineData("SalvageMissionItem2",      "SalvageMissionItem2")] // already clean
+    [InlineData("",                         null)]
+    [InlineData(null,                       null)]
+    public void StripCloneSuffix_RestoresRegistryKey(string? input, string? expected)
+    {
+        Assert.Equal(expected, ActivityEventBuilder.StripCloneSuffix(input));
+    }
+
     // --- Unified rewards snapshot ----------------------------------------
 
     [Fact]

@@ -368,7 +368,7 @@ internal sealed class ActivityEventBuilder
                 if (fid != null) dict[camel] = fid;
                 return;
             case InventoryItemType it:
-                var iid = SafeGet(() => _itemTypeIdentifierField.GetValue(it)) as string;
+                var iid = ResolveItemIdentifier(it);
                 if (iid != null) dict[camel] = iid;
                 return;
             case MapElement me:
@@ -394,6 +394,49 @@ internal sealed class ActivityEventBuilder
 
     private static string? ReadFactionId(Faction? faction) =>
         faction is null ? null : _factionIdentifierField.GetValue(faction) as string;
+
+    /// <summary>
+    /// Resolve an <see cref="InventoryItemType"/> to its stable registry
+    /// identifier — the string <see cref="InventoryItemType.Get"/> accepts.
+    /// Vanilla's load code sets <c>identifier = name</c> once on the prefab
+    /// (<c>InventoryItemType.cs:717</c>), and <c>identifier</c> is an
+    /// auto-property backing field without <c>[SerializeField]</c>, so
+    /// <see cref="UnityEngine.Object.Instantiate(UnityEngine.Object)"/> does
+    /// NOT carry the value to runtime clones (<c>Item</c>-reward instances
+    /// produced by <c>ItemBuilder.CreateItemType</c>). For those clones the
+    /// stable id lives on the Unity object's <c>name</c> — with the
+    /// <c>(Clone)</c> suffix that <c>Instantiate</c> appends stripped.
+    /// Translated <c>displayName</c> is intentionally NOT used; the log
+    /// stores system identifiers so consumers can round-trip via <c>Get</c>.
+    /// </summary>
+    private static string? ResolveItemIdentifier(InventoryItemType it)
+    {
+        if (it == null) return null;
+
+        var backing = SafeGet(() => _itemTypeIdentifierField.GetValue(it)) as string;
+        if (!string.IsNullOrEmpty(backing)) return backing;
+
+        var name = SafeGet(() => it.name) as string;
+        return StripCloneSuffix(name);
+    }
+
+    /// <summary>Strip Unity's "(Clone)" suffix (sometimes stacked for nested
+    /// Instantiate calls, sometimes with a leading space) to recover the
+    /// stable registry key. Internal + visible-to-tests for direct
+    /// coverage of the string-manipulation path, since the surrounding
+    /// <see cref="ResolveItemIdentifier"/> needs a real
+    /// <see cref="UnityEngine.Object"/> instance that isn't
+    /// constructible in the xUnit runtime.</summary>
+    internal static string? StripCloneSuffix(string? name)
+    {
+        if (string.IsNullOrEmpty(name)) return null;
+        const string cloneSuffix = "(Clone)";
+        while (name!.EndsWith(cloneSuffix, System.StringComparison.Ordinal))
+        {
+            name = name.Substring(0, name.Length - cloneSuffix.Length).TrimEnd();
+        }
+        return string.IsNullOrEmpty(name) ? null : name;
+    }
 
     private static int ReadPlayerLevel(GamePlayer? player)
     {
