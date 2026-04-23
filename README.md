@@ -46,7 +46,49 @@ See [`docs/02-requirements.md`](docs/02-requirements.md) for the full per-event 
 
 ## Querying from another mod
 
-VGMissionLog exposes `VGMissionLog.Api.MissionLogApi.Current` — a static facade returning `null` when the plugin isn't loaded. Consumers soft-dep via reflection:
+VGMissionLog exposes `VGMissionLog.Api.MissionLogApi.Current` — a static facade returning `null` when the plugin isn't loaded.
+
+### Typed reference (recommended)
+
+Drop `VGMissionLog.dll` into your consumer plugin's `libs/` folder and add a `<Reference>` in your csproj. Your calls are then just ordinary C#:
+
+```csharp
+using BepInEx;
+using BepInEx.Bootstrap;
+using VGMissionLog.Api;
+
+[BepInPlugin("my.consumer", "My Consumer", "1.0.0")]
+[BepInDependency("vgmissionlog", BepInDependency.DependencyFlags.SoftDependency)]
+public class MyPlugin : BaseUnityPlugin
+{
+    private void Awake()
+    {
+        // Soft-dep guard: skip the typed path entirely when VGMissionLog
+        // isn't installed. Putting the usage in a separate method keeps the
+        // JIT from resolving VGMissionLog types until this branch is taken.
+        if (Chainloader.PluginInfos.ContainsKey("vgmissionlog"))
+            UseMissionLog();
+    }
+
+    private void UseMissionLog()
+    {
+        if (MissionLogApi.Current is not { } api) return;
+
+        foreach (var evt in api.GetEventsInSystem("sys-guid-here"))
+        {
+            var storyId = (string)evt["storyId"]!;
+            var type    = (string)evt["type"]!;
+            // ...
+        }
+    }
+}
+```
+
+Events come back as `IReadOnlyList<IReadOnlyDictionary<string, object?>>` with camelCase string keys — consumers access fields by key rather than by property. See [`IMissionLogQuery`](VGMissionLog/Api/IMissionLogQuery.cs) for the full method list.
+
+### Reflection fallback (zero compile-time dep)
+
+If you prefer not to reference `VGMissionLog.dll` at all (scripting-style mods, dynamic-language consumers), the same facade works via reflection:
 
 ```csharp
 var facade = Type.GetType("VGMissionLog.Api.MissionLogApi, VGMissionLog");
@@ -57,16 +99,7 @@ var method = query.GetType().GetMethod("GetEventsInSystem",
     new[] { typeof(string), typeof(double), typeof(double) });
 var events = (IReadOnlyList<IReadOnlyDictionary<string, object?>>)
     method!.Invoke(query, new object[] { "sys-guid-here", 0.0, double.MaxValue })!;
-
-foreach (var evt in events)
-{
-    var storyId   = (string)evt["storyId"]!;
-    var type      = (string)evt["type"]!;
-    // ...
-}
 ```
-
-The API surface returns only primitives, strings, `IReadOnlyList<IReadOnlyDictionary<string, object?>>`, and `IReadOnlyDictionary<string, int>` — no consumer-side reference to VGMissionLog's internal record types is needed. See [`IMissionLogQuery`](VGMissionLog/Api/IMissionLogQuery.cs) for the full method list.
 
 ## Known limitations (MVP)
 
