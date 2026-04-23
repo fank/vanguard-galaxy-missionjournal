@@ -176,6 +176,8 @@ Each objective is a dict:
 
 ### Rewards list
 
+**Identifier rule.** Every resolved reference in `fields` — `enemyFaction`, `miningFaction`, `faction`, `itemType`, `item`, `deliverTo`, `targetPOI`, etc. — is the stable **system identifier** (what vanilla's `Faction.Get(id)` / `InventoryItemType.Get(id)` accept), never the translated `displayName` / `name`. For `InventoryItemType` references on runtime-cloned reward instances (where vanilla's own `identifier` field isn't serialized) we fall back to the Unity object's `name` with the `(Clone)` suffix stripped — still a valid registry key. Consumers can round-trip every id back to the vanilla object.
+
 `rewards[]` carries one entry per `MissionReward` on the mission. Each entry:
 
 | Key | Type | Meaning |
