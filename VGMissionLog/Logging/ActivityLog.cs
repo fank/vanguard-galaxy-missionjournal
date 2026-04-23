@@ -46,6 +46,100 @@ internal sealed class ActivityLog
 
     public IReadOnlyList<ActivityEvent> AllEvents => _events;
 
+    public double? OldestEventGameSeconds =>
+        _events.Count == 0 ? null : _events[0].GameSeconds;
+
+    public double? NewestEventGameSeconds =>
+        _events.Count == 0 ? null : _events[_events.Count - 1].GameSeconds;
+
+    // --- R2.1 raw filters ---------------------------------------------------
+    //
+    // All queries return a new list to keep the internal store / index lists
+    // encapsulated. At N≤2000 allocating a fresh list per query is trivial.
+    // Time-window semantics are inclusive on both bounds — callers typically
+    // pass [0, MaxValue] for "no window"; the defaults below match that.
+
+    /// <summary>
+    /// Events whose <see cref="ActivityEvent.SourceSystemId"/> matches. Events
+    /// without a source system (e.g. synthesized Archive backstops) are not
+    /// returned even if the player happened to be in that system.
+    /// </summary>
+    public IReadOnlyList<ActivityEvent> GetEventsInSystem(
+        string systemId,
+        double sinceGameSeconds = 0.0,
+        double untilGameSeconds = double.MaxValue) =>
+        FilterByTime(IndexedBySourceSystem(systemId), sinceGameSeconds, untilGameSeconds);
+
+    public IReadOnlyList<ActivityEvent> GetEventsByFaction(
+        string factionId,
+        double sinceGameSeconds = 0.0,
+        double untilGameSeconds = double.MaxValue) =>
+        FilterByTime(IndexedBySourceFaction(factionId), sinceGameSeconds, untilGameSeconds);
+
+    /// <summary>
+    /// Exact <see cref="MissionType"/> match (structural equality on Kind +
+    /// Prefix). <c>MissionType.ThirdParty("vganima")</c> matches only vganima
+    /// events, not other third-party prefixes.
+    /// </summary>
+    public IReadOnlyList<ActivityEvent> GetEventsByMissionType(
+        MissionType missionType,
+        double sinceGameSeconds = 0.0,
+        double untilGameSeconds = double.MaxValue)
+    {
+        var result = new List<ActivityEvent>();
+        foreach (var evt in _events)
+        {
+            if (evt.MissionType == missionType &&
+                InTimeWindow(evt.GameSeconds, sinceGameSeconds, untilGameSeconds))
+            {
+                result.Add(evt);
+            }
+        }
+        return result;
+    }
+
+    public IReadOnlyList<ActivityEvent> GetEventsByOutcome(
+        Outcome outcome,
+        double sinceGameSeconds = 0.0,
+        double untilGameSeconds = double.MaxValue)
+    {
+        var result = new List<ActivityEvent>();
+        foreach (var evt in _events)
+        {
+            if (evt.Outcome == outcome &&
+                InTimeWindow(evt.GameSeconds, sinceGameSeconds, untilGameSeconds))
+            {
+                result.Add(evt);
+            }
+        }
+        return result;
+    }
+
+    /// <summary>
+    /// Full per-mission timeline in insertion order (typically
+    /// Offered → Accepted → ObjectiveProgressed* → Completed/Failed/Abandoned).
+    /// </summary>
+    public IReadOnlyList<ActivityEvent> GetEventsForStoryId(string storyId) =>
+        new List<ActivityEvent>(IndexedByStoryId(storyId));
+
+    /// <summary>
+    /// Up to <paramref name="count"/> events, most-recent-first. Optional
+    /// predicate narrows the result set.
+    /// </summary>
+    public IReadOnlyList<ActivityEvent> GetRecentEvents(
+        int count,
+        Func<ActivityEvent, bool>? filter = null)
+    {
+        if (count <= 0) return Array.Empty<ActivityEvent>();
+        var result = new List<ActivityEvent>(Math.Min(count, _events.Count));
+        for (var i = _events.Count - 1; i >= 0 && result.Count < count; i--)
+        {
+            var evt = _events[i];
+            if (filter is null || filter(evt)) result.Add(evt);
+        }
+        return result;
+    }
+
     public void Append(ActivityEvent evt)
     {
         if (evt is null) throw new ArgumentNullException(nameof(evt));
@@ -136,5 +230,20 @@ internal sealed class ActivityLog
         if (!map.TryGetValue(key, out var list)) return;
         list.Remove(evt);
         if (list.Count == 0) map.Remove(key);
+    }
+
+    private static bool InTimeWindow(double gameSeconds, double since, double until) =>
+        gameSeconds >= since && gameSeconds <= until;
+
+    private static IReadOnlyList<ActivityEvent> FilterByTime(
+        IReadOnlyList<ActivityEvent> source, double since, double until)
+    {
+        if (source.Count == 0) return Array.Empty<ActivityEvent>();
+        var result = new List<ActivityEvent>(source.Count);
+        foreach (var evt in source)
+        {
+            if (InTimeWindow(evt.GameSeconds, since, until)) result.Add(evt);
+        }
+        return result;
     }
 }
