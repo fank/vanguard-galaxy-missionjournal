@@ -1,5 +1,9 @@
+using System.Collections.Generic;
+using System.Reflection;
 using System.Runtime.CompilerServices;
+using Source.Item;
 using Source.MissionSystem;
+using Source.MissionSystem.Objectives;
 
 namespace VGMissionLog.Tests.Support;
 
@@ -43,5 +47,65 @@ internal static class TestMission
                 .SetValue(mission, storyId);
         }
         return mission;
+    }
+
+    /// <summary>
+    /// Populate a mission's <c>steps</c> with a single step containing the
+    /// provided objectives. Used by archetype-inference tests.
+    /// Mission.steps is a get-only auto-property (private set), so we reach
+    /// through its compiler-synthesised backing field.
+    /// </summary>
+    public static Mission WithObjectives(params MissionObjective[] objectives)
+    {
+        var mission = Generic();
+        SetBackingField(typeof(Mission), mission, "steps",
+            new List<MissionStep> { BuildStep(objectives) });
+        return mission;
+    }
+
+    /// <summary>Populate a mission's steps directly with a list of
+    /// pre-built steps (useful when the test wants multiple steps).</summary>
+    public static Mission WithSteps(params MissionStep[] steps)
+    {
+        var mission = Generic();
+        SetBackingField(typeof(Mission), mission, "steps", new List<MissionStep>(steps));
+        return mission;
+    }
+
+    public static MissionStep BuildStep(params MissionObjective[] objectives)
+    {
+        var step = (MissionStep)RuntimeHelpers.GetUninitializedObject(typeof(MissionStep));
+        SetBackingField(typeof(MissionStep), step, "objectives",
+            new List<MissionObjective>(objectives));
+        return step;
+    }
+
+    // --- Objective factories (vanilla instance ctors NRE outside Unity;
+    // bare instances are sufficient for pattern-match + field-read tests) ---
+
+    public static KillEnemies   Kill()    => Uninit<KillEnemies>();
+    public static ProtectUnit   Protect() => Uninit<ProtectUnit>();
+    public static TravelToPOI   Travel()  => Uninit<TravelToPOI>();
+    public static Mining        Mine()    => Uninit<Mining>();
+
+    public static CollectItemTypes Collect(ItemCategory? category)
+    {
+        var c = Uninit<CollectItemTypes>();
+        typeof(CollectItemTypes)
+            .GetField(nameof(CollectItemTypes.itemCategory))!
+            .SetValue(c, category);
+        return c;
+    }
+
+    private static T Uninit<T>() where T : MissionObjective =>
+        (T)RuntimeHelpers.GetUninitializedObject(typeof(T));
+
+    private static void SetBackingField(System.Type declaringType, object instance, string propertyName, object? value)
+    {
+        // C# auto-property backing fields are named `<PropertyName>k__BackingField`.
+        var field = declaringType.GetField(
+            $"<{propertyName}>k__BackingField",
+            BindingFlags.Instance | BindingFlags.NonPublic);
+        field!.SetValue(instance, value);
     }
 }
