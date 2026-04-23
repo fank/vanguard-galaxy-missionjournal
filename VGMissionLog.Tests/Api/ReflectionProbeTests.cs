@@ -17,6 +17,7 @@ namespace VGMissionLog.Tests.Api;
 /// setup to seed the log) — if a consumer mod does the same, it can
 /// interop without a hard dependency on VGMissionLog.dll.
 /// </summary>
+[Collection("MissionLogApi.Current")]
 public class ReflectionProbeTests : IDisposable
 {
     private readonly ActivityLog _log;

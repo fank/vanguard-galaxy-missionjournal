@@ -8,6 +8,7 @@ using Xunit;
 
 namespace VGMissionLog.Tests.Api;
 
+[Collection("MissionLogApi.Current")]
 public class MissionLogQueryAdapterTests
 {
     private static (ActivityLog log, MissionLogQueryAdapter adapter) Build()
