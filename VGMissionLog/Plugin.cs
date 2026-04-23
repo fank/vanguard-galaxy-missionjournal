@@ -56,33 +56,7 @@ public class Plugin : BaseUnityPlugin
         }
 
         // --- wire every patch's static slots ----------------------------
-        MissionAcceptPatch.Builder   = Builder;
-        MissionAcceptPatch.Log       = ActivityLog;
-        MissionAcceptPatch.BepLog    = Log;
-
-        MissionCompletePatch.Builder = Builder;
-        MissionCompletePatch.Log     = ActivityLog;
-        MissionCompletePatch.BepLog  = Log;
-
-        MissionFailPatch.Builder     = Builder;
-        MissionFailPatch.Log         = ActivityLog;
-        MissionFailPatch.BepLog      = Log;
-
-        MissionAbandonPatch.Builder  = Builder;
-        MissionAbandonPatch.Log      = ActivityLog;
-        MissionAbandonPatch.BepLog   = Log;
-
-        MissionArchivePatch.Builder  = Builder;
-        MissionArchivePatch.Log      = ActivityLog;
-        MissionArchivePatch.BepLog   = Log;
-
-        SaveWritePatch.Log           = ActivityLog;
-        SaveWritePatch.Io            = Io;
-        SaveWritePatch.BepLog        = Log;
-
-        SaveLoadPatch.Log            = ActivityLog;
-        SaveLoadPatch.Io             = Io;
-        SaveLoadPatch.BepLog         = Log;
+        PatchWiring.WireAll(Builder, ActivityLog, Io, Log);
 
         // --- patch attach -----------------------------------------------
         _harmony = new Harmony(PluginGuid);
