@@ -66,13 +66,17 @@ public class ActivityEventBuilderTests
     }
 
     [Fact]
-    public void Build_GenericMission_HasEmptyStoryId_NotNull()
+    public void Build_GenericMission_SynthesizesAnonStoryId()
     {
-        // R1.2 says storyId is `string` (non-nullable) — synthesise "" for
-        // missions that don't carry one, rather than leaving a null on the wire.
-        var evt = NewBuilder().Build(TestMission.Generic(), ActivityEventType.Accepted);
+        // R1.2 says storyId is synthesised when absent. Pooling all anonymous
+        // events under "" would collide per-mission timelines; use a unique
+        // "anon:<guid>" so each anonymous mission stays independently indexable.
+        var evt1 = NewBuilder().Build(TestMission.Generic(), ActivityEventType.Accepted);
+        var evt2 = NewBuilder().Build(TestMission.Generic(), ActivityEventType.Accepted);
 
-        Assert.Equal("", evt.StoryId);
+        Assert.StartsWith("anon:", evt1.StoryId);
+        Assert.StartsWith("anon:", evt2.StoryId);
+        Assert.NotEqual(evt1.StoryId, evt2.StoryId);
     }
 
     // --- Outcome derivation ----------------------------------------------

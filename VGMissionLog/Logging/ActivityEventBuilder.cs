@@ -104,7 +104,7 @@ internal sealed class ActivityEventBuilder
             Type:                  type,
             GameSeconds:           _clock.GameSeconds,
             RealUtc:               _clock.UtcNow.ToString("O"),
-            StoryId:               mission.storyId ?? "",
+            StoryId:               string.IsNullOrEmpty(mission.storyId) ? $"anon:{Guid.NewGuid():N}" : mission.storyId,
             MissionName:           mission.name,     // public field
             MissionType:           MissionClassifier.Classify(mission),
             MissionSubclass:       MissionClassifier.SubclassName(mission),
