@@ -203,6 +203,12 @@ These are documented limitations of the current shipping version. Consumers shou
 - **Reputation rewards carry only the faction identifier.** Display metadata (name, colour) isn't persisted; resolve from your own faction data if you need it.
 - **No `Offered` or `ObjectiveProgressed` events.** Accepted is load-bearing; Offered varies too much by source (board, bar, broker) to hook reliably at this stage.
 
+## Retention
+
+The log defaults to a soft cap of **2000 events per save**, with FIFO eviction once exceeded — oldest events drop off first. Consumers should not assume the full playtime is always available; use `OldestEventGameSeconds` if you need to know how far back the log reaches.
+
+The cap is configurable via `Persistence.MaxEvents` in `vgmissionlog.cfg`. Setting it to **`0` disables the cap entirely** — the log then retains every event for the save's lifetime, at the cost of an unbounded sidecar size (~500 bytes per event). A user with 50 000 captured events would sit around 25 MB on disk.
+
 ## Stability
 
 - **Method signatures on `IMissionLogQuery`** are part of the public API contract. Breaking changes require a major-version bump and release notes.
