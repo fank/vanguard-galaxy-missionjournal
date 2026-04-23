@@ -17,13 +17,15 @@ internal static class TestEvents
         ActivityEventType type = ActivityEventType.Accepted,
         string missionSubclass = "Mission",
         string? sourceSystemId = null,
-        string? sourceFaction  = null) =>
+        string? sourceFaction  = null,
+        string missionInstanceId = "inst-baseline") =>
         new(
             EventId:               eventId,
             Type:                  type,
             GameSeconds:           gameSeconds,
             RealUtc:               "2026-01-01T00:00:00Z",
             StoryId:               storyId,
+            MissionInstanceId:     missionInstanceId,
             MissionName:           "Test Mission",
             MissionSubclass:       missionSubclass,
             MissionLevel:          1,

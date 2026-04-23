@@ -22,14 +22,15 @@ internal static class ActivityEventMapper
         // so wire-level and API-level shapes match.
         var d = new Dictionary<string, object?>(capacity: 24)
         {
-            ["eventId"]         = evt.EventId,
-            ["type"]            = evt.Type.ToString(),
-            ["gameSeconds"]     = evt.GameSeconds,
-            ["realUtc"]         = evt.RealUtc,
-            ["storyId"]         = evt.StoryId,
-            ["missionSubclass"] = evt.MissionSubclass,
-            ["missionLevel"]    = evt.MissionLevel,
-            ["playerLevel"]     = evt.PlayerLevel,
+            ["eventId"]           = evt.EventId,
+            ["type"]              = evt.Type.ToString(),
+            ["gameSeconds"]       = evt.GameSeconds,
+            ["realUtc"]           = evt.RealUtc,
+            ["storyId"]           = evt.StoryId,
+            ["missionInstanceId"] = evt.MissionInstanceId,
+            ["missionSubclass"]   = evt.MissionSubclass,
+            ["missionLevel"]      = evt.MissionLevel,
+            ["playerLevel"]       = evt.PlayerLevel,
         };
 
         if (evt.MissionName != null) d["missionName"] = evt.MissionName;

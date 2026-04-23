@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using Behaviour.Item;
 using Source.Galaxy;
 using Source.MissionSystem;
@@ -35,6 +36,15 @@ internal sealed class ActivityEventBuilder
 {
     private readonly IClock _clock;
     private readonly Func<GamePlayer?> _gamePlayerProvider;
+
+    // Session-local correlation id per Mission instance. ConditionalWeakTable
+    // holds the key weakly, so garbage-collected missions don't keep ids
+    // alive. The table lives for the plugin's lifetime (process uptime), but
+    // mission identity is lost across save/load because vanilla rebuilds
+    // Mission objects on load — that's the caveat documented on
+    // ActivityEvent.MissionInstanceId.
+    private static readonly ConditionalWeakTable<Mission, string> _instanceIds =
+        new();
 
     // --- cached reflection (FieldInfos are immutable and thread-safe once resolved) ---
     private static readonly FieldInfo _missionRewardsField =
@@ -118,6 +128,7 @@ internal sealed class ActivityEventBuilder
             GameSeconds:           _clock.GameSeconds,
             RealUtc:               _clock.UtcNow.ToString("O"),
             StoryId:               mission.storyId ?? string.Empty,
+            MissionInstanceId:     GetOrCreateInstanceId(mission),
             MissionName:           mission.name,     // public field
             MissionSubclass:       mission.GetType().Name,
             MissionLevel:          0,                 // TBD — computed getter depends on GamePlayer.current; MVP ships null-equivalent
@@ -195,6 +206,11 @@ internal sealed class ActivityEventBuilder
             Experience: hasExperience ? experience : (long?)null,
             Reputation: reputation);
     }
+
+    // --- mission instance id ---
+
+    private static string GetOrCreateInstanceId(Mission mission) =>
+        _instanceIds.GetValue(mission, _ => Guid.NewGuid().ToString());
 
     // --- step / objective extraction ---
 

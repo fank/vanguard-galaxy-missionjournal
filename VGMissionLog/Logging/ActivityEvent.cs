@@ -17,6 +17,17 @@ namespace VGMissionLog.Logging;
 /// ("BountyMission", "PatrolMission", "IndustryMission", "Mission", …).
 /// Consumers that want to bucket missions into categories do so themselves
 /// from this raw string; the monitor does not editorialize.</para>
+///
+/// <para><b>Linking accepted → terminal events.</b> Vanilla only populates
+/// <see cref="StoryId"/> on authored story missions (Tutorial, Puppeteers),
+/// leaving it empty for the generator-produced missions that make up most
+/// gameplay. <see cref="MissionInstanceId"/> is a session-local GUID
+/// synthesized per <c>Mission</c> instance so consumers can correlate an
+/// Accepted event with its Completed/Failed/Abandoned counterpart for any
+/// mission, not just story ones. <b>The id does not survive save/load</b>
+/// — vanilla rebuilds mission instances on load, so a mission accepted in
+/// session A and completed in session B will have different ids on each
+/// event.</para>
 /// </summary>
 public sealed record ActivityEvent(
     string EventId,
@@ -24,6 +35,7 @@ public sealed record ActivityEvent(
     double GameSeconds,
     string RealUtc,
     string StoryId,
+    string MissionInstanceId,
     string? MissionName,
     string MissionSubclass,
     int MissionLevel,

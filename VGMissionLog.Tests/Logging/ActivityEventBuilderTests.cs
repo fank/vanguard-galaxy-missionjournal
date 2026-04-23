@@ -187,6 +187,35 @@ public class ActivityEventBuilderTests
         Assert.Null(evt.PlayerCurrentSystemId);
     }
 
+    // --- Mission instance id ---------------------------------------------
+
+    [Fact]
+    public void Build_SameMissionInstance_YieldsStableInstanceId()
+    {
+        // The id lets consumers link Accepted → Completed for generator
+        // missions where vanilla leaves storyId empty. Two events built
+        // from the same Mission reference must share the same id.
+        var mission = TestMission.Generic();
+        var b = NewBuilder();
+
+        var accepted  = b.Build(mission, ActivityEventType.Accepted);
+        var completed = b.Build(mission, ActivityEventType.Completed);
+
+        Assert.False(string.IsNullOrEmpty(accepted.MissionInstanceId));
+        Assert.Equal(accepted.MissionInstanceId, completed.MissionInstanceId);
+    }
+
+    [Fact]
+    public void Build_DifferentMissionInstances_YieldDistinctInstanceIds()
+    {
+        var b = NewBuilder();
+
+        var a = b.Build(TestMission.Generic(), ActivityEventType.Accepted);
+        var c = b.Build(TestMission.Generic(), ActivityEventType.Accepted);
+
+        Assert.NotEqual(a.MissionInstanceId, c.MissionInstanceId);
+    }
+
     // --- Step / objective snapshot ---------------------------------------
 
     [Fact]
