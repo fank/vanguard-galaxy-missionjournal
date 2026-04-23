@@ -140,6 +140,82 @@ internal sealed class ActivityLog
         return result;
     }
 
+    // --- R2.2 proximity queries --------------------------------------------
+    //
+    // VGMissionLog never walks a jumpgate graph itself — the caller supplies
+    // a <c>jumpDistance</c> delegate that returns the number of jumps between
+    // two system GUIDs (or -1 when unreachable). This keeps the log
+    // graph-agnostic; VGAnima passes its GalaxyDistance.JumpsBetween, a
+    // future consumer can pass a different implementation. Pivot-to-pivot
+    // (same system) returns 0 jumps by delegate convention.
+
+    /// <summary>
+    /// Events whose source system is within <paramref name="maxJumps"/> of
+    /// <paramref name="pivotSystemId"/>, as reported by
+    /// <paramref name="jumpDistance"/>. Events without a source system are
+    /// skipped; unreachable systems (delegate returns &lt; 0) are excluded.
+    /// </summary>
+    public IReadOnlyList<ActivityEvent> GetEventsWithinJumps(
+        string pivotSystemId,
+        int maxJumps,
+        Func<string, string, int> jumpDistance,
+        double sinceGameSeconds = 0.0,
+        double untilGameSeconds = double.MaxValue)
+    {
+        if (jumpDistance is null) throw new ArgumentNullException(nameof(jumpDistance));
+        if (maxJumps < 0) return Array.Empty<ActivityEvent>();
+
+        var result = new List<ActivityEvent>();
+        foreach (var evt in _events)
+        {
+            if (string.IsNullOrEmpty(evt.SourceSystemId)) continue;
+            if (!InTimeWindow(evt.GameSeconds, sinceGameSeconds, untilGameSeconds)) continue;
+
+            var jumps = jumpDistance(pivotSystemId, evt.SourceSystemId!);
+            if (jumps < 0 || jumps > maxJumps) continue;
+
+            result.Add(evt);
+        }
+        return result;
+    }
+
+    /// <summary>
+    /// Events sorted by ascending jump distance from
+    /// <paramref name="pivotSystemId"/>. Each entry carries the event and
+    /// the jump count; unreachable events and events without a source
+    /// system are excluded. Ties are broken by insertion order.
+    /// </summary>
+    public IReadOnlyList<(ActivityEvent Event, int Jumps)> GetEventsSortedByJumps(
+        string pivotSystemId,
+        Func<string, string, int> jumpDistance,
+        Func<ActivityEvent, bool>? filter = null)
+    {
+        if (jumpDistance is null) throw new ArgumentNullException(nameof(jumpDistance));
+
+        var indexed = new List<(ActivityEvent Event, int Jumps, int InsertionOrder)>();
+        for (var i = 0; i < _events.Count; i++)
+        {
+            var evt = _events[i];
+            if (string.IsNullOrEmpty(evt.SourceSystemId)) continue;
+            if (filter != null && !filter(evt)) continue;
+
+            var jumps = jumpDistance(pivotSystemId, evt.SourceSystemId!);
+            if (jumps < 0) continue;
+
+            indexed.Add((evt, jumps, i));
+        }
+
+        indexed.Sort((a, b) =>
+        {
+            var cmp = a.Jumps.CompareTo(b.Jumps);
+            return cmp != 0 ? cmp : a.InsertionOrder.CompareTo(b.InsertionOrder);
+        });
+
+        var result = new List<(ActivityEvent, int)>(indexed.Count);
+        foreach (var (evt, jumps, _) in indexed) result.Add((evt, jumps));
+        return result;
+    }
+
     public void Append(ActivityEvent evt)
     {
         if (evt is null) throw new ArgumentNullException(nameof(evt));
