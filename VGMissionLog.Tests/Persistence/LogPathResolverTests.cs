@@ -56,7 +56,7 @@ public class LogPathResolverTests
     public void IsSidecar_UnrelatedFile_IsFalse()
     {
         Assert.False(LogPathResolver.IsSidecar("MySave.save"));
-        Assert.False(LogPathResolver.IsSidecar("MySave.save.vganima.json")); // a peer mod's sidecar
+        Assert.False(LogPathResolver.IsSidecar("MySave.save.peermod.json")); // a peer mod's sidecar
         Assert.False(LogPathResolver.IsSidecar(""));
     }
 

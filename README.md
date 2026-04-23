@@ -1,17 +1,12 @@
 # VGMissionLog — Observational mission-activity logger for Vanguard Galaxy
 
-A BepInEx 5 plugin that records every mission-lifecycle event — acceptance, completion, failure, abandonment — of every mission the player engages with (vanilla bounty / patrol / industry / story missions AND third-party-mod-authored missions). The log is persisted per save, exposes a reflection-friendly public query API for other mods to consume, and **never mutates vanilla state**.
+A BepInEx 5 plugin that records every mission-lifecycle event — acceptance, completion, failure, abandonment — of every mission the player engages with, whether authored by vanilla or another mod. The log is persisted per save, exposes a reflection-friendly public query API for other mods to consume, and **never mutates vanilla state**.
 
-## Why a separate mod
+## Design principle: pure observer
 
-VGMissionLog is intentionally split from its primary consumer, [VGAnima](../vanguard-galaxy-anima), on the principle "observers live apart from mutators":
+VGMissionLog observes; it never mutates. Worst failure mode is a corrupt log file the player can safely delete — history is lost, the save is not. This is why it's safe to leave running indefinitely alongside anything.
 
-- VGAnima injects LLM-authored missions and brokers — it carries real save-corruption risk (schema migrations, orphans, sidecar versioning).
-- VGMissionLog observes only. Its worst failure mode is a corrupt log file the player can safely delete, losing history but not the save.
-
-Splitting also means you can **install VGMissionLog today** (long before VGAnima is stable) and start accumulating real player-activity data. When VGAnima matures and consumes VGMissionLog's API, it'll have months of history rather than starting empty.
-
-Follows the same soft-dependency pattern as [VGTTS](../vanguard-galaxy-tts): either mod works standalone; installing both upgrades the combined experience.
+Consumers (future stats dashboards, LLM-driven NPCs, progression mods, etc.) soft-dep via reflection on a stable API surface. Consumers bucket and interpret; VGMissionLog records what the game hands it and nothing more.
 
 ## Install
 
@@ -45,7 +40,7 @@ MaxEvents = 2000
 | **Offered**   | —                                                                               | **deferred** — post-MVP; Accepted covers the signal consumers actually want |
 | **ObjectiveProgressed** | —                                                                     | **deferred** — post-MVP; additive schema extension |
 
-Every captured event carries: event id, in-game timestamp + wall-clock, storyId, mission name + classified type + raw subclass name, activity archetype (Combat / Gather / Salvage / Deliver / Escort, inferred best-effort), outcome (for terminals), source station / system / faction, facility origin (BountyBoard / PoliceBoard / IndustryBoard), rewards (credits / experience / reputation on Completed), and a player-state snapshot.
+Every captured event carries: event id, in-game timestamp + wall-clock, storyId, mission name + raw subclass name (`mission.GetType().Name`), outcome (for terminals), source station / system / faction, rewards (credits / experience / reputation on Completed), and a player-state snapshot. Consumers bucket by subclass name if they want mission-type categories; VGMissionLog does not classify.
 
 See [`docs/02-requirements.md`](docs/02-requirements.md) for the full per-event shape.
 
@@ -88,7 +83,7 @@ VGMissionLog is a **pure observer**. The Harmony patch set is postfix-only, with
 
 ## Docs
 
-- [`docs/01-background.md`](docs/01-background.md) — why this mod exists, how it fits with VGAnima + VGTTS, risk isolation rationale.
+- [`docs/01-background.md`](docs/01-background.md) — why this mod exists, risk isolation rationale.
 - [`docs/02-requirements.md`](docs/02-requirements.md) — what must be captured, event schema, query API surface, persistence contract.
 - [`docs/03-architecture.md`](docs/03-architecture.md) — proposed design: Harmony hooks, classification logic, storage shape, versioning.
 - [`docs/04-implementation-plan.md`](docs/04-implementation-plan.md) — ordered atomic tasks an implementation agent can execute top-to-bottom.

@@ -13,7 +13,7 @@ public class ActivityLogQueryTests
         //           t=20 accept patrol in Helion (Police),
         //           t=30 complete bounty (m-bounty, Zoran, BountyGuild),
         //           t=40 fail patrol (m-patrol, Helion, Police),
-        //           t=50 accept a vganima-authored parametric mission (Zoran, no faction).
+        //           t=50 accept a custom-storyId parametric mission (Zoran, no faction).
         var log = new ActivityLog();
         log.Append(TestEvents.Baseline(eventId: "accept-b",  storyId: "m-bounty", gameSeconds: 10,
             type: ActivityEventType.Accepted,
@@ -31,7 +31,7 @@ public class ActivityLogQueryTests
             type: ActivityEventType.Failed,
             missionSubclass: "PatrolMission",
             sourceSystemId: "sys-helion", sourceFaction: "Police") with { Outcome = Outcome.Failed });
-        log.Append(TestEvents.Baseline(eventId: "accept-v",   storyId: "vganima_llm_abc", gameSeconds: 50,
+        log.Append(TestEvents.Baseline(eventId: "accept-v",   storyId: "story-custom-abc", gameSeconds: 50,
             type: ActivityEventType.Accepted,
             missionSubclass: "Mission",
             sourceSystemId: "sys-zoran"));

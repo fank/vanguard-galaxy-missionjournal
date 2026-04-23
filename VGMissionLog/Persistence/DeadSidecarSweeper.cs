@@ -12,7 +12,7 @@ namespace VGMissionLog.Persistence;
 /// <para>Skips <c>.vgmissionlog.corrupt.*.json</c> quarantine files —
 /// they carry forensic value and the player may want to inspect them
 /// before deciding to delete. Skips anything that doesn't end with the
-/// live-sidecar suffix (e.g. peer mods' sidecars like VGAnima's).</para>
+/// live-sidecar suffix so peer mods' sidecars are left alone.</para>
 ///
 /// <para>Runs at plugin load (see <c>Plugin.Awake</c> in ML-T4i). Any IO
 /// failure is swallowed by the caller and warn-logged per R5.2; the

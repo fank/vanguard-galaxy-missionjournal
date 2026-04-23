@@ -88,14 +88,14 @@ public class DeadSidecarSweeperTests : IDisposable
     [Fact]
     public void Sweep_PeerSidecars_AreIgnored()
     {
-        // VGAnima's sidecars share the save dir but aren't ours.
-        Touch("Gamma.save.vganima.json");
+        // Peer mods' sidecars share the save dir but aren't ours.
+        Touch("Gamma.save.peermod.json");
         Touch("Gamma.save");
 
         var deleted = DeadSidecarSweeper.Sweep(_tmpDir);
 
         Assert.Empty(deleted);
-        Assert.True(File.Exists(FilePath("Gamma.save.vganima.json")));
+        Assert.True(File.Exists(FilePath("Gamma.save.peermod.json")));
     }
 
     [Fact]
@@ -105,7 +105,7 @@ public class DeadSidecarSweeperTests : IDisposable
         Touch("Paired.save.vgmissionlog.json");
         Touch("Orphan.save.vgmissionlog.json");
         Touch("Quarantine.save.vgmissionlog.corrupt.20260101000000.json");
-        Touch("PeerAnima.save.vganima.json"); // no .save; still must not touch
+        Touch("PeerMod.save.peermod.json"); // no .save; still must not touch
 
         var deleted = DeadSidecarSweeper.Sweep(_tmpDir);
 
@@ -114,6 +114,6 @@ public class DeadSidecarSweeperTests : IDisposable
         // Everything else stays.
         Assert.True(File.Exists(FilePath("Paired.save.vgmissionlog.json")));
         Assert.True(File.Exists(FilePath("Quarantine.save.vgmissionlog.corrupt.20260101000000.json")));
-        Assert.True(File.Exists(FilePath("PeerAnima.save.vganima.json")));
+        Assert.True(File.Exists(FilePath("PeerMod.save.peermod.json")));
     }
 }

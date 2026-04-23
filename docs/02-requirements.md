@@ -17,7 +17,7 @@ VGMissionLog must record **every mission lifecycle transition** as a discrete `A
 | `Abandoned` | Player-initiated drop (vanilla's `RemoveMission(..., completed:false)`) |
 | `ObjectiveProgressed` | A mission step / objective advanced (optional — see R1.4) |
 
-`Offered` is best-effort — vanilla's offer path varies by source (mission board regenerates parametrically; bar salesmen materialize on bar refresh; VGAnima-style brokers dispatch async). The implementor should capture whatever is reliably observable and flag any gaps.
+`Offered` is best-effort — vanilla's offer path varies by source (mission board regenerates parametrically; bar salesmen materialize on bar refresh; third-party mods may dispatch asynchronously). The implementor should capture whatever is reliably observable and flag any gaps.
 
 ### R1.2 — Required per-event fields
 
@@ -101,7 +101,7 @@ The public API must answer these queries in ≤ 5ms on logs up to 2000 events. S
 ### R3.1 — Per-save sidecar
 
 - One log per vanilla save slot.
-- File name: `<saveName>.save.vgmissionlog.json` (parallel to VGAnima's `.vganima.json`).
+- File name: `<saveName>.save.vgmissionlog.json`.
 - Same directory as vanilla's saves (`{persistentDataPath}/Saves/` on PC).
 
 ### R3.2 — Save/load lifecycle
@@ -109,7 +109,7 @@ The public API must answer these queries in ≤ 5ms on logs up to 2000 events. S
 - **On vanilla save-write** — flush the in-memory log to the sidecar. Postfix hook after vanilla's own save succeeds; never block vanilla's write path.
 - **On vanilla save-load** — read the paired sidecar and replace the in-memory log wholesale. Missing / corrupt / unreadable → empty in-memory log + warn-level log line.
 - **On ApplicationQuit** — best-effort flush to the last-known save path as a safety net.
-- **On save-delete** (best-effort) — orphan sidecar sweep at plugin load, similar to VGAnima's `DeadSidecarSweeper`.
+- **On save-delete** (best-effort) — orphan sidecar sweep at plugin load.
 
 ### R3.3 — Atomic writes
 
@@ -123,7 +123,7 @@ A corrupt sidecar must not poison vanilla's load. Read failures quarantine the b
 
 - Top-level `version: int` field, bumped on every breaking schema change.
 - **Additive changes (new fields on events, new event types)** — readable without version bump when fields are nullable / opt-in.
-- **Breaking changes (field removal, semantic shifts)** — bump version; old versions quarantine on load OR upgrade-on-read (same pattern VGAnima uses for its v2→v3 transition).
+- **Breaking changes (field removal, semantic shifts)** — bump version; old versions quarantine on load OR upgrade-on-read (additive in-memory restamp when the prior version is one back).
 - The initial ship version is `1`.
 
 ### R3.6 — Capacity bound
@@ -134,7 +134,7 @@ A corrupt sidecar must not poison vanilla's load. Read failures quarantine the b
 
 ### R3.7 — Security
 
-- Sidecar content is user-authored trust-surface (may travel via cloud-sync, shared saves). If Newtonsoft's `TypeNameHandling.Auto` is used (not recommended for this mod — primitive-typed records only), it MUST be paired with a locked-down `ISerializationBinder`, following VGAnima's pattern.
+- Sidecar content is user-authored trust-surface (may travel via cloud-sync, shared saves). If Newtonsoft's `TypeNameHandling.Auto` is used (not recommended for this mod — primitive-typed records only), it MUST be paired with a locked-down `ISerializationBinder`.
 - VGMissionLog should prefer plain primitive records → no `$type` discriminators → no binder complexity.
 
 ## R4 — Plugin surface
@@ -181,13 +181,9 @@ Any exception in a Harmony postfix must be caught and logged at Warning level. V
 
 ### R5.3 — Third-party-mod mission support
 
-Mods other than vanilla may author missions (e.g. VGAnima's `vganima_llm_` storyId prefix). VGMissionLog classifies these into the `ThirdParty(prefix)` missionType by extracting a namespace-like prefix from the storyId. If no useful prefix exists, classify as `Generic`.
+Mods other than vanilla may author missions. Those missions flow through vanilla's `AddMissionWithLog` like any other, so they're captured automatically — the raw `mission.GetType().Name` and the game-provided `storyId` carry whatever signal the consumer needs to attribute them. VGMissionLog does not classify mod authorship; consumers read the raw values and bucket as they see fit.
 
-### R5.4 — VGAnima-produced missions
-
-Missions authored by VGAnima flow through vanilla's `AddMissionWithLog` like any other mission, so they're captured automatically with `missionType=ThirdParty("vganima")`. VGAnima itself will consume VGMissionLog for historical queries; that's a one-way dep. VGMissionLog does NOT import or require VGAnima.
-
-### R5.5 — Broken or missing peer mods
+### R5.4 — Broken or missing peer mods
 
 If a consumer of VGMissionLog is not installed, nothing changes — the log keeps running in write-only mode. Consumers are late-binding; producers are eager.
 

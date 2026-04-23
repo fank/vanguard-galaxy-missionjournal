@@ -28,7 +28,7 @@ public class MissionLogQueryAdapterTests
             type: ActivityEventType.Completed, missionSubclass: "BountyMission",
             sourceSystemId: "sys-zoran", sourceFaction: "BountyGuild")
             with { Outcome = Outcome.Completed, RewardsCredits = 1500 });
-        log.Append(TestEvents.Baseline(eventId: "v1", storyId: "vganima_llm_x", gameSeconds: 30,
+        log.Append(TestEvents.Baseline(eventId: "v1", storyId: "story-custom-x", gameSeconds: 30,
             type: ActivityEventType.Accepted,
             missionSubclass: "Mission",
             sourceSystemId: "sys-helion"));

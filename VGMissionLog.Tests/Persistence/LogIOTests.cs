@@ -134,7 +134,7 @@ public class LogIOTests : IDisposable
                 type: ActivityEventType.Completed, missionSubclass: "BountyMission",
                 sourceSystemId: "sys-zoran", sourceFaction: "BountyGuild")
                 with { Outcome = Outcome.Completed, RewardsCredits = 1500, RewardsExperience = 200 },
-            TestEvents.Baseline(eventId: "c", storyId: "vganima_llm_x", gameSeconds: 3.0,
+            TestEvents.Baseline(eventId: "c", storyId: "story-custom-x", gameSeconds: 3.0,
                 type: ActivityEventType.Accepted,
                 missionSubclass: "Mission",
                 sourceSystemId: "sys-helion"),

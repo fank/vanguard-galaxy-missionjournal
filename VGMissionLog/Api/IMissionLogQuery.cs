@@ -9,9 +9,9 @@ namespace VGMissionLog.Api;
 /// <para>Every return type is either a primitive, a string, a
 /// <see cref="IReadOnlyList{T}"/> of primitive-keyed dictionaries, or a
 /// <see cref="IReadOnlyDictionary{TKey,TValue}"/> of primitives — so
-/// reflection-based consumers (VGAnima, future stats dashboards, etc.)
-/// can call through <see cref="MissionLogApi.Current"/> without
-/// referencing <c>VGMissionLog</c>'s internal record type
+/// reflection-based consumers can call through
+/// <see cref="MissionLogApi.Current"/> without referencing
+/// <c>VGMissionLog</c>'s internal record type
 /// (<see cref="Logging.ActivityEvent"/>).</para>
 ///
 /// <para>Event dictionaries use the same camelCase keys the JSON sidecar

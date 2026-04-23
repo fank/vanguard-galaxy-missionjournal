@@ -27,7 +27,7 @@ public void LoadSaveGame()
 
 - **Instance** method on `SaveGameFile`. Vanilla save path is `this.File.FullName`.
 - Body wraps `SaveGame.LoadState(Recall())` in a try/catch; on failure, shows popup and returns to menu.
-- **Patch**: prefix (one prefix allowed per spec R5.1 for save-load). Matches architecture doc §"Dependency on vanilla save lifecycle" and VGAnima's `SaveLoadPatch` for ecosystem consistency — sidecar is populated before any hypothetical post-load consumer queries during vanilla's load body. Read via `LogIO.Read(LogPathResolver.From(this.File.FullName))` → `ActivityLog.LoadFrom(result.Schema.Events)` or empty log on MissingFile/Corrupted/UnsupportedVersion.
+- **Patch**: prefix (one prefix allowed per spec R5.1 for save-load). Matches architecture doc §"Dependency on vanilla save lifecycle" — sidecar is populated before any hypothetical post-load consumer queries during vanilla's load body. Read via `LogIO.Read(LogPathResolver.From(this.File.FullName))` → `ActivityLog.LoadFrom(result.Schema.Events)` or empty log on MissingFile/Corrupted/UnsupportedVersion.
 
 ## Mission lifecycle
 
@@ -144,6 +144,6 @@ The publicized stub's method bodies are `throw null;` IL (see ML-T2c commit), so
 
 ## Harmony gotchas
 
-- Flat patch classes only (one `[HarmonyPatch]` per file). `Harmony.PatchAll(typeof(OuterClass))` silently no-ops when the attribute lives on nested types — VGAnima ran into this (commented in their `Plugin.cs` line 127). We sidestep by one-patch-one-file.
+- Flat patch classes only (one `[HarmonyPatch]` per file). `Harmony.PatchAll(typeof(OuterClass))` silently no-ops when the attribute lives on nested types. We sidestep by one-patch-one-file.
 - Wrap every postfix/prefix body in try/catch + `Plugin.Log.LogWarning` per spec R5.2. Never rethrow — vanilla execution must survive our failures.
 - Post-`PatchAll`, assert `_harmony.GetPatchedMethods().Count() >= N` in a test fixture to catch silent rename drift (spec R6.2).

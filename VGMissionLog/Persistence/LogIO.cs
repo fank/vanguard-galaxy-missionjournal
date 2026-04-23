@@ -14,14 +14,13 @@ internal sealed record LogReadResult(
 /// <summary>
 /// Reads and writes the log sidecar file. Writes are atomic (tmp +
 /// rename); reads quarantine corrupt or future-version files so vanilla's
-/// load can proceed with an empty log. Mirrors VGAnima's SidecarIO shape
-/// so the two mods behave identically in the save directory.
+/// load can proceed with an empty log.
 ///
 /// <para>Version acceptance policy: the current
 /// <see cref="LogSchema.CurrentVersion"/> loads as-is; anything else
 /// quarantines. At MVP (v1) there's no back-compat window — future
-/// bumps can add an upgrade path the same way VGAnima's SidecarIO does
-/// (v2→v3: additive, in-memory restamp).</para>
+/// bumps add an upgrade path here (additive, in-memory restamp when
+/// schema.Version == CurrentVersion - 1).</para>
 ///
 /// <para>Exceptions from <see cref="Write"/> are <b>not</b> swallowed
 /// here — the caller (<c>SaveWritePatch</c>) is the layer that must

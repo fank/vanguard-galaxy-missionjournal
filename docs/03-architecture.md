@@ -1,6 +1,6 @@
 # 03 — Architecture (Proposed Design)
 
-Satisfies the requirements in `02-requirements.md`. The implementor may diverge on specific mechanisms as long as the contract holds, but the structure below has been chosen to match the sibling VGAnima project's conventions so reviewers can pattern-match.
+Satisfies the requirements in `02-requirements.md`. The implementor may diverge on specific mechanisms as long as the contract holds.
 
 ## Project layout
 
@@ -24,7 +24,7 @@ vanguard-galaxy-missionlog/
 │   │   └── ActivityLog.cs    — in-memory append-only log + query API
 │   ├── Classification/
 │   │   ├── MissionClassifier.cs   — Mission → (MissionType, Archetype, FacilityOrigin)
-│   │   └── StoryIdPrefixMap.cs    — e.g. "vganima_llm_" → "vganima"
+│   │   └── StoryIdPrefixMap.cs    — extract a namespace-like prefix from a storyId
 │   ├── Persistence/
 │   │   ├── LogSchema.cs      — top-level sidecar record; version constant
 │   │   ├── LogIO.cs          — atomic read/write + quarantine
@@ -88,7 +88,7 @@ public sealed record ActivityEvent(
 public sealed record RepReward(string Faction, int Amount);
 ```
 
-All fields primitive / nullable-primitive → **no `TypeNameHandling.Auto` needed**. The `ISerializationBinder` complexity VGAnima carries is unnecessary here.
+All fields primitive / nullable-primitive → **no `TypeNameHandling.Auto` needed**, and no `ISerializationBinder` complexity.
 
 ## In-memory log
 
@@ -134,7 +134,7 @@ IReadOnlyDictionary<string, int> CountBySystem(double sinceGameSeconds, double u
 // ...
 ```
 
-The proximity queries deliberately take a `jumpDistance` delegate from the caller. VGMissionLog never imports vanilla's galaxy graph or hardcodes a BFS — the caller knows how to walk the graph (VGAnima has `GalaxyDistance.JumpsBetween`; another consumer might have a different graph). Keeps VGMissionLog pure-observational.
+The proximity queries deliberately take a `jumpDistance` delegate from the caller. VGMissionLog never imports vanilla's galaxy graph or hardcodes a BFS — the caller knows how to walk the graph. Keeps VGMissionLog pure-observational.
 
 ## Public facade
 
@@ -175,7 +175,7 @@ public interface IMissionLogQuery
 
 ### Required postfixes
 
-All patches follow VGAnima's pattern: postfix, exception-swallowed, never-null-check-crashes.
+All patches follow the same pattern: postfix, exception-swallowed, never-null-check-crashes.
 
 | Patch | Target | Purpose |
 |---|---|---|
@@ -219,7 +219,7 @@ internal static class MissionClassifier
         var id = m.storyId ?? string.Empty;
         var prefix = StoryIdPrefixMap.ExtractPrefix(id);
         return prefix != null
-            ? new MissionType.ThirdParty(prefix)  // e.g. "vganima"
+            ? new MissionType.ThirdParty(prefix)
             : MissionType.Story;
     }
 }
@@ -242,7 +242,7 @@ Schema top-level:
 ```
 
 - `LogSchema.CurrentVersion = 1` at ship time.
-- `LogIO.Read` handles: missing file / corrupt JSON / unsupported version. Mirrors VGAnima's `SidecarIO` (one-version-back auto-upgrade when additive).
+- `LogIO.Read` handles: missing file / corrupt JSON / unsupported version. Supports one-version-back auto-upgrade when the change is additive.
 - `LogIO.Write` uses the tmp+rename pattern for atomic writes.
 - `LogPathResolver.From("<saveName>.save")` → `"<saveName>.save.vgmissionlog.json"`.
 - `DeadSidecarSweeper.Sweep()` at plugin load — deletes `.vgmissionlog.json` files whose vanilla save is gone.
@@ -262,15 +262,13 @@ vanilla calls GamePlayer.AddMissionWithLog(mission)
 
 ## Dependency on vanilla save lifecycle
 
-Same contract VGAnima uses:
-
 - `SaveWritePatch` postfix — flush after vanilla's own save succeeds.
-- `SaveLoadPatch` prefix — read sidecar **before** vanilla's load finishes, so if any post-load consumer (hypothetical future mod) queries the log during load, it's populated. Prefix not postfix — mirrors VGAnima's `SaveLoadPatch`.
+- `SaveLoadPatch` prefix — read sidecar **before** vanilla's load finishes, so if any post-load consumer (hypothetical future mod) queries the log during load, it's populated. Prefix not postfix for this timing reason.
 - `Application.quitting` handler — flush to `LastKnownSavePath` as a safety net.
 
 ## Testing approach
 
-`.NET 8` test project targeting netstandard2.1 plugin. Same `DOTNET_ROLL_FORWARD=LatestMajor` trick VGAnima uses. Reference the publicized `Assembly-CSharp.dll` symlinked stub via `make link-asm`.
+`.NET 8` test project targeting netstandard2.1 plugin, using `DOTNET_ROLL_FORWARD=LatestMajor` to load the netstandard2.1 binary under net8.0. Reference the publicized `Assembly-CSharp.dll` symlinked stub via `make link-asm`.
 
 - **Logging tests** — pure in-memory log, deterministic timestamps via injected `IClock`.
 - **Persistence tests** — temp-directory file IO, roundtrip + corrupt + version cases.

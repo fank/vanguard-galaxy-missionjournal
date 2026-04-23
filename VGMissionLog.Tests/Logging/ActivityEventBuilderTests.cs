@@ -56,11 +56,11 @@ public class ActivityEventBuilderTests
     [Fact]
     public void Build_StoryIdPresent_PassesThrough()
     {
-        var mission = TestMission.Generic("vganima_llm_xyz");
+        var mission = TestMission.Generic("story-xyz");
 
         var evt = NewBuilder().Build(mission, ActivityEventType.Accepted);
 
-        Assert.Equal("vganima_llm_xyz", evt.StoryId);
+        Assert.Equal("story-xyz", evt.StoryId);
     }
 
     [Fact]

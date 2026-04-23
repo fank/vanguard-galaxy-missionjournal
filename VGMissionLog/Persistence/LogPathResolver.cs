@@ -11,10 +11,6 @@ namespace VGMissionLog.Persistence;
 /// <c>{same-path}.vgmissionlog.json</c>. Quarantined corrupt sidecars
 /// get a timestamp suffix and live in the same directory so they survive
 /// re-loads and the player can forensically inspect them.</para>
-///
-/// <para>Mirrors VGAnima's <c>SidecarPathResolver</c> shape so both mods
-/// behave identically in the save directory (paired JSON, same dir,
-/// same quarantine pattern).</para>
 /// </summary>
 internal static class LogPathResolver
 {

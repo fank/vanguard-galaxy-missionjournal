@@ -22,8 +22,8 @@ namespace VGMissionLog.Persistence;
 ///         unsupported versions (or upgrades-on-read when additive).</item>
 /// </list></para>
 ///
-/// <para><b>Security:</b> unlike VGAnima, VGMissionLog's records are all
-/// primitive / nullable-primitive / <see cref="System.Collections.Generic.IReadOnlyList{T}"/>
+/// <para><b>Security:</b> VGMissionLog's records are all primitive /
+/// nullable-primitive / <see cref="System.Collections.Generic.IReadOnlyList{T}"/>
 /// of flat records, so <c>TypeNameHandling.Auto</c> is <b>not</b> enabled
 /// and no <c>ISerializationBinder</c> is needed. That's a deliberate
 /// simplification per R3.7 — sidecars travel with saves (cloud-sync,

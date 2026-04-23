@@ -2,7 +2,7 @@
 
 A top-to-bottom ordered task list. Each task is atomic (build-green + committable on its own), with clear done-criteria and dependencies. An implementation agent can execute sequentially.
 
-**Conventions**: match the sibling VGAnima repo. Build with `DOTNET_ROLL_FORWARD=LatestMajor dotnet build VGMissionLog.sln`. Run tests the same way. Harmony patches use postfix-only pattern with exception-swallow + null-guard. Commit in logical chunks with Conventional Commits messages (`feat:`, `fix:`, `docs:`, `test:`).
+**Conventions**: Build with `DOTNET_ROLL_FORWARD=LatestMajor dotnet build VGMissionLog.sln`. Run tests the same way. Harmony patches use postfix-only pattern with exception-swallow + null-guard. Commit in logical chunks with Conventional Commits messages (`feat:`, `fix:`, `docs:`, `test:`).
 
 The decomp lives at `/tmp/vg-decomp/Assembly-CSharp.decompiled.cs` (single huge file) — grep it for method signatures before patching.
 
@@ -11,15 +11,15 @@ The decomp lives at `/tmp/vg-decomp/Assembly-CSharp.decompiled.cs` (single huge 
 ## Phase 0 — Bootstrap
 
 ### ML-T0a: Project scaffolding
-Create `VGMissionLog.sln`, `VGMissionLog/VGMissionLog.csproj`, `VGMissionLog.Tests/VGMissionLog.Tests.csproj`. Mirror VGAnima's project files verbatim (change `VGAnima` → `VGMissionLog` throughout). Wire `InternalsVisibleTo` for tests.
+Create `VGMissionLog.sln`, `VGMissionLog/VGMissionLog.csproj`, `VGMissionLog.Tests/VGMissionLog.Tests.csproj`. Standard BepInEx 5 netstandard2.1 plugin shape; xUnit test project on net8.0 with `DOTNET_ROLL_FORWARD=LatestMajor`. Wire `InternalsVisibleTo` for tests.
 **Done when**: `dotnet build` succeeds with an empty project.
 
 ### ML-T0b: Makefile
-Copy VGAnima's Makefile, adapt variables (`DLL`, `GAME_DIR`, `PLUGIN_DIR`). Targets: `build` / `test` / `deploy` / `link-asm` / `clean`.
+Author a Makefile with variables (`DLL`, `GAME_DIR`, `PLUGIN_DIR`) and targets: `build` / `test` / `deploy` / `link-asm` / `clean`.
 **Done when**: `make build` produces `bin/Debug/netstandard2.1/VGMissionLog.dll`.
 
 ### ML-T0c: Assembly-CSharp symlink
-Add `link-asm` target pointing at a sibling VGTTS checkout's publicized stub (same approach VGAnima uses). Run it.
+Add `link-asm` target pointing at a sibling VGTTS checkout's publicized stub. Run it.
 **Done when**: `VGMissionLog/lib/Assembly-CSharp.dll` exists as a symlink and `dotnet build` still succeeds.
 
 ### ML-T0d: Empty Plugin.cs
@@ -59,10 +59,10 @@ Create `IClock` / `GameClock` (production) / test-fake. All `ActivityEvent` emis
 
 ### ML-T2a: MissionClassifier
 Create `Classification/MissionClassifier.cs` — pattern-match on `Mission` subclass → `MissionType`. Fall-through to `Story` or `Generic`.
-**Tests**: one per known subclass (stubs of vanilla `BountyMission` etc. using the publicized stub), plus `ThirdParty` via `vganima_llm_`-prefixed storyId.
+**Tests**: one per known subclass (stubs of vanilla `BountyMission` etc. using the publicized stub), plus `ThirdParty` via a `_llm_`-infixed storyId.
 
 ### ML-T2b: StoryIdPrefixMap
-Tiny helper extracting a namespace-like prefix from a storyId (e.g. `"vganima_llm_xxx"` → `"vganima"`). Configurable registration for 3rd-party integrations but works out of the box for VGAnima.
+Tiny helper extracting a namespace-like prefix from a storyId by splitting on a configurable infix. Third-party mods register their own infix; a built-in default covers common conventions.
 **Tests**: extraction, empty / malformed storyIds.
 
 ### ML-T2c: Archetype inference
@@ -87,7 +87,7 @@ Best-effort — infer from mission type: `BountyMission` → `BountyBoard`, `Pat
 `Persistence/LogSchema.cs` — top-level record `(version: int, events: ActivityEvent[])`, `CurrentVersion = 1`, serializer settings (standard Newtonsoft, camelCase, no `TypeNameHandling.Auto`).
 
 ### ML-T3b: LogIO
-`Persistence/LogIO.cs` — mirrors VGAnima's `SidecarIO`:
+`Persistence/LogIO.cs`:
 - `Read(path)` → `{Loaded, MissingFile, Corrupted, UnsupportedVersion}` + optional quarantine path
 - `Write(path, schema)` — tmp + rename
 - Corruption / unsupported version → quarantine to `<path>.corrupt.<timestamp>.json`
@@ -110,7 +110,7 @@ Confirm method names for `SaveGame.Store` and `SaveGameFile.LoadSaveGame` are st
 **Done when**: a scout memo is added to the PR describing exact signatures.
 
 ### ML-T4b: SaveWritePatch + SaveLoadPatch
-Copy VGAnima's patch structure. Postfix on `Store`: flush log to sidecar. Prefix on `LoadSaveGame`: read sidecar, replace in-memory log. `Application.quitting` safety-net flush.
+Postfix on `Store`: flush log to sidecar. Prefix on `LoadSaveGame`: read sidecar, replace in-memory log. `Application.quitting` safety-net flush.
 **Done when**: save → quit → load → log survives.
 
 ### ML-T4c: MissionAcceptPatch
@@ -171,13 +171,13 @@ Add a test that calls `MissionLogApi.Current` via reflection (using `Type.GetTyp
 Update `README.md` with install instructions, known limitations, list of which lifecycle events are captured and which are best-effort.
 
 ### ML-T7b: Manual E2E verification
-Start a new save, accept a bounty, complete it, accept a patrol, abandon it, accept a VGAnima broker mission, finish it. Inspect the sidecar JSON — verify every event has correct classification, snapshot fields, and timestamps.
+Start a new save, accept a bounty, complete it, accept a patrol, abandon it. Inspect the sidecar JSON — verify every event has correct snapshot fields and timestamps.
 
-### ML-T7c: VGAnima integration test
-With VGAnima installed alongside, verify:
-- VGAnima-authored missions are captured (`missionType=ThirdParty("vganima")`).
-- VGAnima's own journal / regionally-known still functions — this mod doesn't break it.
-- When VGAnima's `VgMissionLogBridge` lands (in VGAnima's repo, not here), the facade is discoverable via reflection.
+### ML-T7c: Third-party consumer smoke test
+With at least one reflection-based consumer mod alongside, verify:
+- Events authored by that mod are captured.
+- The consumer's own state isn't perturbed — this mod observes, never mutates.
+- The facade is discoverable via reflection (`Type.GetType("VGMissionLog.Api.MissionLogApi, VGMissionLog")`).
 
 ---
 
@@ -186,7 +186,6 @@ With VGAnima installed alongside, verify:
 - All ML-T0…ML-T7 tasks complete.
 - CI green (if configured).
 - Private GitHub repo (`fank/vanguard-galaxy-missionlog`) has at least one tagged release (`v0.1.0`).
-- VGAnima repo has a corresponding issue or PR tracking the `VgMissionLogBridge` consumer work — separate repo, separate task list.
 
 ## Deferred to post-MVP
 

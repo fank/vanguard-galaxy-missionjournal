@@ -13,10 +13,10 @@ namespace VGMissionLog.Patches;
 /// before vanilla starts applying the save state.
 ///
 /// <para>This is the one allowed prefix per spec R5.1 (save-load). The
-/// prefix timing matches VGAnima's <c>SaveLoadPatch</c> — sidecar is
-/// populated before any hypothetical post-load consumer queries during
-/// vanilla's load body. We're still read-only (no mutation of vanilla
-/// state); the prefix is a timing convenience, not a mutation vector.</para>
+/// sidecar is populated before any hypothetical post-load consumer
+/// queries during vanilla's load body. We're still read-only (no
+/// mutation of vanilla state); the prefix is a timing convenience,
+/// not a mutation vector.</para>
 ///
 /// <para>Error policy per spec R3.4:
 /// <see cref="LogReadStatus.MissingFile"/> → empty log, silent.

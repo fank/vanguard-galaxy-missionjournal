@@ -156,9 +156,8 @@ internal sealed class ActivityLog
     // VGMissionLog never walks a jumpgate graph itself — the caller supplies
     // a <c>jumpDistance</c> delegate that returns the number of jumps between
     // two system GUIDs (or -1 when unreachable). This keeps the log
-    // graph-agnostic; VGAnima passes its GalaxyDistance.JumpsBetween, a
-    // future consumer can pass a different implementation. Pivot-to-pivot
-    // (same system) returns 0 jumps by delegate convention.
+    // graph-agnostic; consumers pass whatever graph implementation they have.
+    // Pivot-to-pivot (same system) returns 0 jumps by delegate convention.
 
     /// <summary>
     /// Events whose source system is within <paramref name="maxJumps"/> of
