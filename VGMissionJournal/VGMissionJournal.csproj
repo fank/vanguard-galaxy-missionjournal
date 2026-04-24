@@ -31,11 +31,14 @@
   </ItemGroup>
 
   <ItemGroup>
-    <!-- Publicized stub of the game's Assembly-CSharp.dll. Symlinked from the
-         sibling VGTTS checkout (single source of truth) via `make link-asm`.
-         Conditional so an un-linked checkout can still `dotnet restore` for
-         nuget-only operations; build will fail later if the stub is missing
-         and any code references game types. -->
+    <!-- Publicized stub of the game's Assembly-CSharp.dll — committed to
+         lib/ so CI can build without a sibling checkout. Regenerate after
+         game updates via:
+           assembly-publicizer --strip <game>/Assembly-CSharp.dll \
+                               -o VGMissionJournal/lib/Assembly-CSharp.dll
+         Conditional so an incomplete checkout can still `dotnet restore`
+         for nuget-only operations; build fails later if the stub is
+         missing and any code references game types. -->
     <Reference Include="Assembly-CSharp" Condition="Exists('lib/Assembly-CSharp.dll')">
       <HintPath>lib/Assembly-CSharp.dll</HintPath>
       <Private>false</Private>

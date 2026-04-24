@@ -87,4 +87,4 @@ make deploy      # copies the DLL into <GameDir>/BepInEx/plugins/VGMissionJourna
 
 ## License
 
-TBD (will match sibling mods).
+MIT — see [`LICENSE`](LICENSE).
