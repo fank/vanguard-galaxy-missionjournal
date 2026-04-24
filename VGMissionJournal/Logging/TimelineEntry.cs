@@ -1,3 +1,5 @@
+using Newtonsoft.Json;
+
 namespace VGMissionJournal.Logging;
 
 /// <summary>
@@ -10,6 +12,9 @@ public sealed record TimelineEntry(
     double GameSeconds,
     string? RealUtc)
 {
+    /// <summary>Derived from <see cref="State"/>. Not serialized — consumers
+    /// read it via the C# API; the sidecar stores only <see cref="State"/>.</summary>
+    [JsonIgnore]
     public bool IsTerminal =>
         State is TimelineState.Completed or TimelineState.Failed or TimelineState.Abandoned;
 }

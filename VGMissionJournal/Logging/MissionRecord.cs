@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Newtonsoft.Json;
 
 namespace VGMissionJournal.Logging;
 
@@ -44,14 +45,22 @@ public sealed record MissionRecord(
     IReadOnlyList<MissionRewardSnapshot> Rewards,
     IReadOnlyList<TimelineEntry> Timeline)
 {
+    // Computed helpers — derivable from Timeline. Not serialized to the
+    // sidecar (the on-disk shape stores only the timeline and lets readers
+    // derive these on demand); exposed via the C# API for consumer ergonomics.
+
+    [JsonIgnore]
     public bool IsActive => TerminalEntry is null;
 
+    [JsonIgnore]
     public double AcceptedAtGameSeconds =>
         Timeline.Count > 0 ? Timeline[0].GameSeconds
                            : throw new InvalidOperationException("MissionRecord has no Accepted entry.");
 
+    [JsonIgnore]
     public double? TerminalAtGameSeconds => TerminalEntry?.GameSeconds;
 
+    [JsonIgnore]
     public Outcome? Outcome => TerminalEntry?.State switch
     {
         TimelineState.Completed => Logging.Outcome.Completed,
@@ -66,6 +75,7 @@ public sealed record MissionRecord(
     public double AgeSeconds(double nowGameSeconds) =>
         (TerminalAtGameSeconds ?? nowGameSeconds) - AcceptedAtGameSeconds;
 
+    [JsonIgnore]
     private TimelineEntry? TerminalEntry =>
         Timeline.Count > 0 && Timeline[Timeline.Count - 1].IsTerminal
             ? Timeline[Timeline.Count - 1]

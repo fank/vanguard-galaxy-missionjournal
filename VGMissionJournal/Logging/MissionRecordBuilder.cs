@@ -260,6 +260,8 @@ internal sealed class MissionRecordBuilder
                     case "rewardIcon":
                     case "rewardColor":
                     case "coreName":      // MissionObjective base getter returning "Core" verbatim — pure noise
+                    case "currentAmount": // live progress counter — not mission structure
+                    case "displayedAmount": // same, UI-rendered count
                         continue;
                 }
                 TryAdd(dict, prop.Name, SafeGet(() => prop.GetValue(target)));
