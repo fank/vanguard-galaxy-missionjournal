@@ -1,4 +1,5 @@
 using BepInEx.Configuration;
+using VGMissionLog.Logging;
 
 namespace VGMissionLog.Config;
 
@@ -10,7 +11,7 @@ namespace VGMissionLog.Config;
 internal sealed class MissionLogConfig
 {
     public ConfigEntry<bool> Verbose          { get; }
-    public ConfigEntry<int>  MaxEvents        { get; }
+    public ConfigEntry<int>  MaxMissions      { get; }
 
     public MissionLogConfig(ConfigFile file)
     {
@@ -22,13 +23,10 @@ internal sealed class MissionLogConfig
                          "mission lifecycle event. Off by default — only the summary " +
                          "lines (load/flush/eviction) appear at Info.");
 
-        MaxEvents = file.Bind(
-            section:  "Persistence",
-            key:      "MaxEvents",
-            defaultValue: 2000,
-            description: "Soft cap on retained events per save (FIFO eviction). Each " +
-                         "event is ~500 bytes serialised; 2000 × 500 B ≈ 1 MB per sidecar. " +
-                         "Set to 0 to disable the cap entirely — sidecar size then grows " +
-                         "without bound for the lifetime of the save.");
+        MaxMissions = file.Bind(
+            section:  "Logging",
+            key:      "MaxMissions",
+            defaultValue: MissionStore.DefaultMaxMissions,
+            description: "Maximum mission records kept in the log. 0 = unbounded.");
     }
 }

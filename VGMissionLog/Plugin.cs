@@ -69,7 +69,7 @@ public class Plugin : BaseUnityPlugin
         Clock   = new GameClock();
         Io      = new LogIO(() => DateTime.UtcNow);
         Store   = new MissionStore(
-            maxMissions:     Cfg.MaxEvents.Value,
+            maxMissions:     Cfg.MaxMissions.Value,
             onFirstEviction: cap => Log.LogWarning(
                 $"Mission store hit cap of {cap} missions — oldest entries are now being evicted FIFO"));
         Builder = new MissionRecordBuilder(Clock, ResolvePlayerCurrentSystemId);

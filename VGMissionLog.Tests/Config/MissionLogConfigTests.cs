@@ -30,9 +30,9 @@ public class MissionLogConfigTests : IDisposable
     }
 
     [Fact]
-    public void MaxEvents_DefaultsTo2000()
+    public void MaxMissions_DefaultsTo2000()
     {
-        Assert.Equal(2000, Build().MaxEvents.Value);
+        Assert.Equal(2000, Build().MaxMissions.Value);
     }
 
     [Fact]
@@ -40,10 +40,10 @@ public class MissionLogConfigTests : IDisposable
     {
         var cfg = Build();
 
-        Assert.Equal("Logging",     cfg.Verbose.Definition.Section);
-        Assert.Equal("Verbose",     cfg.Verbose.Definition.Key);
-        Assert.Equal("Persistence", cfg.MaxEvents.Definition.Section);
-        Assert.Equal("MaxEvents",   cfg.MaxEvents.Definition.Key);
+        Assert.Equal("Logging",      cfg.Verbose.Definition.Section);
+        Assert.Equal("Verbose",      cfg.Verbose.Definition.Key);
+        Assert.Equal("Logging",      cfg.MaxMissions.Definition.Section);
+        Assert.Equal("MaxMissions",  cfg.MaxMissions.Definition.Key);
     }
 
     [Fact]
@@ -51,13 +51,13 @@ public class MissionLogConfigTests : IDisposable
     {
         // Write a value, rebuild the config from the same file — setting survives.
         var first = Build();
-        first.Verbose.Value   = true;
-        first.MaxEvents.Value = 500;
+        first.Verbose.Value      = true;
+        first.MaxMissions.Value  = 500;
         // Touch the file by invoking Save via BepInEx's ConfigFile.
         first.Verbose.ConfigFile.Save();
 
         var second = Build();
         Assert.True(second.Verbose.Value);
-        Assert.Equal(500, second.MaxEvents.Value);
+        Assert.Equal(500, second.MaxMissions.Value);
     }
 }
