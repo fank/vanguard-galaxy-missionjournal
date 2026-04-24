@@ -9,22 +9,15 @@ namespace VGMissionLog.Patches;
 
 /// <summary>
 /// Postfix on <see cref="GamePlayer.RemoveMission(Mission, bool)"/>
-/// (decomp line 33883). Gated on <c>completed == false</c> — emits a
-/// <see cref="ActivityEventType.Abandoned"/> event only when the player
+/// (decomp line 33883). Gated on <c>completed == false</c> — appends a
+/// <see cref="TimelineState.Abandoned"/> transition only when the player
 /// drops a mission voluntarily.
-///
-/// <para>Scout finding (ML-T4a memo): <c>RemoveMission</c> is called
-/// from two paths — <c>completed:true</c> by <c>ClaimRewards</c> after
-/// a successful completion (our <see cref="MissionCompletePatch"/> has
-/// already emitted Completed), and <c>completed:false</c> by
-/// player-initiated abandon. Without the gate we'd double-emit for
-/// every completion; the gate makes this purely the abandon signal.</para>
 /// </summary>
 [HarmonyPatch(typeof(GamePlayer), nameof(GamePlayer.RemoveMission), new[] { typeof(Mission), typeof(bool) })]
 internal static class MissionAbandonPatch
 {
-    internal static ActivityEventBuilder Builder = null!;
-    internal static ActivityLog          Log     = null!;
+    internal static MissionRecordBuilder Builder = null!;
+    internal static MissionStore         Store   = null!;
     internal static ManualLogSource      BepLog  = null!;
 
     [HarmonyPostfix]
@@ -34,8 +27,11 @@ internal static class MissionAbandonPatch
         if (completed) return;  // the "completed:true" path is covered by MissionCompletePatch
         try
         {
-            var evt = Builder.Build(mission, ActivityEventType.Abandoned);
-            Log.Append(evt);
+            var key      = Builder.GetInstanceId(mission);
+            var existing = Store.GetByInstanceId(key);
+            if (existing is null) return;
+            var next = Builder.AppendTransition(existing, TimelineState.Abandoned, mission);
+            Store.Upsert(next);
         }
         catch (Exception e)
         {

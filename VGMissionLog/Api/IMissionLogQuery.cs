@@ -4,123 +4,82 @@ using System.Collections.Generic;
 namespace VGMissionLog.Api;
 
 /// <summary>
-/// Neutral-shape query interface for cross-mod consumers (spec R4.3).
+/// Neutral-shape query interface for cross-mod consumers. v3 is mission-oriented:
+/// every return is either a single mission dict, a list of mission dicts, or a
+/// primitive-keyed aggregate. Fields omitted or null should both be handled.
 ///
-/// <para>Every return type is either a primitive, a string, a
-/// <see cref="IReadOnlyList{T}"/> of primitive-keyed dictionaries, or a
-/// <see cref="IReadOnlyDictionary{TKey,TValue}"/> of primitives — so
-/// reflection-based consumers can call through
-/// <see cref="MissionLogApi.Current"/> without referencing
-/// <c>VGMissionLog</c>'s internal record type
-/// (<see cref="Logging.ActivityEvent"/>).</para>
+/// <para>Each "mission dict" uses the same camelCase keys as the sidecar's
+/// <c>missions[]</c> entry: <c>storyId</c>, <c>missionInstanceId</c>,
+/// <c>missionSubclass</c>, <c>steps</c>, <c>rewards</c>, <c>timeline</c>, etc.
+/// Age/active/outcome are derived off <c>timeline[]</c> by the consumer, or
+/// read off the helper fields the mapper exposes (<c>acceptedAtGameSeconds</c>,
+/// <c>terminalAtGameSeconds</c>, <c>outcome</c>, <c>isActive</c>).</para>
 ///
-/// <para>Event dictionaries use the same camelCase keys the JSON sidecar
-/// uses (<c>eventId</c>, <c>gameSeconds</c>, <c>storyId</c>, etc.), so
-/// consumers can interchange wire-level and API-level access. Fields
-/// with no value are either omitted or present with <c>null</c> — both
-/// should be handled by downstream code.</para>
-///
-/// <para>This interface is part of the public API surface: changes to
-/// existing methods are breaking (spec R4.2 — major-version bump + doc
-/// migration). New methods are additive and require no version bump.</para>
+/// <para>Adding new methods is non-breaking; changing existing signatures is.</para>
 /// </summary>
 public interface IMissionLogQuery
 {
-    /// <summary>Schema version this implementation was built against
-    /// (<see cref="Persistence.LogSchema.CurrentVersion"/>). Consumers
-    /// feature-gate on this to avoid calling methods added in a newer
-    /// version.</summary>
     int SchemaVersion { get; }
+    int TotalMissionCount { get; }
+    double? OldestAcceptedGameSeconds { get; }
+    double? NewestAcceptedGameSeconds { get; }
 
-    int TotalEventCount { get; }
-    double? OldestEventGameSeconds { get; }
-    double? NewestEventGameSeconds { get; }
+    IReadOnlyDictionary<string, object?>? GetMission(string missionInstanceId);
+    IReadOnlyList<IReadOnlyDictionary<string, object?>> GetActiveMissions();
+    IReadOnlyList<IReadOnlyDictionary<string, object?>> GetAllMissions();
 
-    // --- R2.1 raw filters -------------------------------------------------
+    IReadOnlyList<IReadOnlyDictionary<string, object?>> GetMissionsInSystem(
+        string systemId, double sinceGameSeconds = 0.0, double untilGameSeconds = double.MaxValue);
 
-    IReadOnlyList<IReadOnlyDictionary<string, object?>> GetEventsInSystem(
-        string systemId,
-        double sinceGameSeconds = 0.0,
-        double untilGameSeconds = double.MaxValue);
+    IReadOnlyList<IReadOnlyDictionary<string, object?>> GetMissionsByFaction(
+        string factionId, double sinceGameSeconds = 0.0, double untilGameSeconds = double.MaxValue);
 
-    IReadOnlyList<IReadOnlyDictionary<string, object?>> GetEventsByFaction(
-        string factionId,
-        double sinceGameSeconds = 0.0,
-        double untilGameSeconds = double.MaxValue);
-
-    /// <summary>Filter by raw mission subclass name. The subclass is the
-    /// value of <c>mission.GetType().Name</c> captured at event build
-    /// time — typically <c>"BountyMission"</c>, <c>"PatrolMission"</c>,
-    /// <c>"IndustryMission"</c>, or <c>"Mission"</c> for the base type.
-    /// Match is ordinal / case-sensitive; consumers bucket further if
-    /// they wish (the log does not classify).</summary>
-    IReadOnlyList<IReadOnlyDictionary<string, object?>> GetEventsByMissionSubclass(
-        string missionSubclass,
-        double sinceGameSeconds = 0.0,
-        double untilGameSeconds = double.MaxValue);
+    IReadOnlyList<IReadOnlyDictionary<string, object?>> GetMissionsByMissionSubclass(
+        string missionSubclass, double sinceGameSeconds = 0.0, double untilGameSeconds = double.MaxValue);
 
     /// <summary><paramref name="outcome"/> is one of <c>"Completed"</c> /
-    /// <c>"Failed"</c> / <c>"Abandoned"</c>. Non-terminal events never
-    /// match.</summary>
-    IReadOnlyList<IReadOnlyDictionary<string, object?>> GetEventsByOutcome(
-        string outcome,
-        double sinceGameSeconds = 0.0,
-        double untilGameSeconds = double.MaxValue);
+    /// <c>"Failed"</c> / <c>"Abandoned"</c>. Active missions never match.</summary>
+    IReadOnlyList<IReadOnlyDictionary<string, object?>> GetMissionsByOutcome(
+        string outcome, double sinceGameSeconds = 0.0, double untilGameSeconds = double.MaxValue);
 
-    IReadOnlyList<IReadOnlyDictionary<string, object?>> GetEventsForStoryId(string storyId);
+    /// <summary>Missions whose <c>steps[].objectives[].type</c> includes
+    /// <paramref name="objectiveType"/>. Case-sensitive ordinal.</summary>
+    IReadOnlyList<IReadOnlyDictionary<string, object?>> GetMissionsWithObjective(
+        string objectiveType, double sinceGameSeconds = 0.0, double untilGameSeconds = double.MaxValue);
 
-    /// <summary>Events whose <c>steps[].objectives[].type</c> contains
-    /// <paramref name="objectiveType"/>. The type string is the raw
-    /// <c>objective.GetType().Name</c> (e.g. <c>"KillEnemies"</c>,
-    /// <c>"TravelToPOI"</c>, <c>"CollectItemTypes"</c>) captured at event
-    /// build time. Match is ordinal / case-sensitive. Events without a
-    /// steps snapshot (non-terminal progress events) never match.</summary>
-    IReadOnlyList<IReadOnlyDictionary<string, object?>> GetEventsWithObjective(
-        string objectiveType,
-        double sinceGameSeconds = 0.0,
-        double untilGameSeconds = double.MaxValue);
+    /// <summary>Missions for a specific storyId (story missions that share an id
+    /// across accept/archive chains). Returns 0..N records depending on how
+    /// many mission instances carried that id.</summary>
+    IReadOnlyList<IReadOnlyDictionary<string, object?>> GetMissionsForStoryId(string storyId);
 
-    IReadOnlyList<IReadOnlyDictionary<string, object?>> GetRecentEvents(int count);
+    /// <summary>Up to <paramref name="count"/> missions sorted by accept time
+    /// descending (newest first).</summary>
+    IReadOnlyList<IReadOnlyDictionary<string, object?>> GetRecentMissions(int count);
 
-    // --- R2.2 proximity --------------------------------------------------
+    // --- Proximity -------------------------------------------------------
 
-    /// <summary>Events within <paramref name="maxJumps"/> of the pivot
-    /// system, per the caller-supplied <paramref name="jumpDistance"/>
-    /// (signature <c>(from, to) → jumps, -1 if unreachable</c>). Keeps
-    /// VGMissionLog graph-agnostic.</summary>
-    IReadOnlyList<IReadOnlyDictionary<string, object?>> GetEventsWithinJumps(
+    IReadOnlyList<IReadOnlyDictionary<string, object?>> GetMissionsWithinJumps(
         string pivotSystemId,
         int maxJumps,
         Func<string, string, int> jumpDistance,
         double sinceGameSeconds = 0.0,
         double untilGameSeconds = double.MaxValue);
 
-    // --- R2.3 aggregates -------------------------------------------------
+    // --- Aggregates ------------------------------------------------------
 
-    /// <summary>Keys are the raw mission subclass name
-    /// (<c>mission.GetType().Name</c> at build time — e.g.
-    /// <c>"BountyMission"</c>, <c>"Mission"</c>).</summary>
     IReadOnlyDictionary<string, int> CountByMissionSubclass(
-        double sinceGameSeconds = 0.0,
-        double untilGameSeconds = double.MaxValue);
+        double sinceGameSeconds = 0.0, double untilGameSeconds = double.MaxValue);
 
-    /// <summary>Keys are one of "Completed" / "Failed" / "Abandoned".</summary>
     IReadOnlyDictionary<string, int> CountByOutcome(
-        double sinceGameSeconds = 0.0,
-        double untilGameSeconds = double.MaxValue);
+        double sinceGameSeconds = 0.0, double untilGameSeconds = double.MaxValue);
 
     IReadOnlyDictionary<string, int> CountBySystem(
-        double sinceGameSeconds = 0.0,
-        double untilGameSeconds = double.MaxValue);
+        double sinceGameSeconds = 0.0, double untilGameSeconds = double.MaxValue);
 
     IReadOnlyDictionary<string, int> CountByFaction(
-        double sinceGameSeconds = 0.0,
-        double untilGameSeconds = double.MaxValue);
+        double sinceGameSeconds = 0.0, double untilGameSeconds = double.MaxValue);
 
-    /// <summary>Top-N most active source systems within
-    /// <paramref name="maxJumps"/>, sorted by count desc (ordinal
-    /// system-id as tiebreaker). Each entry is
-    /// <c>{ "systemId": string, "count": int, "jumps": int }</c>.</summary>
+    /// <summary>Top-N most-active source systems within <paramref name="maxJumps"/>.</summary>
     IReadOnlyList<IReadOnlyDictionary<string, object?>> MostActiveSystemsInRange(
         string pivotSystemId,
         Func<string, string, int> jumpDistance,

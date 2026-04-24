@@ -1,8 +1,11 @@
 using System;
 using System.Linq;
+using System.Reflection;
 using BepInEx;
 using BepInEx.Logging;
 using HarmonyLib;
+using Source.Galaxy;
+using Source.Player;
 using Source.Util;
 using UnityEngine;
 using VGMissionLog.Api;
@@ -24,13 +27,35 @@ public class Plugin : BaseUnityPlugin
     internal static Plugin          Instance { get; private set; } = null!;
     internal static ManualLogSource Log      { get; private set; } = null!;
 
-    internal ActivityLog          ActivityLog { get; private set; } = null!;
-    internal IClock               Clock       { get; private set; } = null!;
-    internal LogIO                Io          { get; private set; } = null!;
-    internal ActivityEventBuilder Builder     { get; private set; } = null!;
-    internal MissionLogConfig     Cfg         { get; private set; } = null!;
+    internal MissionStore         Store   { get; private set; } = null!;
+    internal IClock               Clock   { get; private set; } = null!;
+    internal LogIO                Io      { get; private set; } = null!;
+    internal MissionRecordBuilder Builder { get; private set; } = null!;
+    internal MissionLogConfig     Cfg     { get; private set; } = null!;
 
     private Harmony _harmony = null!;
+
+    // Reflection-resolved once — MapElement.<guid>k__BackingField on the
+    // player's current POI -> system.
+    private static readonly FieldInfo? _mapElementGuidField =
+        typeof(Source.Galaxy.MapElement).GetField(
+            "<guid>k__BackingField",
+            BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+
+    private static string? ResolvePlayerCurrentSystemId()
+    {
+        try
+        {
+            var player = GamePlayer.current;
+            var system = player?.currentPointOfInterest?.system;
+            if (system is null || _mapElementGuidField is null) return null;
+            return _mapElementGuidField.GetValue(system) as string;
+        }
+        catch
+        {
+            return null;
+        }
+    }
 
     private void Awake()
     {
@@ -41,22 +66,25 @@ public class Plugin : BaseUnityPlugin
         Cfg = new MissionLogConfig(Config);
 
         // --- singletons -------------------------------------------------
-        Clock       = new GameClock();
-        Io          = new LogIO(() => DateTime.UtcNow);
-        ActivityLog = new ActivityLog(
-            maxEvents:        Cfg.MaxEvents.Value,
-            onFirstEviction:  cap => Log.LogWarning(
-                $"Activity log hit cap of {cap} events — oldest entries are now being evicted FIFO"));
-        Builder     = new ActivityEventBuilder(Clock);
+        Clock   = new GameClock();
+        Io      = new LogIO(() => DateTime.UtcNow);
+        Store   = new MissionStore(
+            maxMissions:     Cfg.MaxEvents.Value,
+            onFirstEviction: cap => Log.LogWarning(
+                $"Mission store hit cap of {cap} missions — oldest entries are now being evicted FIFO"));
+        Builder = new MissionRecordBuilder(Clock, ResolvePlayerCurrentSystemId);
 
         if (Cfg.Verbose.Value)
         {
-            ActivityLog.OnAppend += evt =>
-                Log.LogDebug($"{evt.Type} {evt.MissionSubclass} storyId={evt.StoryId} @ {evt.GameSeconds:F1}s");
+            Store.OnMissionChanged += r =>
+            {
+                var last = r.Timeline[r.Timeline.Count - 1];
+                Log.LogDebug($"{last.State} {r.MissionSubclass} instanceId={r.MissionInstanceId} @ {last.GameSeconds:F1}s");
+            };
         }
 
         // --- wire every patch's static slots ----------------------------
-        PatchWiring.WireAll(Builder, ActivityLog, Io, Log);
+        PatchWiring.WireAll(Builder, Store, Io, Log);
 
         // --- patch attach -----------------------------------------------
         _harmony = new Harmony(PluginGuid);
@@ -79,16 +107,13 @@ public class Plugin : BaseUnityPlugin
         catch (Exception e)
         {
             Log.LogError($"Dead-sidecar sweep failed: {e}");
-            // Non-fatal; journal continues running.
         }
 
         // --- safety-net quit-flush (spec R3.2) --------------------------
         Application.quitting += OnApplicationQuitting;
 
         // --- public facade (spec R4.2) ----------------------------------
-        // Late-assigned last so consumers reflection-probing during our
-        // startup never see a half-wired handle.
-        MissionLogApi.Current = new MissionLogQueryAdapter(ActivityLog);
+        MissionLogApi.Current = new MissionLogQueryAdapter(Store);
 
         var patchCount = _harmony.GetPatchedMethods().Count();
         Log.LogInfo($"{PluginName} v{PluginVersion} loaded ({patchCount} patched method(s))");
@@ -103,9 +128,9 @@ public class Plugin : BaseUnityPlugin
             var sidecar = LogPathResolver.From(path);
             var schema  = new LogSchema(
                 LogSchema.CurrentVersion,
-                ActivityLog.AllEvents.ToArray());
+                Store.AllMissions.ToArray());
             Io.Write(sidecar, schema);
-            Log.LogInfo($"ApplicationQuit: flushed {schema.Events.Length} event(s) to {sidecar}");
+            Log.LogInfo($"ApplicationQuit: flushed {schema.Missions.Length} mission(s) to {sidecar}");
         }
         catch (Exception e)
         {
@@ -115,8 +140,6 @@ public class Plugin : BaseUnityPlugin
 
     private void OnDestroy()
     {
-        // Null the facade first so consumers reflection-probing after
-        // teardown can't call into a torn-down adapter.
         MissionLogApi.Current = null;
         Application.quitting -= OnApplicationQuitting;
         _harmony?.UnpatchSelf();

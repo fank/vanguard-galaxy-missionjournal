@@ -16,16 +16,12 @@ internal sealed record LogReadResult(
 /// rename); reads quarantine corrupt or future-version files so vanilla's
 /// load can proceed with an empty log.
 ///
-/// <para>Version acceptance policy: the current
-/// <see cref="LogSchema.CurrentVersion"/> loads as-is; anything else
-/// quarantines. At MVP (v1) there's no back-compat window — future
-/// bumps add an upgrade path here (additive, in-memory restamp when
-/// schema.Version == CurrentVersion - 1).</para>
+/// <para>Version acceptance policy: v3 loads as-is; v1 is routed through
+/// <see cref="V1ToV3Migrator"/>; anything else quarantines.</para>
 ///
 /// <para>Exceptions from <see cref="Write"/> are <b>not</b> swallowed
 /// here — the caller (<c>SaveWritePatch</c>) is the layer that must
-/// catch and warn-log per spec R5.2. Keeping IO thin-and-throwing
-/// makes this layer easy to reason about.</para>
+/// catch and warn-log per spec R5.2.</para>
 /// </summary>
 internal sealed class LogIO
 {
@@ -50,19 +46,34 @@ internal sealed class LogIO
             return new LogReadResult(LogReadStatus.MissingFile, null, null);
         }
 
-        LogSchema? schema;
-        try { schema = JsonConvert.DeserializeObject<LogSchema>(raw, LogSchema.SerializerSettings); }
+        // First pass: read just the version.
+        int version;
+        try
+        {
+            var probe = JsonConvert.DeserializeObject<VersionProbe>(raw, LogSchema.SerializerSettings);
+            version = probe?.Version ?? 0;
+        }
         catch (JsonException) { return Quarantine(sidecarPath, LogReadStatus.Corrupted); }
 
-        if (schema is null) return Quarantine(sidecarPath, LogReadStatus.Corrupted);
-
-        if (schema.Version == LogSchema.CurrentVersion)
+        if (version == LogSchema.CurrentVersion)
+        {
+            LogSchema? schema;
+            try { schema = JsonConvert.DeserializeObject<LogSchema>(raw, LogSchema.SerializerSettings); }
+            catch (JsonException) { return Quarantine(sidecarPath, LogReadStatus.Corrupted); }
+            if (schema is null) return Quarantine(sidecarPath, LogReadStatus.Corrupted);
             return new LogReadResult(LogReadStatus.Loaded, schema, null);
+        }
 
-        // At v1 there's no back-compat window. When we bump to v2, the
-        // additive upgrade path lives here: if schema.Version ==
-        // CurrentVersion - 1 and the bump is additive, rewrite with
-        // `schema with { Version = CurrentVersion }` and return Loaded.
+        if (version == 1)
+        {
+            try
+            {
+                var migrated = V1ToV3Migrator.Migrate(raw);
+                return new LogReadResult(LogReadStatus.Loaded, migrated, null);
+            }
+            catch (Exception) { return Quarantine(sidecarPath, LogReadStatus.Corrupted); }
+        }
+
         return Quarantine(sidecarPath, LogReadStatus.UnsupportedVersion);
     }
 
@@ -83,5 +94,10 @@ internal sealed class LogIO
         var quarantinePath = LogPathResolver.QuarantineName(sidecarPath, _utcNow());
         File.Move(sidecarPath, quarantinePath);
         return new LogReadResult(status, null, quarantinePath);
+    }
+
+    private sealed class VersionProbe
+    {
+        public int Version { get; set; }
     }
 }

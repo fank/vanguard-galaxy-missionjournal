@@ -6,45 +6,42 @@ namespace VGMissionLog.Patches;
 
 /// <summary>
 /// Centralises the static-slot wiring for every patch class. Keeping this in
-/// one place makes it impossible to forget a slot when adding a new patch —
-/// <see cref="AssertAllWired"/> is exercised by a test that reflection-scans
-/// every <c>*Patch</c> type and verifies each slot is non-null after
-/// <see cref="WireAll"/> runs.
+/// one place makes it impossible to forget a slot when adding a new patch.
 /// </summary>
 internal static class PatchWiring
 {
     public static void WireAll(
-        ActivityEventBuilder builder,
-        ActivityLog          log,
+        MissionRecordBuilder builder,
+        MissionStore         store,
         LogIO                io,
         ManualLogSource      bepLog)
     {
         MissionAcceptPatch.Builder   = builder;
-        MissionAcceptPatch.Log       = log;
+        MissionAcceptPatch.Store     = store;
         MissionAcceptPatch.BepLog    = bepLog;
 
         MissionCompletePatch.Builder = builder;
-        MissionCompletePatch.Log     = log;
+        MissionCompletePatch.Store   = store;
         MissionCompletePatch.BepLog  = bepLog;
 
         MissionFailPatch.Builder     = builder;
-        MissionFailPatch.Log         = log;
+        MissionFailPatch.Store       = store;
         MissionFailPatch.BepLog      = bepLog;
 
         MissionAbandonPatch.Builder  = builder;
-        MissionAbandonPatch.Log      = log;
+        MissionAbandonPatch.Store    = store;
         MissionAbandonPatch.BepLog   = bepLog;
 
         MissionArchivePatch.Builder  = builder;
-        MissionArchivePatch.Log      = log;
+        MissionArchivePatch.Store    = store;
         MissionArchivePatch.BepLog   = bepLog;
 
-        SaveWritePatch.Log           = log;
-        SaveWritePatch.Io            = io;
+        SaveWritePatch.Store         = store;
+        SaveWritePatch.IO            = io;
         SaveWritePatch.BepLog        = bepLog;
 
-        SaveLoadPatch.Log            = log;
-        SaveLoadPatch.Io             = io;
+        SaveLoadPatch.Store          = store;
+        SaveLoadPatch.IO             = io;
         SaveLoadPatch.BepLog         = bepLog;
     }
 }

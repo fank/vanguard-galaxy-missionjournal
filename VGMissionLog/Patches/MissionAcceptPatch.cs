@@ -9,9 +9,9 @@ namespace VGMissionLog.Patches;
 
 /// <summary>
 /// Postfix on <see cref="GamePlayer.AddMissionWithLog(Mission)"/>
-/// (decomp line 34880). Emits an <see cref="ActivityEventType.Accepted"/>
-/// event whenever vanilla registers a mission as "in progress" for the
-/// player.
+/// (decomp line 34880). Creates a <see cref="MissionRecord"/> with a
+/// single <see cref="TimelineState.Accepted"/> timeline entry whenever
+/// vanilla registers a mission as "in progress" for the player.
 ///
 /// <para>Vanilla also has a string-overload of
 /// <c>AddMissionWithLog(string)</c> at line 34911 that resolves a
@@ -20,17 +20,13 @@ namespace VGMissionLog.Patches;
 /// both acceptance paths.</para>
 ///
 /// <para>Exception safety per spec R5.2: the postfix body is wrapped in
-/// try/catch; any failure warn-logs and is swallowed. Vanilla execution
-/// must survive our internal state.</para>
+/// try/catch; any failure warn-logs and is swallowed.</para>
 /// </summary>
 [HarmonyPatch(typeof(GamePlayer), nameof(GamePlayer.AddMissionWithLog), new[] { typeof(Mission) })]
 internal static class MissionAcceptPatch
 {
-    // Wired by Plugin.Awake in ML-T4i. The patch is static (Harmony
-    // requires it) so we ambient-inject singletons rather than
-    // constructor-inject.
-    internal static ActivityEventBuilder Builder = null!;
-    internal static ActivityLog          Log     = null!;
+    internal static MissionRecordBuilder Builder = null!;
+    internal static MissionStore         Store   = null!;
     internal static ManualLogSource      BepLog  = null!;
 
     [HarmonyPostfix]
@@ -39,8 +35,8 @@ internal static class MissionAcceptPatch
         if (mission is null) return;
         try
         {
-            var evt = Builder.Build(mission, ActivityEventType.Accepted);
-            Log.Append(evt);
+            var record = Builder.CreateFromAccept(mission);
+            Store.Upsert(record);
         }
         catch (Exception e)
         {
