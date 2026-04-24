@@ -95,63 +95,6 @@ public class LogIOTests : IDisposable
         Assert.Null(result.QuarantinedTo);
     }
 
-    [Fact]
-    public void Read_V1Payload_MigratesToV3()
-    {
-        // Minimal v1 sidecar with one Accepted + one Completed event for
-        // the same missionInstanceId. The migrator should fold these into
-        // a single v3 MissionRecord with a two-entry timeline.
-        var path = FilePath("legacy.save.vgmissionjournal.json");
-        const string v1Payload =
-            "{\"version\":1,\"events\":[" +
-            "{" +
-              "\"eventId\":\"e1\"," +
-              "\"type\":\"Accepted\"," +
-              "\"gameSeconds\":10.0," +
-              "\"realUtc\":\"2026-01-01T00:00:00.0000000Z\"," +
-              "\"storyId\":\"story-x\"," +
-              "\"missionInstanceId\":\"inst-x\"," +
-              "\"missionSubclass\":\"BountyMission\"," +
-              "\"missionLevel\":1," +
-              "\"sourceSystemId\":\"sys-zoran\"," +
-              "\"sourceFaction\":\"BountyGuild\"," +
-              "\"playerLevel\":5" +
-            "}," +
-            "{" +
-              "\"eventId\":\"e2\"," +
-              "\"type\":\"Completed\"," +
-              "\"gameSeconds\":20.0," +
-              "\"realUtc\":\"2026-01-01T00:00:10.0000000Z\"," +
-              "\"storyId\":\"story-x\"," +
-              "\"missionInstanceId\":\"inst-x\"," +
-              "\"missionSubclass\":\"BountyMission\"," +
-              "\"missionLevel\":1," +
-              "\"rewardsCredits\":1500," +
-              "\"playerLevel\":5" +
-            "}]}";
-        File.WriteAllText(path, v1Payload);
-
-        var result = _io.Read(path);
-
-        Assert.Equal(JournalReadStatus.Loaded, result.Status);
-        Assert.NotNull(result.Schema);
-        Assert.Equal(JournalSchema.CurrentVersion, result.Schema!.Version);
-        Assert.Single(result.Schema.Missions);
-        var r = result.Schema.Missions[0];
-        Assert.Equal("inst-x",       r.MissionInstanceId);
-        Assert.Equal("story-x",      r.StoryId);
-        Assert.Equal("BountyMission", r.MissionSubclass);
-        Assert.Equal("sys-zoran",    r.SourceSystemId);
-        Assert.Equal(2,              r.Timeline.Count);
-        Assert.Equal(TimelineState.Accepted,  r.Timeline[0].State);
-        Assert.Equal(10.0,                    r.Timeline[0].GameSeconds);
-        Assert.Equal(TimelineState.Completed, r.Timeline[1].State);
-        Assert.Equal(20.0,                    r.Timeline[1].GameSeconds);
-        Assert.Equal(Outcome.Completed,       r.Outcome);
-        // Typed v1 rewards fold into the unified rewards list.
-        Assert.Contains(r.Rewards, rw => rw.Type == "Credits");
-    }
-
     // --- Write ----------------------------------------------------------
 
     [Fact]

@@ -30,13 +30,13 @@ public class MyPlugin : BaseUnityPlugin
     private void Awake()
     {
         if (Chainloader.PluginInfos.ContainsKey("vgmissionjournal"))
-            UseMissionLog();
+            UseMissionJournal();
     }
 
     // Separate method so the JIT doesn't resolve VGMissionJournal types
     // until this branch is actually taken (important when the plugin
     // isn't installed — referenced assembly would otherwise fail to load).
-    private void UseMissionLog()
+    private void UseMissionJournal()
     {
         if (MissionJournalApi.Current is not { } api) return;
         foreach (var m in api.GetRecentMissions(10))
@@ -193,7 +193,7 @@ Captured once on acceptance and never mutate — vanilla doesn't change a missio
 | `Type` | `string` | Raw `reward.GetType().Name` — one of `"Credits"`, `"Experience"`, `"Reputation"`, `"Item"`, `"Ship"`, `"Crew"`, `"Skilltree"`, `"Skillpoint"`, `"WorkshopCredit"`, `"StoryMission"`, `"MissionFollowUp"`, `"POICoordinates"`, `"UmbralControl"`, `"ConquestStrength"`. |
 | `Fields` | `IReadOnlyDictionary<string, object?>?` | Best-effort primitive field dump. `Credits` / `Experience` / `Skillpoint` / `WorkshopCredit` / `UmbralControl` / `ConquestStrength` → `amount`. `Item` → `item` (identifier) + `amount`. `Ship` → `ship` (identifier). `Skilltree` → `treeName`. `StoryMission` → `missionId`. `Reputation` → `amount` + `faction` (identifier). `null` when extraction yields nothing. |
 
-The typed top-level fields from v1 (`rewardsCredits`, `rewardsExperience`, `rewardsReputation`) are **removed** in v3. Read all rewards off `Rewards` by `Type`.
+Read all rewards off `Rewards` by `Type`.
 
 **Identifier rule.** Every resolved reference in `Fields` — `enemyFaction`, `miningFaction`, `faction`, `itemType`, `item`, `deliverTo`, `targetPOI`, etc. — is the stable **system identifier** (what vanilla's `Faction.Get(id)` / `InventoryItemType.Get(id)` accept), never the translated `displayName` / `name`. For `InventoryItemType` references on runtime-cloned reward instances (where vanilla's own `identifier` field isn't serialized) we fall back to the Unity object's `name` with the `(Clone)` suffix stripped — still a valid registry key. Consumers can round-trip every id back to the vanilla object.
 
@@ -290,10 +290,6 @@ If you'd rather read the log without loading VGMissionJournal (offline analysis,
 - Written atomically via tmp+rename, so partial files are never observed.
 - Corrupt / unsupported-version files are quarantined to `<saveName>.save.vgmissionjournal.corrupt.<UTC>.json` and replaced by an empty log — VGMissionJournal never blocks vanilla's load on a bad sidecar.
 - `version` bumps on breaking schema changes. Additive changes (new optional fields) stay at the current version.
-
-## Migration
-
-v1 sidecars (schema `"version": 1, "events": [...]`) are **automatically migrated** on first load — no user action required. Each group of events sharing a `missionInstanceId` collapses into a single v3 mission record with a sparse timeline (one `Accepted` entry plus at most one terminal entry). v1 didn't record intermediate transitions and neither does v3, so no timeline information is lost beyond what v1 already omitted. Reward fields (`rewardsCredits`, `rewardsExperience`, `rewardsReputation`) from v1 are folded into the unified `rewards[]` list. The migrated file is written back as v3 immediately.
 
 ## Known gaps
 

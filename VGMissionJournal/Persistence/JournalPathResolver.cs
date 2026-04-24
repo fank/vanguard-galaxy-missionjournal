@@ -1,5 +1,4 @@
 using System;
-using System.IO;
 
 namespace VGMissionJournal.Persistence;
 
@@ -18,46 +17,15 @@ internal static class JournalPathResolver
     internal const string Suffix          = ".vgmissionjournal.json";
     internal const string QuarantineInfix = ".vgmissionjournal.corrupt.";
 
-    // One-shot bridge from the pre-rename VGMissionLog days. When the new
-    // ".vgmissionjournal.json" sidecar is missing but the legacy
-    // ".vgmissionlog.json" exists at the same base path, the file is
-    // renamed in place so existing history isn't orphaned on first load
-    // of the renamed plugin. Transient — safe to delete in a later release
-    // once it's plausibly done its job on every install.
-    private const string LegacySuffix = ".vgmissionlog.json";
-
     /// <summary>Given a vanilla save path, return the paired sidecar path.
     /// Idempotent — passing a path that already has the suffix returns
     /// the same value, so double-invocation is safe.</summary>
     public static string From(string vanillaSavePath)
     {
         if (vanillaSavePath is null) throw new ArgumentNullException(nameof(vanillaSavePath));
-        var newPath = vanillaSavePath.EndsWith(Suffix, StringComparison.Ordinal)
+        return vanillaSavePath.EndsWith(Suffix, StringComparison.Ordinal)
             ? vanillaSavePath
             : vanillaSavePath + Suffix;
-
-        // One-shot legacy-filename rename: promote a ".vgmissionlog.json"
-        // sidecar to ".vgmissionjournal.json" so history survives the
-        // plugin rename. Failures fall through — subsequent read logic
-        // will just see a missing file and treat it as a fresh install.
-        try
-        {
-            if (!File.Exists(newPath))
-            {
-                var baseSave = vanillaSavePath.EndsWith(Suffix, StringComparison.Ordinal)
-                    ? vanillaSavePath.Substring(0, vanillaSavePath.Length - Suffix.Length)
-                    : vanillaSavePath;
-                var legacyPath = baseSave + LegacySuffix;
-                if (File.Exists(legacyPath))
-                {
-                    File.Move(legacyPath, newPath);
-                }
-            }
-        }
-        catch (IOException) { /* fall through */ }
-        catch (UnauthorizedAccessException) { /* fall through */ }
-
-        return newPath;
     }
 
     /// <summary>True iff the path is a live (non-quarantine) VGMissionJournal

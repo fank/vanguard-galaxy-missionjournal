@@ -16,8 +16,8 @@ internal sealed record JournalReadResult(
 /// rename); reads quarantine corrupt or future-version files so vanilla's
 /// load can proceed with an empty log.
 ///
-/// <para>Version acceptance policy: v3 loads as-is; v1 is routed through
-/// <see cref="V1ToV3Migrator"/>; anything else quarantines.</para>
+/// <para>Version acceptance policy: only v3 loads; anything else quarantines
+/// as UnsupportedVersion.</para>
 ///
 /// <para>Exceptions from <see cref="Write"/> are <b>not</b> swallowed
 /// here — the caller (<c>SaveWritePatch</c>) is the layer that must
@@ -55,26 +55,14 @@ internal sealed class JournalIO
         }
         catch (JsonException) { return Quarantine(sidecarPath, JournalReadStatus.Corrupted); }
 
-        if (version == JournalSchema.CurrentVersion)
-        {
-            JournalSchema? schema;
-            try { schema = JsonConvert.DeserializeObject<JournalSchema>(raw, JournalSchema.SerializerSettings); }
-            catch (JsonException) { return Quarantine(sidecarPath, JournalReadStatus.Corrupted); }
-            if (schema is null) return Quarantine(sidecarPath, JournalReadStatus.Corrupted);
-            return new JournalReadResult(JournalReadStatus.Loaded, schema, null);
-        }
+        if (version != JournalSchema.CurrentVersion)
+            return Quarantine(sidecarPath, JournalReadStatus.UnsupportedVersion);
 
-        if (version == 1)
-        {
-            try
-            {
-                var migrated = V1ToV3Migrator.Migrate(raw);
-                return new JournalReadResult(JournalReadStatus.Loaded, migrated, null);
-            }
-            catch (Exception) { return Quarantine(sidecarPath, JournalReadStatus.Corrupted); }
-        }
-
-        return Quarantine(sidecarPath, JournalReadStatus.UnsupportedVersion);
+        JournalSchema? schema;
+        try { schema = JsonConvert.DeserializeObject<JournalSchema>(raw, JournalSchema.SerializerSettings); }
+        catch (JsonException) { return Quarantine(sidecarPath, JournalReadStatus.Corrupted); }
+        if (schema is null) return Quarantine(sidecarPath, JournalReadStatus.Corrupted);
+        return new JournalReadResult(JournalReadStatus.Loaded, schema, null);
     }
 
     public void Write(string sidecarPath, JournalSchema schema)

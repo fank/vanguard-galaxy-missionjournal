@@ -11,8 +11,7 @@ namespace VGMissionJournal.Persistence;
 /// each element is a <see cref="MissionRecord"/> with identity + structure +
 /// rewards + timeline.
 ///
-/// <para>v1 sidecars migrate on load via <see cref="V1ToV3Migrator"/>;
-/// writes are always v3. No legacy fields.</para>
+/// <para>Writes are always v3. No legacy fields.</para>
 /// </summary>
 internal sealed record JournalSchema(
     [property: JsonProperty("version")]  int Version,
