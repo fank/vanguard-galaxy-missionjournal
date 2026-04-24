@@ -42,6 +42,12 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Update="Fixtures/**/*">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
     <!-- Needed because VGMissionLog internal types surface game types like
          Mission in their signatures. Shares the same symlinked stub as
          VGMissionLog.csproj via `make link-asm`. Unlike the plugin project

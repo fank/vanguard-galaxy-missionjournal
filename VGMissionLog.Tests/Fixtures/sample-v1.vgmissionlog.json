@@ -1,0 +1,1209 @@
+{
+  "version": 1,
+  "events": [
+    {
+      "eventId": "48319d36-5a66-4dae-9fca-118bac72da66",
+      "type": "Accepted",
+      "gameSeconds": 328174.56080503331,
+      "realUtc": "2026-04-23T21:16:53.0855762Z",
+      "storyId": "",
+      "missionName": "Reclaim Salvage Rights",
+      "missionSubclass": "Mission",
+      "missionLevel": 0,
+      "sourceStationId": "580e4e20-4ae1-43bf-b0e0-b7a38fea8a11",
+      "sourceStationName": "Fort Opportunity",
+      "sourceSystemId": "d920e93f-c7cd-4350-9779-234fb8e332c5",
+      "sourceSystemName": "Venerable Graveyard",
+      "sourceFaction": "SalvageGuild",
+      "playerLevel": 24,
+      "playerCurrentSystemId": "d920e93f-c7cd-4350-9779-234fb8e332c5"
+    },
+    {
+      "eventId": "63fda73b-b8ea-40a3-9aa5-0dfb19892101",
+      "type": "Accepted",
+      "gameSeconds": 328185.59676609735,
+      "realUtc": "2026-04-23T21:17:04.1199322Z",
+      "storyId": "",
+      "missionName": "Salvage Ancient Fragments",
+      "missionSubclass": "Mission",
+      "missionLevel": 0,
+      "sourceStationId": "580e4e20-4ae1-43bf-b0e0-b7a38fea8a11",
+      "sourceStationName": "Fort Opportunity",
+      "sourceSystemId": "d920e93f-c7cd-4350-9779-234fb8e332c5",
+      "sourceSystemName": "Venerable Graveyard",
+      "sourceFaction": "SalvageGuild",
+      "playerLevel": 24,
+      "playerCurrentSystemId": "d920e93f-c7cd-4350-9779-234fb8e332c5"
+    },
+    {
+      "eventId": "acd79a77-cc22-45e2-b018-7baf6c0f2275",
+      "type": "Completed",
+      "gameSeconds": 328464.39776956884,
+      "realUtc": "2026-04-23T21:21:42.9263622Z",
+      "storyId": "",
+      "missionName": "Recover Exotic Cargo",
+      "missionSubclass": "Mission",
+      "missionLevel": 0,
+      "outcome": "Completed",
+      "sourceStationId": "580e4e20-4ae1-43bf-b0e0-b7a38fea8a11",
+      "sourceStationName": "Fort Opportunity",
+      "sourceSystemId": "d920e93f-c7cd-4350-9779-234fb8e332c5",
+      "sourceSystemName": "Venerable Graveyard",
+      "sourceFaction": "SalvageGuild",
+      "rewardsCredits": 23181,
+      "rewardsReputation": [
+        {
+          "faction": "SalvageGuild",
+          "amount": 250
+        }
+      ],
+      "playerLevel": 24,
+      "playerCurrentSystemId": "d920e93f-c7cd-4350-9779-234fb8e332c5"
+    },
+    {
+      "eventId": "88c9f6dc-67d9-468d-a269-7cf287a1f267",
+      "type": "Completed",
+      "gameSeconds": 328990.80795560859,
+      "realUtc": "2026-04-23T21:30:29.3327878Z",
+      "storyId": "",
+      "missionName": "Reclaim Salvage Rights",
+      "missionSubclass": "Mission",
+      "missionLevel": 0,
+      "outcome": "Completed",
+      "sourceStationId": "580e4e20-4ae1-43bf-b0e0-b7a38fea8a11",
+      "sourceStationName": "Fort Opportunity",
+      "sourceSystemId": "d920e93f-c7cd-4350-9779-234fb8e332c5",
+      "sourceSystemName": "Venerable Graveyard",
+      "sourceFaction": "SalvageGuild",
+      "rewardsCredits": 2636,
+      "rewardsReputation": [
+        {
+          "faction": "SalvageGuild",
+          "amount": 350
+        }
+      ],
+      "playerLevel": 24,
+      "playerCurrentSystemId": "d920e93f-c7cd-4350-9779-234fb8e332c5"
+    },
+    {
+      "eventId": "27a2cddc-b581-4fb5-83b7-13911aae4813",
+      "type": "Completed",
+      "gameSeconds": 328991.19971540931,
+      "realUtc": "2026-04-23T21:30:29.7252154Z",
+      "storyId": "",
+      "missionName": "Salvage Ancient Fragments",
+      "missionSubclass": "Mission",
+      "missionLevel": 0,
+      "outcome": "Completed",
+      "sourceStationId": "580e4e20-4ae1-43bf-b0e0-b7a38fea8a11",
+      "sourceStationName": "Fort Opportunity",
+      "sourceSystemId": "d920e93f-c7cd-4350-9779-234fb8e332c5",
+      "sourceSystemName": "Venerable Graveyard",
+      "sourceFaction": "SalvageGuild",
+      "rewardsCredits": 3289,
+      "rewardsReputation": [
+        {
+          "faction": "SalvageGuild",
+          "amount": 350
+        }
+      ],
+      "playerLevel": 24,
+      "playerCurrentSystemId": "d920e93f-c7cd-4350-9779-234fb8e332c5"
+    },
+    {
+      "eventId": "cd09ab76-122c-4686-8e6b-373156a28b09",
+      "type": "Accepted",
+      "gameSeconds": 328992.8080610045,
+      "realUtc": "2026-04-23T21:30:31.3314161Z",
+      "storyId": "",
+      "missionName": "Reclaim Salvage Rights",
+      "missionSubclass": "Mission",
+      "missionLevel": 0,
+      "sourceStationId": "580e4e20-4ae1-43bf-b0e0-b7a38fea8a11",
+      "sourceStationName": "Fort Opportunity",
+      "sourceSystemId": "d920e93f-c7cd-4350-9779-234fb8e332c5",
+      "sourceSystemName": "Venerable Graveyard",
+      "sourceFaction": "SalvageGuild",
+      "playerLevel": 24,
+      "playerCurrentSystemId": "d920e93f-c7cd-4350-9779-234fb8e332c5"
+    },
+    {
+      "eventId": "e388e395-588a-4c88-9719-0fc33a9fccb8",
+      "type": "Accepted",
+      "gameSeconds": 328994.72476280655,
+      "realUtc": "2026-04-23T21:30:33.2477307Z",
+      "storyId": "",
+      "missionName": "Procure Solvent Cartridge",
+      "missionSubclass": "Mission",
+      "missionLevel": 0,
+      "sourceStationId": "580e4e20-4ae1-43bf-b0e0-b7a38fea8a11",
+      "sourceStationName": "Fort Opportunity",
+      "sourceSystemId": "d920e93f-c7cd-4350-9779-234fb8e332c5",
+      "sourceSystemName": "Venerable Graveyard",
+      "sourceFaction": "SalvageGuild",
+      "playerLevel": 24,
+      "playerCurrentSystemId": "d920e93f-c7cd-4350-9779-234fb8e332c5"
+    },
+    {
+      "eventId": "88056a61-9475-4899-9f00-4f4b0d744d78",
+      "type": "Completed",
+      "gameSeconds": 329571.51936069492,
+      "realUtc": "2026-04-23T21:40:10.0456085Z",
+      "storyId": "",
+      "missionName": "Reclaim Salvage Rights",
+      "missionSubclass": "Mission",
+      "missionLevel": 0,
+      "outcome": "Completed",
+      "sourceStationId": "580e4e20-4ae1-43bf-b0e0-b7a38fea8a11",
+      "sourceStationName": "Fort Opportunity",
+      "sourceSystemId": "d920e93f-c7cd-4350-9779-234fb8e332c5",
+      "sourceSystemName": "Venerable Graveyard",
+      "sourceFaction": "SalvageGuild",
+      "rewardsCredits": 13075,
+      "rewardsReputation": [
+        {
+          "faction": "SalvageGuild",
+          "amount": 300
+        }
+      ],
+      "playerLevel": 24,
+      "playerCurrentSystemId": "d920e93f-c7cd-4350-9779-234fb8e332c5"
+    },
+    {
+      "eventId": "cabdc86a-51aa-44be-bfc0-a7b0776de0da",
+      "type": "Accepted",
+      "gameSeconds": 329832.33270117349,
+      "realUtc": "2026-04-23T21:44:30.8806661Z",
+      "storyId": "UmbralMission10",
+      "missionName": "Void Drifters Contact",
+      "missionSubclass": "Mission",
+      "missionLevel": 0,
+      "sourceFaction": "Smugglers",
+      "playerLevel": 24,
+      "playerCurrentSystemId": "d920e93f-c7cd-4350-9779-234fb8e332c5"
+    },
+    {
+      "eventId": "86fcc957-10d9-4a86-897f-43179bc59bb6",
+      "type": "Completed",
+      "gameSeconds": 329832.33270117349,
+      "realUtc": "2026-04-23T21:44:30.9006962Z",
+      "storyId": "UmbralMission9",
+      "missionName": "Scrap The Drones",
+      "missionSubclass": "Mission",
+      "missionLevel": 0,
+      "outcome": "Completed",
+      "sourceFaction": "Puppeteers",
+      "rewardsExperience": 750,
+      "rewardsReputation": [
+        {
+          "faction": "unknown",
+          "amount": 180
+        }
+      ],
+      "playerLevel": 24,
+      "playerCurrentSystemId": "d920e93f-c7cd-4350-9779-234fb8e332c5"
+    },
+    {
+      "eventId": "83e8e01a-c68c-47ff-a7bb-6ef1c73a0f89",
+      "type": "Accepted",
+      "gameSeconds": 329896.04166886181,
+      "realUtc": "2026-04-23T21:59:41.8634769Z",
+      "storyId": "UmbralMission11",
+      "missionInstanceId": "f70f17d3-a359-4e9e-8823-f3550f0675f5",
+      "missionName": "Defend The Drifters",
+      "missionSubclass": "Mission",
+      "missionLevel": 0,
+      "sourceFaction": "Smugglers",
+      "playerLevel": 24,
+      "playerCurrentSystemId": "d920e93f-c7cd-4350-9779-234fb8e332c5",
+      "steps": [
+        {
+          "isComplete": false,
+          "requireAllObjectives": true,
+          "hidden": false,
+          "objectives": [
+            {
+              "type": "KillEnemies",
+              "isComplete": false,
+              "statusText": "Corsair Syndicate destroyed: 0/3",
+              "fields": {
+                "enemyFaction": "Marauders",
+                "requiredAmount": 3,
+                "currentAmount": 0,
+                "gameplayType": "Combat",
+                "triggeredBy": "UnitDestroyed",
+                "coreName": "Core"
+              }
+            }
+          ]
+        },
+        {
+          "isComplete": false,
+          "requireAllObjectives": true,
+          "hidden": false,
+          "objectives": [
+            {
+              "type": "TriggerObjective",
+              "isComplete": false,
+              "statusText": "Talk to a smuggler.",
+              "fields": {
+                "trigger": "Umbral11Smuggler",
+                "description": "Talk to a smuggler.",
+                "requiredAmount": 1,
+                "currentAmount": 0,
+                "progress": 0.0,
+                "triggeredBy": "Umbral11Smuggler",
+                "gameplayType": "Generic",
+                "coreName": "Core"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "eventId": "9531c071-25ce-43c1-bcb1-b6414deda69a",
+      "type": "Completed",
+      "gameSeconds": 329896.04166886181,
+      "realUtc": "2026-04-23T21:59:41.8634769Z",
+      "storyId": "UmbralMission10",
+      "missionName": "Void Drifters Contact",
+      "missionSubclass": "Mission",
+      "missionLevel": 0,
+      "outcome": "Completed",
+      "sourceFaction": "Smugglers",
+      "playerLevel": 24,
+      "playerCurrentSystemId": "d920e93f-c7cd-4350-9779-234fb8e332c5"
+    },
+    {
+      "eventId": "5d076653-ef9d-4f7c-877f-574dd4a6fc84",
+      "type": "Completed",
+      "gameSeconds": 329896.04166886181,
+      "realUtc": "2026-04-23T21:59:41.8634769Z",
+      "storyId": "UmbralMission10",
+      "missionInstanceId": "1fb241ae-979e-48f1-b4ff-1eef51237743",
+      "missionName": "Void Drifters Contact",
+      "missionSubclass": "Mission",
+      "missionLevel": 0,
+      "outcome": "Completed",
+      "sourceFaction": "Smugglers",
+      "rewardsExperience": 100,
+      "rewards": [
+        {
+          "type": "Experience",
+          "fields": {
+            "amount": 100,
+            "hidden": false
+          }
+        },
+        {
+          "type": "StoryMission",
+          "fields": {
+            "missionId": "UmbralMission11",
+            "hidden": false
+          }
+        }
+      ],
+      "playerLevel": 24,
+      "playerCurrentSystemId": "d920e93f-c7cd-4350-9779-234fb8e332c5",
+      "steps": [
+        {
+          "isComplete": true,
+          "requireAllObjectives": true,
+          "hidden": false,
+          "objectives": [
+            {
+              "type": "TriggerObjective",
+              "isComplete": true,
+              "statusText": "Dock with the station",
+              "fields": {
+                "trigger": "DockedWithSpaceStation",
+                "description": "Dock with the station",
+                "requiredAmount": 1,
+                "currentAmount": 1,
+                "progress": 1.0,
+                "triggeredBy": "DockedWithSpaceStation",
+                "gameplayType": "Generic",
+                "coreName": "Core"
+              }
+            }
+          ]
+        },
+        {
+          "isComplete": true,
+          "requireAllObjectives": true,
+          "hidden": false,
+          "objectives": [
+            {
+              "type": "TriggerObjective",
+              "isComplete": true,
+              "statusText": "Talk to the man",
+              "fields": {
+                "trigger": "Umbral10Smuggler",
+                "description": "Talk to the man",
+                "requiredAmount": 1,
+                "currentAmount": 1,
+                "progress": 1.0,
+                "triggeredBy": "Umbral10Smuggler",
+                "gameplayType": "Generic",
+                "coreName": "Core"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "eventId": "cba21c43-c0c3-4d32-b8dd-e1a505c309b3",
+      "type": "Accepted",
+      "gameSeconds": 330027.96632751328,
+      "realUtc": "2026-04-23T22:01:53.7924723Z",
+      "storyId": "",
+      "missionInstanceId": "43f84ddd-9aa0-40d0-9afa-b079b7aa6f5d",
+      "missionName": "Procure Combat Exoskeleton",
+      "missionSubclass": "Mission",
+      "missionLevel": 0,
+      "sourceStationId": "580e4e20-4ae1-43bf-b0e0-b7a38fea8a11",
+      "sourceStationName": "Fort Opportunity",
+      "sourceSystemId": "d920e93f-c7cd-4350-9779-234fb8e332c5",
+      "sourceSystemName": "Venerable Graveyard",
+      "sourceFaction": "SalvageGuild",
+      "playerLevel": 24,
+      "playerCurrentSystemId": "d920e93f-c7cd-4350-9779-234fb8e332c5",
+      "steps": [
+        {
+          "isComplete": false,
+          "requireAllObjectives": true,
+          "hidden": false,
+          "objectives": [
+            {
+              "type": "TradeOffer",
+              "isComplete": false,
+              "statusText": "Deliver Combat Exoskeleton to Fort Opportunity: 0/10 [40 m3]",
+              "fields": {
+                "itemType": "Combat Exoskeleton",
+                "requiredAmount": 10,
+                "deliverTo": "580e4e20-4ae1-43bf-b0e0-b7a38fea8a11",
+                "currentAmount": 0,
+                "displayedAmount": 0,
+                "cargoSpaceRequired": 40.0,
+                "gameplayType": "Cargo",
+                "coreName": "Core"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "eventId": "048c6030-dd94-444c-b441-e1237e4ebfd0",
+      "type": "Accepted",
+      "gameSeconds": 330036.38397009083,
+      "realUtc": "2026-04-23T22:02:02.2100048Z",
+      "storyId": "",
+      "missionInstanceId": "efce397e-a16c-42ad-99cb-1237f73301d5",
+      "missionName": "Procure Consumer Electronics",
+      "missionSubclass": "Mission",
+      "missionLevel": 0,
+      "sourceStationId": "580e4e20-4ae1-43bf-b0e0-b7a38fea8a11",
+      "sourceStationName": "Fort Opportunity",
+      "sourceSystemId": "d920e93f-c7cd-4350-9779-234fb8e332c5",
+      "sourceSystemName": "Venerable Graveyard",
+      "sourceFaction": "SalvageGuild",
+      "playerLevel": 24,
+      "playerCurrentSystemId": "d920e93f-c7cd-4350-9779-234fb8e332c5",
+      "steps": [
+        {
+          "isComplete": false,
+          "requireAllObjectives": true,
+          "hidden": false,
+          "objectives": [
+            {
+              "type": "TradeOffer",
+              "isComplete": false,
+              "statusText": "Deliver Consumer Electronics to Fort Opportunity: 0/49 [147 m3]",
+              "fields": {
+                "itemType": "Consumer Electronics",
+                "requiredAmount": 49,
+                "deliverTo": "580e4e20-4ae1-43bf-b0e0-b7a38fea8a11",
+                "currentAmount": 0,
+                "displayedAmount": 0,
+                "cargoSpaceRequired": 147.0,
+                "gameplayType": "Cargo",
+                "coreName": "Core"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "eventId": "d6bec415-a58d-40c2-94c0-6033784735e0",
+      "type": "Accepted",
+      "gameSeconds": 330040.66768279736,
+      "realUtc": "2026-04-23T22:02:06.4938777Z",
+      "storyId": "",
+      "missionInstanceId": "2fb17456-b3b7-496f-919d-2f00be88dc00",
+      "missionName": "Procure Massive Vid-Screen",
+      "missionSubclass": "Mission",
+      "missionLevel": 0,
+      "sourceStationId": "580e4e20-4ae1-43bf-b0e0-b7a38fea8a11",
+      "sourceStationName": "Fort Opportunity",
+      "sourceSystemId": "d920e93f-c7cd-4350-9779-234fb8e332c5",
+      "sourceSystemName": "Venerable Graveyard",
+      "sourceFaction": "SalvageGuild",
+      "playerLevel": 24,
+      "playerCurrentSystemId": "d920e93f-c7cd-4350-9779-234fb8e332c5",
+      "steps": [
+        {
+          "isComplete": false,
+          "requireAllObjectives": true,
+          "hidden": false,
+          "objectives": [
+            {
+              "type": "TradeOffer",
+              "isComplete": false,
+              "statusText": "Deliver Massive Vid-Screen to Fort Opportunity: 0/29 [116 m3]",
+              "fields": {
+                "itemType": "Massive Vid-Screen",
+                "requiredAmount": 29,
+                "deliverTo": "580e4e20-4ae1-43bf-b0e0-b7a38fea8a11",
+                "currentAmount": 0,
+                "displayedAmount": 0,
+                "cargoSpaceRequired": 116.0,
+                "gameplayType": "Cargo",
+                "coreName": "Core"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "eventId": "b53cb0e8-c4da-4985-a968-bc3fb90bddf1",
+      "type": "Accepted",
+      "gameSeconds": 330045.40955309541,
+      "realUtc": "2026-04-23T22:02:11.2355944Z",
+      "storyId": "",
+      "missionInstanceId": "01c47317-5376-4a28-991e-a9e68fcf8bf2",
+      "missionName": "Procure Solvent Cartridge",
+      "missionSubclass": "Mission",
+      "missionLevel": 0,
+      "sourceStationId": "580e4e20-4ae1-43bf-b0e0-b7a38fea8a11",
+      "sourceStationName": "Fort Opportunity",
+      "sourceSystemId": "d920e93f-c7cd-4350-9779-234fb8e332c5",
+      "sourceSystemName": "Venerable Graveyard",
+      "sourceFaction": "SalvageGuild",
+      "playerLevel": 24,
+      "playerCurrentSystemId": "d920e93f-c7cd-4350-9779-234fb8e332c5",
+      "steps": [
+        {
+          "isComplete": false,
+          "requireAllObjectives": true,
+          "hidden": false,
+          "objectives": [
+            {
+              "type": "TradeOffer",
+              "isComplete": false,
+              "statusText": "Deliver Solvent Cartridge to Fort Opportunity: 0/46 [92 m3]",
+              "fields": {
+                "itemType": "Solvent Cartridge",
+                "requiredAmount": 46,
+                "deliverTo": "580e4e20-4ae1-43bf-b0e0-b7a38fea8a11",
+                "currentAmount": 0,
+                "displayedAmount": 0,
+                "cargoSpaceRequired": 92.0,
+                "gameplayType": "Cargo",
+                "coreName": "Core"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "eventId": "d3765f32-ffbf-4f89-904d-1083345a3159",
+      "type": "Completed",
+      "gameSeconds": 330573.27517187846,
+      "realUtc": "2026-04-23T22:10:59.1040815Z",
+      "storyId": "",
+      "missionInstanceId": "767cf721-d9eb-4430-b4c7-8f5ff8214382",
+      "missionName": "Procure Body Armor",
+      "missionSubclass": "Mission",
+      "missionLevel": 0,
+      "outcome": "Completed",
+      "sourceStationId": "580e4e20-4ae1-43bf-b0e0-b7a38fea8a11",
+      "sourceStationName": "Fort Opportunity",
+      "sourceSystemId": "d920e93f-c7cd-4350-9779-234fb8e332c5",
+      "sourceSystemName": "Venerable Graveyard",
+      "sourceFaction": "SalvageGuild",
+      "rewardsCredits": 40482,
+      "rewardsExperience": 1111,
+      "rewardsReputation": [
+        {
+          "faction": "SalvageGuild",
+          "amount": 350
+        }
+      ],
+      "rewards": [
+        {
+          "type": "Item",
+          "fields": {
+            "amount": 1,
+            "hidden": false
+          }
+        },
+        {
+          "type": "Reputation",
+          "fields": {
+            "amount": 350,
+            "faction": "SalvageGuild",
+            "hidden": false
+          }
+        },
+        {
+          "type": "Experience",
+          "fields": {
+            "amount": 1111,
+            "hidden": false
+          }
+        },
+        {
+          "type": "WorkshopCredit",
+          "fields": {
+            "amount": 10436,
+            "hidden": false
+          }
+        },
+        {
+          "type": "Credits",
+          "fields": {
+            "amount": 40482,
+            "hidden": false
+          }
+        }
+      ],
+      "playerLevel": 24,
+      "playerCurrentSystemId": "d920e93f-c7cd-4350-9779-234fb8e332c5",
+      "steps": [
+        {
+          "isComplete": false,
+          "requireAllObjectives": true,
+          "hidden": false,
+          "objectives": [
+            {
+              "type": "TradeOffer",
+              "isComplete": false,
+              "statusText": "Deliver Body Armor to Fort Opportunity: 0/117 [234 m3]",
+              "fields": {
+                "itemType": "Body Armor",
+                "requiredAmount": 117,
+                "deliverTo": "580e4e20-4ae1-43bf-b0e0-b7a38fea8a11",
+                "currentAmount": 0,
+                "displayedAmount": 0,
+                "cargoSpaceRequired": 234.0,
+                "gameplayType": "Cargo",
+                "coreName": "Core"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "eventId": "9e1edd79-b2bd-4920-9a53-3c4c6bc998be",
+      "type": "Completed",
+      "gameSeconds": 330574.00179377681,
+      "realUtc": "2026-04-23T22:10:59.8303989Z",
+      "storyId": "",
+      "missionInstanceId": "765f2637-fd6a-4277-bfa4-01cdd5a0cce9",
+      "missionName": "Procure Liquid Alloy",
+      "missionSubclass": "Mission",
+      "missionLevel": 0,
+      "outcome": "Completed",
+      "sourceStationId": "580e4e20-4ae1-43bf-b0e0-b7a38fea8a11",
+      "sourceStationName": "Fort Opportunity",
+      "sourceSystemId": "d920e93f-c7cd-4350-9779-234fb8e332c5",
+      "sourceSystemName": "Venerable Graveyard",
+      "sourceFaction": "SalvageGuild",
+      "rewardsCredits": 40651,
+      "rewardsReputation": [
+        {
+          "faction": "SalvageGuild",
+          "amount": 250
+        }
+      ],
+      "rewards": [
+        {
+          "type": "Item",
+          "fields": {
+            "amount": 1,
+            "hidden": false
+          }
+        },
+        {
+          "type": "Reputation",
+          "fields": {
+            "amount": 250,
+            "faction": "SalvageGuild",
+            "hidden": false
+          }
+        },
+        {
+          "type": "WorkshopCredit",
+          "fields": {
+            "amount": 10415,
+            "hidden": false
+          }
+        },
+        {
+          "type": "Credits",
+          "fields": {
+            "amount": 40651,
+            "hidden": false
+          }
+        }
+      ],
+      "playerLevel": 24,
+      "playerCurrentSystemId": "d920e93f-c7cd-4350-9779-234fb8e332c5",
+      "steps": [
+        {
+          "isComplete": false,
+          "requireAllObjectives": true,
+          "hidden": false,
+          "objectives": [
+            {
+              "type": "TradeOffer",
+              "isComplete": false,
+              "statusText": "Deliver Liquid Alloy to Fort Opportunity: 0/59 [118 m3]",
+              "fields": {
+                "itemType": "Liquid Alloy",
+                "requiredAmount": 59,
+                "deliverTo": "580e4e20-4ae1-43bf-b0e0-b7a38fea8a11",
+                "currentAmount": 0,
+                "displayedAmount": 0,
+                "cargoSpaceRequired": 118.0,
+                "gameplayType": "Cargo",
+                "coreName": "Core"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "eventId": "db8af091-4c33-44ed-b866-fc8c826919dd",
+      "type": "Completed",
+      "gameSeconds": 330574.36012977379,
+      "realUtc": "2026-04-23T22:11:00.1882198Z",
+      "storyId": "",
+      "missionInstanceId": "eb5a1dfc-0814-4277-80af-b57632e87458",
+      "missionName": "Procure Combat Exoskeleton",
+      "missionSubclass": "Mission",
+      "missionLevel": 0,
+      "outcome": "Completed",
+      "sourceStationId": "580e4e20-4ae1-43bf-b0e0-b7a38fea8a11",
+      "sourceStationName": "Fort Opportunity",
+      "sourceSystemId": "d920e93f-c7cd-4350-9779-234fb8e332c5",
+      "sourceSystemName": "Venerable Graveyard",
+      "sourceFaction": "SalvageGuild",
+      "rewardsCredits": 41515,
+      "rewardsReputation": [
+        {
+          "faction": "SalvageGuild",
+          "amount": 250
+        }
+      ],
+      "rewards": [
+        {
+          "type": "Item",
+          "fields": {
+            "amount": 1,
+            "hidden": false
+          }
+        },
+        {
+          "type": "Reputation",
+          "fields": {
+            "amount": 250,
+            "faction": "SalvageGuild",
+            "hidden": false
+          }
+        },
+        {
+          "type": "WorkshopCredit",
+          "fields": {
+            "amount": 10315,
+            "hidden": false
+          }
+        },
+        {
+          "type": "Credits",
+          "fields": {
+            "amount": 41515,
+            "hidden": false
+          }
+        }
+      ],
+      "playerLevel": 24,
+      "playerCurrentSystemId": "d920e93f-c7cd-4350-9779-234fb8e332c5",
+      "steps": [
+        {
+          "isComplete": false,
+          "requireAllObjectives": true,
+          "hidden": false,
+          "objectives": [
+            {
+              "type": "TradeOffer",
+              "isComplete": false,
+              "statusText": "Deliver Combat Exoskeleton to Fort Opportunity: 0/19 [76 m3]",
+              "fields": {
+                "itemType": "Combat Exoskeleton",
+                "requiredAmount": 19,
+                "deliverTo": "580e4e20-4ae1-43bf-b0e0-b7a38fea8a11",
+                "currentAmount": 0,
+                "displayedAmount": 0,
+                "cargoSpaceRequired": 76.0,
+                "gameplayType": "Cargo",
+                "coreName": "Core"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "eventId": "40b86b8b-44e7-4154-b81d-62181f43ae59",
+      "type": "Completed",
+      "gameSeconds": 330574.5914198758,
+      "realUtc": "2026-04-23T22:11:00.4193379Z",
+      "storyId": "",
+      "missionInstanceId": "6481ef95-3bbd-4e6b-afad-b939d349826c",
+      "missionName": "Procure Solvent Cartridge",
+      "missionSubclass": "Mission",
+      "missionLevel": 0,
+      "outcome": "Completed",
+      "sourceStationId": "580e4e20-4ae1-43bf-b0e0-b7a38fea8a11",
+      "sourceStationName": "Fort Opportunity",
+      "sourceSystemId": "d920e93f-c7cd-4350-9779-234fb8e332c5",
+      "sourceSystemName": "Venerable Graveyard",
+      "sourceFaction": "SalvageGuild",
+      "rewardsCredits": 51273,
+      "rewardsReputation": [
+        {
+          "faction": "SalvageGuild",
+          "amount": 300
+        }
+      ],
+      "rewards": [
+        {
+          "type": "Item",
+          "fields": {
+            "amount": 1,
+            "hidden": false
+          }
+        },
+        {
+          "type": "Credits",
+          "fields": {
+            "amount": 51273,
+            "hidden": false
+          }
+        },
+        {
+          "type": "Reputation",
+          "fields": {
+            "amount": 300,
+            "faction": "SalvageGuild",
+            "hidden": false
+          }
+        },
+        {
+          "type": "WorkshopCredit",
+          "fields": {
+            "amount": 11021,
+            "hidden": false
+          }
+        }
+      ],
+      "playerLevel": 24,
+      "playerCurrentSystemId": "d920e93f-c7cd-4350-9779-234fb8e332c5",
+      "steps": [
+        {
+          "isComplete": false,
+          "requireAllObjectives": true,
+          "hidden": false,
+          "objectives": [
+            {
+              "type": "TradeOffer",
+              "isComplete": false,
+              "statusText": "Deliver Solvent Cartridge to Fort Opportunity: 46/163 [326 m3]",
+              "fields": {
+                "itemType": "Solvent Cartridge",
+                "requiredAmount": 163,
+                "deliverTo": "580e4e20-4ae1-43bf-b0e0-b7a38fea8a11",
+                "currentAmount": 46,
+                "displayedAmount": 46,
+                "cargoSpaceRequired": 326.0,
+                "gameplayType": "Cargo",
+                "coreName": "Core"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "eventId": "c52d777e-5a8c-4850-ad0d-741b13cb7400",
+      "type": "Completed",
+      "gameSeconds": 330574.83308937604,
+      "realUtc": "2026-04-23T22:11:00.6614878Z",
+      "storyId": "",
+      "missionInstanceId": "efce397e-a16c-42ad-99cb-1237f73301d5",
+      "missionName": "Procure Consumer Electronics",
+      "missionSubclass": "Mission",
+      "missionLevel": 0,
+      "outcome": "Completed",
+      "sourceStationId": "580e4e20-4ae1-43bf-b0e0-b7a38fea8a11",
+      "sourceStationName": "Fort Opportunity",
+      "sourceSystemId": "d920e93f-c7cd-4350-9779-234fb8e332c5",
+      "sourceSystemName": "Venerable Graveyard",
+      "sourceFaction": "SalvageGuild",
+      "rewardsCredits": 25751,
+      "rewardsReputation": [
+        {
+          "faction": "SalvageGuild",
+          "amount": 300
+        }
+      ],
+      "rewards": [
+        {
+          "type": "Credits",
+          "fields": {
+            "amount": 25751,
+            "hidden": false
+          }
+        },
+        {
+          "type": "Reputation",
+          "fields": {
+            "amount": 300,
+            "faction": "SalvageGuild",
+            "hidden": false
+          }
+        },
+        {
+          "type": "WorkshopCredit",
+          "fields": {
+            "amount": 9393,
+            "hidden": false
+          }
+        }
+      ],
+      "playerLevel": 24,
+      "playerCurrentSystemId": "d920e93f-c7cd-4350-9779-234fb8e332c5",
+      "steps": [
+        {
+          "isComplete": false,
+          "requireAllObjectives": true,
+          "hidden": false,
+          "objectives": [
+            {
+              "type": "TradeOffer",
+              "isComplete": false,
+              "statusText": "Deliver Consumer Electronics to Fort Opportunity: 0/49 [147 m3]",
+              "fields": {
+                "itemType": "Consumer Electronics",
+                "requiredAmount": 49,
+                "deliverTo": "580e4e20-4ae1-43bf-b0e0-b7a38fea8a11",
+                "currentAmount": 0,
+                "displayedAmount": 0,
+                "cargoSpaceRequired": 147.0,
+                "gameplayType": "Cargo",
+                "coreName": "Core"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "eventId": "51ce4846-e8d3-4950-8d65-d4a6b4929431",
+      "type": "Completed",
+      "gameSeconds": 330575.59143927338,
+      "realUtc": "2026-04-23T22:11:01.4196276Z",
+      "storyId": "",
+      "missionInstanceId": "2fb17456-b3b7-496f-919d-2f00be88dc00",
+      "missionName": "Procure Massive Vid-Screen",
+      "missionSubclass": "Mission",
+      "missionLevel": 0,
+      "outcome": "Completed",
+      "sourceStationId": "580e4e20-4ae1-43bf-b0e0-b7a38fea8a11",
+      "sourceStationName": "Fort Opportunity",
+      "sourceSystemId": "d920e93f-c7cd-4350-9779-234fb8e332c5",
+      "sourceSystemName": "Venerable Graveyard",
+      "sourceFaction": "SalvageGuild",
+      "rewardsCredits": 31040,
+      "rewardsReputation": [
+        {
+          "faction": "SalvageGuild",
+          "amount": 300
+        }
+      ],
+      "rewards": [
+        {
+          "type": "Item",
+          "fields": {
+            "amount": 1,
+            "hidden": false
+          }
+        },
+        {
+          "type": "Credits",
+          "fields": {
+            "amount": 31040,
+            "hidden": false
+          }
+        },
+        {
+          "type": "Reputation",
+          "fields": {
+            "amount": 300,
+            "faction": "SalvageGuild",
+            "hidden": false
+          }
+        },
+        {
+          "type": "WorkshopCredit",
+          "fields": {
+            "amount": 12898,
+            "hidden": false
+          }
+        }
+      ],
+      "playerLevel": 24,
+      "playerCurrentSystemId": "d920e93f-c7cd-4350-9779-234fb8e332c5",
+      "steps": [
+        {
+          "isComplete": false,
+          "requireAllObjectives": true,
+          "hidden": false,
+          "objectives": [
+            {
+              "type": "TradeOffer",
+              "isComplete": false,
+              "statusText": "Deliver Massive Vid-Screen to Fort Opportunity: 0/29 [116 m3]",
+              "fields": {
+                "itemType": "Massive Vid-Screen",
+                "requiredAmount": 29,
+                "deliverTo": "580e4e20-4ae1-43bf-b0e0-b7a38fea8a11",
+                "currentAmount": 0,
+                "displayedAmount": 0,
+                "cargoSpaceRequired": 116.0,
+                "gameplayType": "Cargo",
+                "coreName": "Core"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "eventId": "38feef87-e135-49dc-bbc1-738908d22f41",
+      "type": "Completed",
+      "gameSeconds": 330575.94144787471,
+      "realUtc": "2026-04-23T22:11:01.7695234Z",
+      "storyId": "",
+      "missionInstanceId": "01c47317-5376-4a28-991e-a9e68fcf8bf2",
+      "missionName": "Procure Solvent Cartridge",
+      "missionSubclass": "Mission",
+      "missionLevel": 0,
+      "outcome": "Completed",
+      "sourceStationId": "580e4e20-4ae1-43bf-b0e0-b7a38fea8a11",
+      "sourceStationName": "Fort Opportunity",
+      "sourceSystemId": "d920e93f-c7cd-4350-9779-234fb8e332c5",
+      "sourceSystemName": "Venerable Graveyard",
+      "sourceFaction": "SalvageGuild",
+      "rewardsCredits": 23966,
+      "rewardsReputation": [
+        {
+          "faction": "SalvageGuild",
+          "amount": 200
+        }
+      ],
+      "rewards": [
+        {
+          "type": "Credits",
+          "fields": {
+            "amount": 23966,
+            "hidden": false
+          }
+        },
+        {
+          "type": "Reputation",
+          "fields": {
+            "amount": 200,
+            "faction": "SalvageGuild",
+            "hidden": false
+          }
+        },
+        {
+          "type": "WorkshopCredit",
+          "fields": {
+            "amount": 10612,
+            "hidden": false
+          }
+        }
+      ],
+      "playerLevel": 24,
+      "playerCurrentSystemId": "d920e93f-c7cd-4350-9779-234fb8e332c5",
+      "steps": [
+        {
+          "isComplete": false,
+          "requireAllObjectives": true,
+          "hidden": false,
+          "objectives": [
+            {
+              "type": "TradeOffer",
+              "isComplete": false,
+              "statusText": "Deliver Solvent Cartridge to Fort Opportunity: 0/46 [92 m3]",
+              "fields": {
+                "itemType": "Solvent Cartridge",
+                "requiredAmount": 46,
+                "deliverTo": "580e4e20-4ae1-43bf-b0e0-b7a38fea8a11",
+                "currentAmount": 0,
+                "displayedAmount": 0,
+                "cargoSpaceRequired": 92.0,
+                "gameplayType": "Cargo",
+                "coreName": "Core"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "eventId": "73ab3e85-463c-4d7d-867d-ce39c8161127",
+      "type": "Accepted",
+      "gameSeconds": 330748.77666189859,
+      "realUtc": "2026-04-23T22:14:48.2703217Z",
+      "storyId": "",
+      "missionInstanceId": "fa676e20-8730-4b3b-b231-1fa67296bef3",
+      "missionName": "Recover Encrypted System Data",
+      "missionSubclass": "Mission",
+      "missionLevel": 0,
+      "sourceStationId": "580e4e20-4ae1-43bf-b0e0-b7a38fea8a11",
+      "sourceStationName": "Fort Opportunity",
+      "sourceSystemId": "d920e93f-c7cd-4350-9779-234fb8e332c5",
+      "sourceSystemName": "Venerable Graveyard",
+      "sourceFaction": "SalvageGuild",
+      "playerLevel": 24,
+      "playerCurrentSystemId": "d920e93f-c7cd-4350-9779-234fb8e332c5",
+      "steps": [
+        {
+          "isComplete": false,
+          "requireAllObjectives": true,
+          "hidden": false,
+          "objectives": [
+            {
+              "type": "Salvage",
+              "isComplete": false,
+              "statusText": "Encrypted System Data collected: 0/1",
+              "fields": {
+                "itemType": "SalvageMissionItem2",
+                "requiredAmount": 1,
+                "targetPOI": "b09c2bcd-ed2a-4d76-80fd-a9022cf105e1",
+                "gameplayType": "Salvage",
+                "currentAmount": 0,
+                "triggeredBy": "ItemCollected"
+              }
+            }
+          ]
+        },
+        {
+          "isComplete": false,
+          "requireAllObjectives": true,
+          "hidden": false,
+          "objectives": [
+            {
+              "type": "TradeOffer",
+              "isComplete": false,
+              "statusText": "Deliver Encrypted System Data to Fort Opportunity: 0/1 [1 m3]",
+              "fields": {
+                "itemType": "SalvageMissionItem2",
+                "requiredAmount": 1,
+                "deliverTo": "580e4e20-4ae1-43bf-b0e0-b7a38fea8a11",
+                "currentAmount": 0,
+                "displayedAmount": 0,
+                "cargoSpaceRequired": 1.0,
+                "gameplayType": "Generic"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "eventId": "15819f7a-8292-4c3c-ba56-07f0365026f4",
+      "type": "Abandoned",
+      "gameSeconds": 330750.72298669757,
+      "realUtc": "2026-04-23T22:14:52.0650411Z",
+      "storyId": "",
+      "missionInstanceId": "fa676e20-8730-4b3b-b231-1fa67296bef3",
+      "missionName": "Recover Encrypted System Data",
+      "missionSubclass": "Mission",
+      "missionLevel": 0,
+      "outcome": "Abandoned",
+      "sourceStationId": "580e4e20-4ae1-43bf-b0e0-b7a38fea8a11",
+      "sourceStationName": "Fort Opportunity",
+      "sourceSystemId": "d920e93f-c7cd-4350-9779-234fb8e332c5",
+      "sourceSystemName": "Venerable Graveyard",
+      "sourceFaction": "SalvageGuild",
+      "playerLevel": 24,
+      "playerCurrentSystemId": "d920e93f-c7cd-4350-9779-234fb8e332c5",
+      "steps": [
+        {
+          "isComplete": false,
+          "requireAllObjectives": true,
+          "hidden": false,
+          "objectives": [
+            {
+              "type": "Salvage",
+              "isComplete": false,
+              "statusText": "Encrypted System Data collected: 0/1",
+              "fields": {
+                "itemType": "SalvageMissionItem2",
+                "requiredAmount": 1,
+                "targetPOI": "b09c2bcd-ed2a-4d76-80fd-a9022cf105e1",
+                "gameplayType": "Salvage",
+                "currentAmount": 0,
+                "triggeredBy": "ItemCollected"
+              }
+            }
+          ]
+        },
+        {
+          "isComplete": false,
+          "requireAllObjectives": true,
+          "hidden": false,
+          "objectives": [
+            {
+              "type": "TradeOffer",
+              "isComplete": false,
+              "statusText": "Deliver Encrypted System Data to Fort Opportunity: 0/1 [1 m3]",
+              "fields": {
+                "itemType": "SalvageMissionItem2",
+                "requiredAmount": 1,
+                "deliverTo": "580e4e20-4ae1-43bf-b0e0-b7a38fea8a11",
+                "currentAmount": 0,
+                "displayedAmount": 0,
+                "cargoSpaceRequired": 1.0,
+                "gameplayType": "Generic"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
