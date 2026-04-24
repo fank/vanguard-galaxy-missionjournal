@@ -6,6 +6,7 @@ using BepInEx.Logging;
 using VGMissionLog.Logging;
 using VGMissionLog.Patches;
 using VGMissionLog.Persistence;
+using VGMissionLog.Tests.Support;
 using Xunit;
 
 namespace VGMissionLog.Tests.Patches;
@@ -23,12 +24,12 @@ public class PatchWiringTests
     [Fact]
     public void WireAll_AssignsEverySlot_OnEveryPatchClass()
     {
-        var builder = new ActivityEventBuilder(new FakeClock());
-        var log     = new ActivityLog();
+        var builder = new MissionRecordBuilder(new FakeClock(), () => null);
+        var store   = new MissionStore();
         var io      = new LogIO(() => DateTime.UtcNow);
         var bepLog  = new ManualLogSource("test");
 
-        PatchWiring.WireAll(builder, log, io, bepLog);
+        PatchWiring.WireAll(builder, store, io, bepLog);
 
         var patchTypes = typeof(PatchWiring).Assembly
             .GetTypes()
@@ -59,11 +60,5 @@ public class PatchWiringTests
                     $"{patch.Name}.{slot.Name} is null after WireAll");
             }
         }
-    }
-
-    private sealed class FakeClock : IClock
-    {
-        public double GameSeconds => 0.0;
-        public DateTime UtcNow    => DateTime.UtcNow;
     }
 }

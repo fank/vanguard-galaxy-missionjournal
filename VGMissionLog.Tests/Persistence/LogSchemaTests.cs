@@ -1,3 +1,4 @@
+using System.Linq;
 using Newtonsoft.Json;
 using VGMissionLog.Logging;
 using VGMissionLog.Persistence;
@@ -9,127 +10,114 @@ namespace VGMissionLog.Tests.Persistence;
 public class LogSchemaTests
 {
     [Fact]
-    public void CurrentVersion_IsOne()
+    public void CurrentVersion_IsThree()
     {
-        Assert.Equal(1, LogSchema.CurrentVersion);
+        Assert.Equal(3, LogSchema.CurrentVersion);
     }
 
     [Fact]
     public void EmptySchema_RoundTripsThroughNewtonsoft()
     {
-        var schema = new LogSchema(LogSchema.CurrentVersion, System.Array.Empty<ActivityEvent>());
+        var schema = new LogSchema(LogSchema.CurrentVersion, System.Array.Empty<MissionRecord>());
 
         var json   = JsonConvert.SerializeObject(schema, LogSchema.SerializerSettings);
         var back   = JsonConvert.DeserializeObject<LogSchema>(json, LogSchema.SerializerSettings);
 
         Assert.NotNull(back);
         Assert.Equal(LogSchema.CurrentVersion, back!.Version);
-        Assert.Empty(back.Events);
+        Assert.Empty(back.Missions);
     }
 
     [Fact]
-    public void SingleEvent_RoundTripsPrimitiveFields()
+    public void SingleMission_RoundTripsPrimitiveFields()
     {
-        var original = TestEvents.Baseline(
-            eventId: "abc",
+        var original = TestRecords.Record(
+            instanceId: "abc",
             storyId: "m1",
-            gameSeconds: 123.45,
-            missionSubclass: "BountyMission",
+            acceptedAt: 123.45,
+            terminal: TimelineState.Completed,
+            terminalAt: 200.0,
+            subclass: "BountyMission",
             sourceSystemId: "sys-zoran",
-            sourceFaction:  "BountyGuild")
-            with { Outcome = Outcome.Completed, RewardsCredits = 5000 };
+            sourceFaction:  "BountyGuild");
 
         var schema = new LogSchema(LogSchema.CurrentVersion, new[] { original });
 
         var json = JsonConvert.SerializeObject(schema, LogSchema.SerializerSettings);
         var back = JsonConvert.DeserializeObject<LogSchema>(json, LogSchema.SerializerSettings)!;
 
-        Assert.Single(back.Events);
-        var roundtripped = back.Events[0];
-        Assert.Equal("abc",              roundtripped.EventId);
-        Assert.Equal("m1",               roundtripped.StoryId);
-        Assert.Equal(123.45,             roundtripped.GameSeconds);
-        Assert.Equal("BountyMission",    roundtripped.MissionSubclass);
-        Assert.Equal("sys-zoran",        roundtripped.SourceSystemId);
-        Assert.Equal("BountyGuild",      roundtripped.SourceFaction);
-        Assert.Equal(Outcome.Completed,  roundtripped.Outcome);
-        Assert.Equal(5000L,              roundtripped.RewardsCredits);
+        Assert.Single(back.Missions);
+        var r = back.Missions[0];
+        Assert.Equal("abc",              r.MissionInstanceId);
+        Assert.Equal("m1",               r.StoryId);
+        Assert.Equal(123.45,             r.AcceptedAtGameSeconds);
+        Assert.Equal("BountyMission",    r.MissionSubclass);
+        Assert.Equal("sys-zoran",        r.SourceSystemId);
+        Assert.Equal("BountyGuild",      r.SourceFaction);
+        Assert.Equal(Outcome.Completed,  r.Outcome);
+        Assert.Equal(200.0,              r.TerminalAtGameSeconds);
     }
 
     [Fact]
-    public void Serialization_OmitsNullEventFields()
+    public void Serialization_OmitsNullMissionFields()
     {
-        // NullValueHandling.Ignore keeps the sidecar compact: a minimal
-        // Accepted event should NOT emit the terminal-only fields.
-        var evt = TestEvents.Baseline(eventId: "minimal");
-        var schema = new LogSchema(LogSchema.CurrentVersion, new[] { evt });
+        // NullValueHandling.Ignore keeps the sidecar compact: an active
+        // record with no target/sector data should NOT emit those fields.
+        var r = TestRecords.Record(instanceId: "minimal");
+        var schema = new LogSchema(LogSchema.CurrentVersion, new[] { r });
 
         var json = JsonConvert.SerializeObject(schema, LogSchema.SerializerSettings);
 
-        Assert.DoesNotContain("\"outcome\":",             json);
-        Assert.DoesNotContain("\"rewardsCredits\":",      json);
-        Assert.DoesNotContain("\"rewardsExperience\":",   json);
-        Assert.DoesNotContain("\"rewardsReputation\":",   json);
+        Assert.DoesNotContain("\"targetStationId\":",   json);
+        Assert.DoesNotContain("\"targetSystemId\":",    json);
+        Assert.DoesNotContain("\"sourceSectorId\":",    json);
     }
 
     [Fact]
     public void Serialization_EmitsEnumsAsStrings()
     {
-        // Regression for the sidecar-API drift bug: ActivityEventType and
-        // Outcome used to serialize as integers (Newtonsoft default), while
-        // the public API dict emits strings. Tooling reading the JSON saw
-        // type:1/outcome:0 instead of "Accepted"/"Completed".
-        var evt = TestEvents.Baseline(eventId: "e1", type: ActivityEventType.Completed)
-            with { Outcome = Outcome.Completed };
-        var schema = new LogSchema(LogSchema.CurrentVersion, new[] { evt });
+        // Timeline states serialize as strings, not integers.
+        var r = TestRecords.Record(instanceId: "e1",
+            terminal: TimelineState.Completed, terminalAt: 50.0);
+        var schema = new LogSchema(LogSchema.CurrentVersion, new[] { r });
 
         var json = JsonConvert.SerializeObject(schema, LogSchema.SerializerSettings);
 
-        Assert.Contains("\"type\": \"Completed\"",    json);
-        Assert.Contains("\"outcome\": \"Completed\"", json);
-        Assert.DoesNotContain("\"type\": 2",          json);
-        Assert.DoesNotContain("\"outcome\": 0",       json);
-    }
-
-    [Fact]
-    public void Deserialization_AcceptsIntegerEnums_ForV1BackCompat()
-    {
-        // Old v1 sidecars were written with integer enums. StringEnumConverter
-        // with AllowIntegerValues=true (default) must still read them so a
-        // pre-fix sidecar round-trips without quarantine.
-        const string legacy =
-            "{\"version\":1,\"events\":[{" +
-            "\"eventId\":\"e1\"," +
-            "\"type\":1," +          // Accepted
-            "\"gameSeconds\":1.0," +
-            "\"realUtc\":\"2026-04-23T00:00:00.0000000Z\"," +
-            "\"storyId\":\"\"," +
-            "\"missionSubclass\":\"Mission\"," +
-            "\"missionLevel\":0," +
-            "\"outcome\":1," +       // Failed
-            "\"playerLevel\":1" +
-            "}]}";
-
-        var schema = JsonConvert.DeserializeObject<LogSchema>(legacy, LogSchema.SerializerSettings)!;
-        var evt = schema.Events[0];
-
-        Assert.Equal(ActivityEventType.Accepted, evt.Type);
-        Assert.Equal(Outcome.Failed, evt.Outcome);
+        Assert.Contains("\"state\": \"Accepted\"",  json);
+        Assert.Contains("\"state\": \"Completed\"", json);
+        // No raw integer enum emissions.
+        Assert.DoesNotContain("\"state\": 0", json);
+        Assert.DoesNotContain("\"state\": 1", json);
+        Assert.DoesNotContain("\"state\": 2", json);
     }
 
     [Fact]
     public void Serialization_UsesCamelCase()
     {
-        var evt = TestEvents.Baseline(eventId: "e1", sourceSystemId: "sys-zoran");
-        var schema = new LogSchema(LogSchema.CurrentVersion, new[] { evt });
+        var r = TestRecords.Record(instanceId: "e1", sourceSystemId: "sys-zoran");
+        var schema = new LogSchema(LogSchema.CurrentVersion, new[] { r });
 
         var json = JsonConvert.SerializeObject(schema, LogSchema.SerializerSettings);
 
-        Assert.Contains("\"version\":",         json);
-        Assert.Contains("\"events\":",          json);
-        Assert.Contains("\"eventId\":",         json);
-        Assert.Contains("\"sourceSystemId\":",  json);
-        Assert.DoesNotContain("\"EventId\":",   json);
-        Assert.DoesNotContain("\"SourceSystemId\":", json);
+        Assert.Contains("\"version\":",           json);
+        Assert.Contains("\"missions\":",          json);
+        Assert.Contains("\"missionInstanceId\":", json);
+        Assert.Contains("\"sourceSystemId\":",    json);
+        Assert.DoesNotContain("\"MissionInstanceId\":", json);
+        Assert.DoesNotContain("\"SourceSystemId\":",    json);
+    }
+
+    [Fact]
+    public void Serialization_TopLevelFieldsUseLowercase()
+    {
+        // LogSchema's positional record parameters carry [JsonProperty]
+        // attributes pinning `version` and `missions` to lowercase, so the
+        // sidecar shape is stable even if the camelCase resolver ever changes.
+        var schema = new LogSchema(LogSchema.CurrentVersion, System.Array.Empty<MissionRecord>());
+
+        var json = JsonConvert.SerializeObject(schema, LogSchema.SerializerSettings);
+
+        Assert.Contains("\"version\":",  json);
+        Assert.Contains("\"missions\":", json);
     }
 }

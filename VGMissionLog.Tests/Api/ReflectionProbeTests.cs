@@ -14,22 +14,22 @@ namespace VGMissionLog.Tests.Api;
 /// goes through Type.GetType(string) and every method / property
 /// invocation uses MethodInfo / PropertyInfo. We don't touch any
 /// VGMissionLog type by direct name in the assertions below (only in
-/// setup to seed the log) — if a consumer mod does the same, it can
+/// setup to seed the store) — if a consumer mod does the same, it can
 /// interop without a hard dependency on VGMissionLog.dll.
 /// </summary>
 [Collection("MissionLogApi.Current")]
 public class ReflectionProbeTests : IDisposable
 {
-    private readonly ActivityLog _log;
+    private readonly MissionStore _store;
 
     public ReflectionProbeTests()
     {
-        _log = new ActivityLog();
-        _log.Append(TestEvents.Baseline(
-            eventId: "evt-1", storyId: "m-probe", gameSeconds: 42.0,
-            type: ActivityEventType.Accepted, missionSubclass: "BountyMission",
+        _store = new MissionStore();
+        _store.Upsert(TestRecords.Record(
+            instanceId: "inst-1", storyId: "m-probe", acceptedAt: 42.0,
+            subclass: "BountyMission",
             sourceSystemId: "sys-zoran", sourceFaction: "BountyGuild"));
-        MissionLogApi.Current = new MissionLogQueryAdapter(_log);
+        MissionLogApi.Current = new MissionLogQueryAdapter(_store);
     }
 
     public void Dispose() => MissionLogApi.Current = null;
@@ -68,16 +68,13 @@ public class ReflectionProbeTests : IDisposable
     }
 
     [Fact]
-    public void GetEventsInSystem_ReturnsListOfPrimitiveDict_ViaReflection()
+    public void GetMissionsInSystem_ReturnsListOfPrimitiveDict_ViaReflection()
     {
         var current = GetCurrentViaReflection()!;
         var method = current.GetType().GetMethod(
-            "GetEventsInSystem", new[] { typeof(string), typeof(double), typeof(double) });
+            "GetMissionsInSystem", new[] { typeof(string), typeof(double), typeof(double) });
         Assert.NotNull(method);
 
-        // Invoke with defaults for the doubles (reflection can't see the
-        // C# default-parameter metadata as defaults the way a caller would,
-        // so we pass them explicitly). A real consumer would do the same.
         var result = method!.Invoke(current, new object[] { "sys-zoran", 0.0, double.MaxValue });
         Assert.NotNull(result);
 
@@ -87,11 +84,11 @@ public class ReflectionProbeTests : IDisposable
         var firstDict = FirstOrDefault<IReadOnlyDictionary<string, object?>>(list);
         Assert.NotNull(firstDict);
 
-        Assert.Equal("evt-1",        firstDict!["eventId"]);
-        Assert.Equal("Accepted",     firstDict["type"]);
-        Assert.Equal("BountyMission", firstDict["missionSubclass"]);
-        Assert.Equal("sys-zoran",    firstDict["sourceSystemId"]);
-        Assert.Equal(42.0,           firstDict["gameSeconds"]);
+        Assert.Equal("inst-1",         firstDict!["missionInstanceId"]);
+        Assert.Equal("m-probe",        firstDict["storyId"]);
+        Assert.Equal("BountyMission",  firstDict["missionSubclass"]);
+        Assert.Equal("sys-zoran",      firstDict["sourceSystemId"]);
+        Assert.Equal(42.0,             firstDict["acceptedAtGameSeconds"]);
     }
 
     [Fact]

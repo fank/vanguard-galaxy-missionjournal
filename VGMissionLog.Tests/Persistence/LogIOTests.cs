@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Linq;
 using VGMissionLog.Logging;
 using VGMissionLog.Persistence;
 using VGMissionLog.Tests.Support;
@@ -17,7 +18,7 @@ public class LogIOTests : IDisposable
 
     public LogIOTests()
     {
-        _tmpDir = System.IO.Path.Combine(System.IO.Path.GetTempPath(), "vgmissionlog-io-" + Guid.NewGuid().ToString("N"));
+        _tmpDir = Path.Combine(Path.GetTempPath(), "vgmissionlog-io-" + Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(_tmpDir);
         _io = new LogIO(() => _quarantineStamp);
     }
@@ -31,7 +32,7 @@ public class LogIOTests : IDisposable
         }
     }
 
-    private string FilePath(string name) => System.IO.Path.Combine(_tmpDir, name);
+    private string FilePath(string name) => Path.Combine(_tmpDir, name);
 
     // --- Read -----------------------------------------------------------
 
@@ -66,7 +67,7 @@ public class LogIOTests : IDisposable
     public void Read_UnsupportedVersion_Quarantines()
     {
         var path = FilePath("future.save.vgmissionlog.json");
-        File.WriteAllText(path, "{\"version\":999,\"events\":[]}");
+        File.WriteAllText(path, "{\"version\":999,\"missions\":[]}");
 
         var result = _io.Read(path);
 
@@ -80,7 +81,8 @@ public class LogIOTests : IDisposable
     public void Read_ValidCurrentVersion_Loads()
     {
         var path = FilePath("valid.save.vgmissionlog.json");
-        var schema = new LogSchema(LogSchema.CurrentVersion, new[] { TestEvents.Baseline(eventId: "abc") });
+        var schema = new LogSchema(LogSchema.CurrentVersion,
+            new[] { TestRecords.Record(instanceId: "abc") });
         _io.Write(path, schema);
 
         var result = _io.Read(path);
@@ -88,9 +90,66 @@ public class LogIOTests : IDisposable
         Assert.Equal(LogReadStatus.Loaded, result.Status);
         Assert.NotNull(result.Schema);
         Assert.Equal(LogSchema.CurrentVersion, result.Schema!.Version);
-        Assert.Single(result.Schema.Events);
-        Assert.Equal("abc", result.Schema.Events[0].EventId);
+        Assert.Single(result.Schema.Missions);
+        Assert.Equal("abc", result.Schema.Missions[0].MissionInstanceId);
         Assert.Null(result.QuarantinedTo);
+    }
+
+    [Fact]
+    public void Read_V1Payload_MigratesToV3()
+    {
+        // Minimal v1 sidecar with one Accepted + one Completed event for
+        // the same missionInstanceId. The migrator should fold these into
+        // a single v3 MissionRecord with a two-entry timeline.
+        var path = FilePath("legacy.save.vgmissionlog.json");
+        const string v1Payload =
+            "{\"version\":1,\"events\":[" +
+            "{" +
+              "\"eventId\":\"e1\"," +
+              "\"type\":\"Accepted\"," +
+              "\"gameSeconds\":10.0," +
+              "\"realUtc\":\"2026-01-01T00:00:00.0000000Z\"," +
+              "\"storyId\":\"story-x\"," +
+              "\"missionInstanceId\":\"inst-x\"," +
+              "\"missionSubclass\":\"BountyMission\"," +
+              "\"missionLevel\":1," +
+              "\"sourceSystemId\":\"sys-zoran\"," +
+              "\"sourceFaction\":\"BountyGuild\"," +
+              "\"playerLevel\":5" +
+            "}," +
+            "{" +
+              "\"eventId\":\"e2\"," +
+              "\"type\":\"Completed\"," +
+              "\"gameSeconds\":20.0," +
+              "\"realUtc\":\"2026-01-01T00:00:10.0000000Z\"," +
+              "\"storyId\":\"story-x\"," +
+              "\"missionInstanceId\":\"inst-x\"," +
+              "\"missionSubclass\":\"BountyMission\"," +
+              "\"missionLevel\":1," +
+              "\"rewardsCredits\":1500," +
+              "\"playerLevel\":5" +
+            "}]}";
+        File.WriteAllText(path, v1Payload);
+
+        var result = _io.Read(path);
+
+        Assert.Equal(LogReadStatus.Loaded, result.Status);
+        Assert.NotNull(result.Schema);
+        Assert.Equal(LogSchema.CurrentVersion, result.Schema!.Version);
+        Assert.Single(result.Schema.Missions);
+        var r = result.Schema.Missions[0];
+        Assert.Equal("inst-x",       r.MissionInstanceId);
+        Assert.Equal("story-x",      r.StoryId);
+        Assert.Equal("BountyMission", r.MissionSubclass);
+        Assert.Equal("sys-zoran",    r.SourceSystemId);
+        Assert.Equal(2,              r.Timeline.Count);
+        Assert.Equal(TimelineState.Accepted,  r.Timeline[0].State);
+        Assert.Equal(10.0,                    r.Timeline[0].GameSeconds);
+        Assert.Equal(TimelineState.Completed, r.Timeline[1].State);
+        Assert.Equal(20.0,                    r.Timeline[1].GameSeconds);
+        Assert.Equal(Outcome.Completed,       r.Outcome);
+        // Typed v1 rewards fold into the unified rewards list.
+        Assert.Contains(r.Rewards, rw => rw.Type == "Credits");
     }
 
     // --- Write ----------------------------------------------------------
@@ -99,7 +158,7 @@ public class LogIOTests : IDisposable
     public void Write_CreatesFile_AndNoTempLeftBehind()
     {
         var path = FilePath("clean.save.vgmissionlog.json");
-        var schema = new LogSchema(LogSchema.CurrentVersion, Array.Empty<ActivityEvent>());
+        var schema = new LogSchema(LogSchema.CurrentVersion, Array.Empty<MissionRecord>());
 
         _io.Write(path, schema);
 
@@ -112,50 +171,53 @@ public class LogIOTests : IDisposable
     public void Write_OverwritesExistingFile()
     {
         var path = FilePath("overwrite.save.vgmissionlog.json");
-        _io.Write(path, new LogSchema(LogSchema.CurrentVersion, new[] { TestEvents.Baseline(eventId: "first") }));
+        _io.Write(path, new LogSchema(LogSchema.CurrentVersion,
+            new[] { TestRecords.Record(instanceId: "first") }));
 
-        _io.Write(path, new LogSchema(LogSchema.CurrentVersion, new[] { TestEvents.Baseline(eventId: "second") }));
+        _io.Write(path, new LogSchema(LogSchema.CurrentVersion,
+            new[] { TestRecords.Record(instanceId: "second") }));
 
         var result = _io.Read(path);
         Assert.Equal(LogReadStatus.Loaded, result.Status);
-        Assert.Equal("second", result.Schema!.Events[0].EventId);
+        Assert.Equal("second", result.Schema!.Missions[0].MissionInstanceId);
     }
 
     [Fact]
-    public void Write_ThenRead_RoundTripsMultipleEvents()
+    public void Write_ThenRead_RoundTripsMultipleRecords()
     {
         var path = FilePath("roundtrip.save.vgmissionlog.json");
-        var events = new[]
+        var records = new[]
         {
-            TestEvents.Baseline(eventId: "a", storyId: "m1", gameSeconds: 1.0,
-                type: ActivityEventType.Accepted, missionSubclass: "BountyMission",
+            TestRecords.Record(instanceId: "a", storyId: "m1", acceptedAt: 1.0,
+                terminal: TimelineState.Completed, terminalAt: 2.0,
+                subclass: "BountyMission",
                 sourceSystemId: "sys-zoran", sourceFaction: "BountyGuild"),
-            TestEvents.Baseline(eventId: "b", storyId: "m1", gameSeconds: 2.0,
-                type: ActivityEventType.Completed, missionSubclass: "BountyMission",
-                sourceSystemId: "sys-zoran", sourceFaction: "BountyGuild")
-                with { Outcome = Outcome.Completed, RewardsCredits = 1500, RewardsExperience = 200 },
-            TestEvents.Baseline(eventId: "c", storyId: "story-custom-x", gameSeconds: 3.0,
-                type: ActivityEventType.Accepted,
-                missionSubclass: "Mission",
+            TestRecords.Record(instanceId: "b", storyId: "m1", acceptedAt: 3.0,
+                subclass: "BountyMission",
+                sourceSystemId: "sys-zoran", sourceFaction: "BountyGuild"),
+            TestRecords.Record(instanceId: "c", storyId: "story-custom-x", acceptedAt: 4.0,
+                subclass: "Mission",
                 sourceSystemId: "sys-helion"),
         };
 
-        _io.Write(path, new LogSchema(LogSchema.CurrentVersion, events));
+        _io.Write(path, new LogSchema(LogSchema.CurrentVersion, records));
         var result = _io.Read(path);
 
         Assert.Equal(LogReadStatus.Loaded, result.Status);
-        Assert.Equal(3, result.Schema!.Events.Length);
+        Assert.Equal(3, result.Schema!.Missions.Length);
         Assert.Equal(new[] { "a", "b", "c" },
-                     Array.ConvertAll(result.Schema.Events, e => e.EventId));
-        Assert.Equal("Mission", result.Schema.Events[2].MissionSubclass);
-        Assert.Equal(1500L, result.Schema.Events[1].RewardsCredits);
+                     result.Schema.Missions.Select(m => m.MissionInstanceId).ToArray());
+        Assert.Equal("Mission", result.Schema.Missions[2].MissionSubclass);
+        Assert.Equal(Outcome.Completed, result.Schema.Missions[0].Outcome);
     }
 
     [Fact]
     public void Write_NullArgs_Throw()
     {
-        Assert.Throws<ArgumentNullException>(() => _io.Write(null!, new LogSchema(1, Array.Empty<ActivityEvent>())));
-        Assert.Throws<ArgumentNullException>(() => _io.Write(FilePath("x.json"), null!));
+        Assert.Throws<ArgumentNullException>(() =>
+            _io.Write(null!, new LogSchema(LogSchema.CurrentVersion, Array.Empty<MissionRecord>())));
+        Assert.Throws<ArgumentNullException>(() =>
+            _io.Write(FilePath("x.json"), null!));
     }
 
     // --- Quarantine naming ---------------------------------------------
