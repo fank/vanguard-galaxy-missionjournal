@@ -32,10 +32,9 @@
 
   <ItemGroup>
     <!-- Publicized stub of the game's Assembly-CSharp.dll — committed to
-         lib/ so CI can build without a sibling checkout. Regenerate after
-         game updates via:
-           assembly-publicizer --strip <game>/Assembly-CSharp.dll \
-                               -o VGMissionJournal/lib/Assembly-CSharp.dll
+         lib/ so CI can build without a sibling checkout. Regenerate the
+         stub after game updates with `assembly-publicizer` using its
+         strip flag (see .gitignore for the full command line).
          Conditional so an incomplete checkout can still `dotnet restore`
          for nuget-only operations; build fails later if the stub is
          missing and any code references game types. -->
