@@ -1,10 +1,10 @@
 # VGMissionJournal — Observational mission-activity logger for Vanguard Galaxy
 
-A BepInEx 5 plugin that records every mission-lifecycle event — acceptance, completion, failure, abandonment — of every mission the player engages with, whether authored by vanilla or another mod. The log is persisted per save, exposes a reflection-friendly public query API for other mods to consume, and **never mutates vanilla state**.
+A BepInEx 5 plugin that records every mission-lifecycle transition — acceptance, completion, failure, abandonment — of every mission the player engages with, whether authored by vanilla or another mod. The journal is persisted per save, exposes a reflection-friendly public query API for other mods to consume, and **never mutates vanilla state**.
 
 ## Design principle: pure observer
 
-VGMissionJournal observes; it never mutates. Worst failure mode is a corrupt log file the player can safely delete — history is lost, the save is not. This is why it's safe to leave running indefinitely alongside anything.
+VGMissionJournal observes; it never mutates. Worst failure mode is a corrupt journal file the player can safely delete — history is lost, the save is not. This is why it's safe to leave running indefinitely alongside anything.
 
 Consumers (future stats dashboards, LLM-driven NPCs, progression mods, etc.) soft-dep via reflection on a stable API surface. Consumers bucket and interpret; VGMissionJournal records what the game hands it and nothing more.
 
@@ -17,8 +17,8 @@ Consumers (future stats dashboards, LLM-driven NPCs, progression mods, etc.) sof
 Config lives at `<GameDir>/BepInEx/config/vgmissionjournal.cfg` after first run:
 
 ```ini
-[Logging]
-## When true, emit a Debug-level log line for every captured mission lifecycle event.
+[Journal]
+## When true, emit a Debug-level log line for every captured mission lifecycle transition.
 # Default: false
 Verbose = false
 
@@ -67,7 +67,7 @@ Full list: [`docs/api.md#known-gaps`](docs/api.md#known-gaps).
 
 ## Safety invariants
 
-VGMissionJournal is a **pure observer**. The Harmony patch set is postfix-only, with one allowed prefix on save-load for timing. Every patch body is wrapped in try/catch and warn-logs on failure — vanilla execution must survive our internal state. If the sidecar is missing or corrupt, the log starts empty and vanilla loads normally; the corrupt file is quarantined with a UTC timestamp for forensic inspection.
+VGMissionJournal is a **pure observer**. The Harmony patch set is postfix-only, with one allowed prefix on save-load for timing. Every patch body is wrapped in try/catch and warn-logs on failure — vanilla execution must survive our internal state. If the sidecar is missing or corrupt, the journal starts empty and vanilla loads normally; the corrupt file is quarantined with a UTC timestamp for forensic inspection.
 
 ## Build
 

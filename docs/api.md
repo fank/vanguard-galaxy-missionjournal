@@ -88,10 +88,10 @@ All query methods return typed `MissionRecord` aggregates (or small typed record
 
 | Property | Type | Meaning |
 |---|---|---|
-| `SchemaVersion` | `int` | Current sidecar / mission schema version (3). Feature-gate method calls that were added in a later version. |
-| `TotalMissionCount` | `int` | Number of mission records currently in the log. |
-| `OldestAcceptedGameSeconds` | `double?` | Accept-time (game seconds) of the oldest retained mission. `null` when the log is empty. |
-| `NewestAcceptedGameSeconds` | `double?` | Accept-time of the most-recently-accepted mission. `null` when the log is empty. |
+| `SchemaVersion` | `int` | Current sidecar wire-format version (3). Tracks on-disk JSON shape only — does **not** bump when API methods are added. For API-level feature gating, reflect on the interface for method presence. |
+| `TotalMissionCount` | `int` | Number of mission records currently in the journal. |
+| `OldestAcceptedGameSeconds` | `double?` | Accept-time (game seconds) of the oldest retained mission. `null` when the journal is empty. |
+| `NewestAcceptedGameSeconds` | `double?` | Accept-time of the most-recently-accepted mission. `null` when the journal is empty. |
 
 ### Filter methods
 
@@ -101,7 +101,7 @@ All filters that accept a time window (`sinceGameSeconds`, `untilGameSeconds`) a
 |---|---|---|
 | `GetMission(missionInstanceId)` | `MissionRecord?` | Single mission by its instance id, or `null` when not found. |
 | `GetActiveMissions()` | `IReadOnlyList<MissionRecord>` | Missions that have not yet reached a terminal state (Completed / Failed / Abandoned). |
-| `GetAllMissions()` | `IReadOnlyList<MissionRecord>` | All missions in the log, no filter. |
+| `GetAllMissions()` | `IReadOnlyList<MissionRecord>` | All missions in the journal, no filter. |
 | `GetMissionsInSystem(systemId, since?, until?)` | `IReadOnlyList<MissionRecord>` | Missions whose `SourceSystemId` matches. Missions without a source system (synthesized archive backstops) are excluded. |
 | `GetMissionsByFaction(factionId, since?, until?)` | `IReadOnlyList<MissionRecord>` | Missions whose `SourceFaction` matches. |
 | `GetMissionsByMissionSubclass(subclass, since?, until?)` | `IReadOnlyList<MissionRecord>` | Exact match on `MissionSubclass` (= `mission.GetType().Name`) — e.g. `"BountyMission"`, `"PatrolMission"`, `"IndustryMission"`, `"Mission"`. Case-sensitive. |
@@ -275,7 +275,7 @@ The sidecar mirrors `MissionRecord` with camelCase keys:
 
 ## Sidecar format
 
-If you'd rather read the log without loading VGMissionJournal (offline analysis, external tooling), the sidecar JSON uses the same shape. File lives at `<GameDir>/Saves/<saveName>.save.vgmissionjournal.json`:
+If you'd rather read the journal without loading VGMissionJournal (offline analysis, external tooling), the sidecar JSON uses the same shape. File lives at `<GameDir>/Saves/<saveName>.save.vgmissionjournal.json`:
 
 ```json
 {
@@ -304,13 +304,13 @@ These are documented limitations of the current shipping version. Consumers shou
 
 ## Retention
 
-The log defaults to a soft cap of **2000 missions per save**, with FIFO eviction once exceeded — oldest-accepted missions drop off first. Consumers should not assume the full playtime is always available; use `OldestAcceptedGameSeconds` if you need to know how far back the log reaches.
+The journal defaults to a soft cap of **2000 missions per save**, with FIFO eviction once exceeded — oldest-accepted missions drop off first. Consumers should not assume the full playtime is always available; use `OldestAcceptedGameSeconds` if you need to know how far back the journal reaches.
 
-The cap is configurable via `Logging.MaxMissions` in `vgmissionjournal.cfg`. Setting it to **`0` disables the cap entirely** — the log then retains every mission for the save's lifetime, at the cost of an unbounded sidecar size. A user with 50 000 captured missions would sit around 25 MB on disk (rough estimate at ~500 bytes per record).
+The cap is configurable via `Journal.MaxMissions` in `vgmissionjournal.cfg`. Setting it to **`0` disables the cap entirely** — the journal then retains every mission for the save's lifetime, at the cost of an unbounded sidecar size. A user with 50 000 captured missions would sit around 25 MB on disk (rough estimate at ~500 bytes per record).
 
 ## Stability
 
 - **Method signatures on `IMissionJournalQuery`** are part of the public API contract. Breaking changes require a major-version bump and release notes.
-- **New methods are additive** — adding a method doesn't bump major. Gate on `SchemaVersion` if you want to call a newer method conditionally.
+- **New methods are additive** — adding a method doesn't bump major. To feature-gate a call that was added in a newer version, reflect on the interface for method presence (e.g. `typeof(IMissionJournalQuery).GetMethod("NewMethod")`). `SchemaVersion` tracks the sidecar wire format only, not the API surface.
 - **`MissionRecord`'s property set** follows the same rules: additions are non-breaking; renames / removals are breaking.
 - **The sidecar `version` field** tracks only on-disk format changes. An additive API change doesn't necessarily bump it.

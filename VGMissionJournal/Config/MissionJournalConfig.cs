@@ -27,6 +27,6 @@ internal sealed class MissionJournalConfig
             section:  "Journal",
             key:      "MaxMissions",
             defaultValue: MissionStore.DefaultMaxMissions,
-            description: "Maximum mission records kept in the log. 0 = unbounded.");
+            description: "Maximum mission records kept in the journal. 0 = unbounded.");
     }
 }
