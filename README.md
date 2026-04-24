@@ -36,8 +36,6 @@ MaxMissions = 2000
 | **Failed**    | Mission fail condition triggers (vanilla's `Mission.MissionFailed`)             | load-bearing |
 | **Abandoned** | Player drops a mission (vanilla's `RemoveMission(_, completed:false)`)          | load-bearing |
 | *(Archived backstop)* | Synthesized Completed for unusual paths (dev cheats, swallow errors) | backstop |
-| **Offered**   | —                                                                               | **deferred** — post-MVP; Accepted covers the signal consumers actually want |
-| **ObjectiveProgressed** | —                                                                     | **deferred** — post-MVP; additive schema extension |
 
 Every captured mission carries: in-game accept timestamp + wall-clock, storyId, a session-local mission instance id (for correlating across the accept→complete lifecycle when `storyId` is empty), mission name + raw subclass name (`mission.GetType().Name`), source station / system / faction, a full snapshot of the step/objective tree (type per objective), a unified rewards list covering all 14 vanilla reward subtypes, a timeline of state transitions (Accepted → Completed/Failed/Abandoned), and a player-state snapshot. Consumers bucket by subclass / objective type if they want categories; VGMissionLog does not classify.
 
@@ -59,7 +57,8 @@ Full integration guide (typed reference, reflection fallback, soft-dep guard), m
 
 ## Known gaps
 
-- **No Offered or ObjectiveProgressed events.** Vanilla's offer paths vary too much by source (board, bar, broker) to hook reliably; Accepted is load-bearing. Both are additive if added later.
+- **No per-step or per-objective transition events.** Vanilla has no hook: `MissionStep.isComplete` is a computed getter over `objectives.All(IsComplete)`, and `Mission.currentStep` just scans for the first non-complete step — nothing fires when a step or objective flips. The timeline captures mission-level transitions only (Accepted → Completed/Failed/Abandoned); the step/objective tree on the Accepted snapshot is structural, not progress-tracked.
+- **No Offered tracking.** Not captured; if consumers ever need it, it's additive.
 - **A few snapshot fields are never populated** — `missionLevel`, sector IDs, target station/system, player ship. Vanilla's accessor graph is deeper than what's currently scouted; fields are reserved in the schema.
 - **One sidecar per save.** No cross-save aggregation.
 

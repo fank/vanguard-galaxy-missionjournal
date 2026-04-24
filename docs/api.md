@@ -276,7 +276,8 @@ These are documented limitations of the current shipping version. Consumers shou
 - **Sector and target-station/system fields are never populated.** Vanilla's accessor graph is deeper than what's currently scouted. Fields are reserved in the schema; additive future.
 - **Player ship fields are never populated.** Same reason.
 - **`missionInstanceId` is session-local.** Resets across save/load because vanilla rebuilds mission instances on load. Accept→Complete in the same session works; across sessions you need `storyId` (if set) or your own joining logic.
-- **No `Offered` or `ObjectiveProgressed` events.** Accepted is load-bearing; Offered varies too much by source (board, bar, broker) to hook reliably at this stage. `steps[]` captured on accept lets consumers reconstruct which objectives a mission carried without needing an `ObjectiveProgressed` stream.
+- **No per-step or per-objective transitions in the timeline.** Vanilla exposes no hook for this — `MissionStep.isComplete` is a computed getter over `objectives.All(IsComplete)`, and `Mission.currentStep` just scans for the first non-complete step. Nothing fires when a step or objective flips. The timeline captures mission-level transitions only (Accepted → Completed/Failed/Abandoned); `steps[]` on the Accepted snapshot describes the mission's structure, not its progress.
+- **No Offered tracking.** Not captured. Additive if consumers ever need it.
 
 ## Retention
 
