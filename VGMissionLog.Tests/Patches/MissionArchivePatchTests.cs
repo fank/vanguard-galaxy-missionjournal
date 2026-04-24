@@ -9,6 +9,7 @@ using Xunit;
 
 namespace VGMissionLog.Tests.Patches;
 
+[Collection("PatchStatics")]
 public class MissionArchivePatchTests
 {
     [Fact]

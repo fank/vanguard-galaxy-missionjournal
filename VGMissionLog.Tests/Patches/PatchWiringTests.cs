@@ -17,6 +17,7 @@ namespace VGMissionLog.Tests.Patches;
 /// NullReferenceException inside a patched method at runtime, which Harmony
 /// would swallow and log as a warning only (per R5.2).
 /// </summary>
+[Collection("PatchStatics")]
 public class PatchWiringTests
 {
     [Fact]
