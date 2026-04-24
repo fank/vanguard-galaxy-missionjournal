@@ -1,7 +1,14 @@
 version: 2
 updates:
+  # Single NuGet update pass across both csproj directories. The
+  # `directories:` (plural) form keeps shared deps like Newtonsoft.Json
+  # in lockstep — bumping a transitive in the main project without the
+  # matching bump in the test project causes NU1605 package-downgrade
+  # errors during restore.
   - package-ecosystem: "nuget"
-    directory: "/VGMissionJournal"
+    directories:
+      - "/VGMissionJournal"
+      - "/VGMissionJournal.Tests"
     schedule:
       interval: "weekly"
     open-pull-requests-limit: 5
@@ -18,23 +25,6 @@ updates:
       - dependency-name: "UnityEngine.Modules"
       # BepInEx 6 is a separate major branch with a different plugin API.
       # Stay on the 5.x stable line until there's a deliberate migration.
-      - dependency-name: "BepInEx.Core"
-        update-types: ["version-update:semver-major"]
-
-  - package-ecosystem: "nuget"
-    directory: "/VGMissionJournal.Tests"
-    schedule:
-      interval: "weekly"
-    open-pull-requests-limit: 5
-    commit-message:
-      prefix: "chore"
-      include: "scope"
-    groups:
-      bepinex:
-        patterns:
-          - "BepInEx.*"
-    ignore:
-      - dependency-name: "UnityEngine.Modules"
       - dependency-name: "BepInEx.Core"
         update-types: ["version-update:semver-major"]
 
