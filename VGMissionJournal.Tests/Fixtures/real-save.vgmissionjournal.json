@@ -1,0 +1,2576 @@
+{
+  "version": 3,
+  "missions": [
+    {
+      "storyId": "",
+      "missionInstanceId": "aa8e02ec-7ea8-426f-b079-f609e0cf0de2",
+      "missionName": "Salvage Ancient Fiber",
+      "missionSubclass": "Mission",
+      "missionLevel": 0,
+      "sourceStationId": "580e4e20-4ae1-43bf-b0e0-b7a38fea8a11",
+      "sourceStationName": "Fort Opportunity",
+      "sourceSystemId": "d920e93f-c7cd-4350-9779-234fb8e332c5",
+      "sourceSystemName": "Venerable Graveyard",
+      "sourceFaction": "SalvageGuild",
+      "playerLevel": 0,
+      "playerCurrentSystemId": "d920e93f-c7cd-4350-9779-234fb8e332c5",
+      "steps": [
+        {
+          "requireAllObjectives": true,
+          "hidden": false,
+          "objectives": [
+            {
+              "type": "Salvage",
+              "fields": {
+                "itemType": "SalvageOreMissionItem3",
+                "requiredAmount": 18,
+                "targetLayer": "Surface",
+                "gameplayType": "Salvage",
+                "currentAmount": 0,
+                "triggeredBy": "ItemCollected"
+              }
+            }
+          ]
+        },
+        {
+          "requireAllObjectives": true,
+          "hidden": false,
+          "objectives": [
+            {
+              "type": "TradeOffer",
+              "fields": {
+                "itemType": "SalvageOreMissionItem3",
+                "requiredAmount": 18,
+                "deliverTo": "580e4e20-4ae1-43bf-b0e0-b7a38fea8a11",
+                "currentAmount": 0,
+                "displayedAmount": 0,
+                "cargoSpaceRequired": 90.0,
+                "gameplayType": "Generic"
+              }
+            }
+          ]
+        }
+      ],
+      "rewards": [
+        {
+          "type": "Credits",
+          "fields": {
+            "amount": 4587,
+            "hidden": false
+          }
+        },
+        {
+          "type": "Reputation",
+          "fields": {
+            "amount": 30,
+            "faction": "SalvageGuild",
+            "hidden": false
+          }
+        },
+        {
+          "type": "WorkshopCredit",
+          "fields": {
+            "amount": 3157,
+            "hidden": false
+          }
+        }
+      ],
+      "timeline": [
+        {
+          "state": "Accepted",
+          "gameSeconds": 346736.63408882875,
+          "realUtc": "2026-04-24T14:37:25.3089010Z",
+          "isTerminal": false
+        }
+      ],
+      "isActive": true,
+      "acceptedAtGameSeconds": 346736.63408882875
+    },
+    {
+      "storyId": "",
+      "missionInstanceId": "12900d75-331d-4a6b-a5fc-d21b86be22aa",
+      "missionName": "Recover Encrypted System Data",
+      "missionSubclass": "Mission",
+      "missionLevel": 0,
+      "sourceStationId": "580e4e20-4ae1-43bf-b0e0-b7a38fea8a11",
+      "sourceStationName": "Fort Opportunity",
+      "sourceSystemId": "d920e93f-c7cd-4350-9779-234fb8e332c5",
+      "sourceSystemName": "Venerable Graveyard",
+      "sourceFaction": "SalvageGuild",
+      "playerLevel": 0,
+      "playerCurrentSystemId": "d920e93f-c7cd-4350-9779-234fb8e332c5",
+      "steps": [
+        {
+          "requireAllObjectives": true,
+          "hidden": false,
+          "objectives": [
+            {
+              "type": "Salvage",
+              "fields": {
+                "itemType": "SalvageMissionItem2",
+                "requiredAmount": 1,
+                "targetPOI": "a5711700-1e73-4e65-a2fe-6379cd43bd63",
+                "gameplayType": "Salvage",
+                "currentAmount": 0,
+                "triggeredBy": "ItemCollected"
+              }
+            }
+          ]
+        },
+        {
+          "requireAllObjectives": true,
+          "hidden": false,
+          "objectives": [
+            {
+              "type": "TradeOffer",
+              "fields": {
+                "itemType": "SalvageMissionItem2",
+                "requiredAmount": 1,
+                "deliverTo": "580e4e20-4ae1-43bf-b0e0-b7a38fea8a11",
+                "currentAmount": 0,
+                "displayedAmount": 0,
+                "cargoSpaceRequired": 1.0,
+                "gameplayType": "Generic"
+              }
+            }
+          ]
+        }
+      ],
+      "rewards": [
+        {
+          "type": "Credits",
+          "fields": {
+            "amount": 3854,
+            "hidden": false
+          }
+        },
+        {
+          "type": "Reputation",
+          "fields": {
+            "amount": 30,
+            "faction": "SalvageGuild",
+            "hidden": false
+          }
+        },
+        {
+          "type": "WorkshopCredit",
+          "fields": {
+            "amount": 3218,
+            "hidden": false
+          }
+        }
+      ],
+      "timeline": [
+        {
+          "state": "Accepted",
+          "gameSeconds": 346999.682454655,
+          "realUtc": "2026-04-24T14:41:48.3534848Z",
+          "isTerminal": false
+        }
+      ],
+      "isActive": true,
+      "acceptedAtGameSeconds": 346999.682454655
+    },
+    {
+      "storyId": "",
+      "missionInstanceId": "735fd883-593e-40e5-8189-35d34d7ff9df",
+      "missionName": "Recover Black Box",
+      "missionSubclass": "Mission",
+      "missionLevel": 0,
+      "sourceStationId": "580e4e20-4ae1-43bf-b0e0-b7a38fea8a11",
+      "sourceStationName": "Fort Opportunity",
+      "sourceSystemId": "d920e93f-c7cd-4350-9779-234fb8e332c5",
+      "sourceSystemName": "Venerable Graveyard",
+      "sourceFaction": "SalvageGuild",
+      "playerLevel": 0,
+      "playerCurrentSystemId": "d920e93f-c7cd-4350-9779-234fb8e332c5",
+      "steps": [
+        {
+          "requireAllObjectives": true,
+          "hidden": false,
+          "objectives": [
+            {
+              "type": "Salvage",
+              "fields": {
+                "itemType": "SalvageMissionItem0",
+                "requiredAmount": 1,
+                "targetPOI": "602bbbec-0330-473c-9fe3-2e9510000535",
+                "gameplayType": "Salvage",
+                "currentAmount": 0,
+                "triggeredBy": "ItemCollected"
+              }
+            }
+          ]
+        },
+        {
+          "requireAllObjectives": true,
+          "hidden": false,
+          "objectives": [
+            {
+              "type": "TradeOffer",
+              "fields": {
+                "itemType": "SalvageMissionItem0",
+                "requiredAmount": 1,
+                "deliverTo": "580e4e20-4ae1-43bf-b0e0-b7a38fea8a11",
+                "currentAmount": 0,
+                "displayedAmount": 0,
+                "cargoSpaceRequired": 1.0,
+                "gameplayType": "Generic"
+              }
+            }
+          ]
+        }
+      ],
+      "rewards": [
+        {
+          "type": "Credits",
+          "fields": {
+            "amount": 3676,
+            "hidden": false
+          }
+        },
+        {
+          "type": "Reputation",
+          "fields": {
+            "amount": 35,
+            "faction": "SalvageGuild",
+            "hidden": false
+          }
+        },
+        {
+          "type": "WorkshopCredit",
+          "fields": {
+            "amount": 4067,
+            "hidden": false
+          }
+        }
+      ],
+      "timeline": [
+        {
+          "state": "Accepted",
+          "gameSeconds": 347191.917819514,
+          "realUtc": "2026-04-24T14:45:00.5889861Z",
+          "isTerminal": false
+        }
+      ],
+      "isActive": true,
+      "acceptedAtGameSeconds": 347191.917819514
+    },
+    {
+      "storyId": "",
+      "missionInstanceId": "b10536cd-27dd-4693-8592-c732fea15f31",
+      "missionName": "Recover Encrypted System Data",
+      "missionSubclass": "Mission",
+      "missionLevel": 0,
+      "sourceStationId": "580e4e20-4ae1-43bf-b0e0-b7a38fea8a11",
+      "sourceStationName": "Fort Opportunity",
+      "sourceSystemId": "d920e93f-c7cd-4350-9779-234fb8e332c5",
+      "sourceSystemName": "Venerable Graveyard",
+      "sourceFaction": "SalvageGuild",
+      "playerLevel": 0,
+      "playerCurrentSystemId": "d920e93f-c7cd-4350-9779-234fb8e332c5",
+      "steps": [
+        {
+          "requireAllObjectives": true,
+          "hidden": false,
+          "objectives": [
+            {
+              "type": "Salvage",
+              "fields": {
+                "itemType": "SalvageMissionItem2",
+                "requiredAmount": 1,
+                "targetPOI": "8d08fe53-5cee-4063-8cfd-897f7bb7bc15",
+                "gameplayType": "Salvage",
+                "currentAmount": 0,
+                "triggeredBy": "ItemCollected"
+              }
+            }
+          ]
+        },
+        {
+          "requireAllObjectives": true,
+          "hidden": false,
+          "objectives": [
+            {
+              "type": "TradeOffer",
+              "fields": {
+                "itemType": "SalvageMissionItem2",
+                "requiredAmount": 1,
+                "deliverTo": "580e4e20-4ae1-43bf-b0e0-b7a38fea8a11",
+                "currentAmount": 0,
+                "displayedAmount": 0,
+                "cargoSpaceRequired": 1.0,
+                "gameplayType": "Generic"
+              }
+            }
+          ]
+        }
+      ],
+      "rewards": [
+        {
+          "type": "Item",
+          "fields": {
+            "item": "WarpFuelTemplate",
+            "amount": 1,
+            "hidden": false
+          }
+        },
+        {
+          "type": "Credits",
+          "fields": {
+            "amount": 4118,
+            "hidden": false
+          }
+        },
+        {
+          "type": "Reputation",
+          "fields": {
+            "amount": 30,
+            "faction": "SalvageGuild",
+            "hidden": false
+          }
+        },
+        {
+          "type": "WorkshopCredit",
+          "fields": {
+            "amount": 3971,
+            "hidden": false
+          }
+        }
+      ],
+      "timeline": [
+        {
+          "state": "Accepted",
+          "gameSeconds": 347308.79604024632,
+          "realUtc": "2026-04-24T14:46:57.4679754Z",
+          "isTerminal": false
+        }
+      ],
+      "isActive": true,
+      "acceptedAtGameSeconds": 347308.79604024632
+    },
+    {
+      "storyId": "",
+      "missionInstanceId": "27b50730-e2ee-4fd5-9477-e68f3a7bfadc",
+      "missionName": "Recover Exotic Cargo",
+      "missionSubclass": "Mission",
+      "missionLevel": 0,
+      "sourceStationId": "580e4e20-4ae1-43bf-b0e0-b7a38fea8a11",
+      "sourceStationName": "Fort Opportunity",
+      "sourceSystemId": "d920e93f-c7cd-4350-9779-234fb8e332c5",
+      "sourceSystemName": "Venerable Graveyard",
+      "sourceFaction": "SalvageGuild",
+      "playerLevel": 0,
+      "playerCurrentSystemId": "d920e93f-c7cd-4350-9779-234fb8e332c5",
+      "steps": [
+        {
+          "requireAllObjectives": true,
+          "hidden": false,
+          "objectives": [
+            {
+              "type": "Salvage",
+              "fields": {
+                "itemType": "SalvageMissionItem3",
+                "requiredAmount": 1,
+                "targetPOI": "bbc741d1-1d2c-4d97-8204-28087441bb42",
+                "gameplayType": "Salvage",
+                "currentAmount": 0,
+                "triggeredBy": "ItemCollected"
+              }
+            }
+          ]
+        },
+        {
+          "requireAllObjectives": true,
+          "hidden": false,
+          "objectives": [
+            {
+              "type": "TradeOffer",
+              "fields": {
+                "itemType": "SalvageMissionItem3",
+                "requiredAmount": 1,
+                "deliverTo": "580e4e20-4ae1-43bf-b0e0-b7a38fea8a11",
+                "currentAmount": 0,
+                "displayedAmount": 0,
+                "cargoSpaceRequired": 1.0,
+                "gameplayType": "Generic"
+              }
+            }
+          ]
+        }
+      ],
+      "rewards": [
+        {
+          "type": "Credits",
+          "fields": {
+            "amount": 3464,
+            "hidden": false
+          }
+        },
+        {
+          "type": "Reputation",
+          "fields": {
+            "amount": 30,
+            "faction": "SalvageGuild",
+            "hidden": false
+          }
+        },
+        {
+          "type": "WorkshopCredit",
+          "fields": {
+            "amount": 4122,
+            "hidden": false
+          }
+        }
+      ],
+      "timeline": [
+        {
+          "state": "Accepted",
+          "gameSeconds": 347465.46539765742,
+          "realUtc": "2026-04-24T14:49:34.1363778Z",
+          "isTerminal": false
+        }
+      ],
+      "isActive": true,
+      "acceptedAtGameSeconds": 347465.46539765742
+    },
+    {
+      "storyId": "",
+      "missionInstanceId": "8c22f97f-8cac-48ae-96dd-14a79acc983d",
+      "missionName": "Recover Scientific Samples",
+      "missionSubclass": "Mission",
+      "missionLevel": 0,
+      "sourceStationId": "580e4e20-4ae1-43bf-b0e0-b7a38fea8a11",
+      "sourceStationName": "Fort Opportunity",
+      "sourceSystemId": "d920e93f-c7cd-4350-9779-234fb8e332c5",
+      "sourceSystemName": "Venerable Graveyard",
+      "sourceFaction": "SalvageGuild",
+      "playerLevel": 0,
+      "playerCurrentSystemId": "d920e93f-c7cd-4350-9779-234fb8e332c5",
+      "steps": [
+        {
+          "requireAllObjectives": true,
+          "hidden": false,
+          "objectives": [
+            {
+              "type": "Salvage",
+              "fields": {
+                "itemType": "SalvageMissionItem1",
+                "requiredAmount": 1,
+                "targetPOI": "d3eeb452-5ea6-4071-9e4f-0b59b889c427",
+                "gameplayType": "Salvage",
+                "currentAmount": 0,
+                "triggeredBy": "ItemCollected"
+              }
+            }
+          ]
+        },
+        {
+          "requireAllObjectives": true,
+          "hidden": false,
+          "objectives": [
+            {
+              "type": "TradeOffer",
+              "fields": {
+                "itemType": "SalvageMissionItem1",
+                "requiredAmount": 1,
+                "deliverTo": "580e4e20-4ae1-43bf-b0e0-b7a38fea8a11",
+                "currentAmount": 0,
+                "displayedAmount": 0,
+                "cargoSpaceRequired": 1.0,
+                "gameplayType": "Generic"
+              }
+            }
+          ]
+        }
+      ],
+      "rewards": [
+        {
+          "type": "Credits",
+          "fields": {
+            "amount": 4155,
+            "hidden": false
+          }
+        },
+        {
+          "type": "Reputation",
+          "fields": {
+            "amount": 35,
+            "faction": "SalvageGuild",
+            "hidden": false
+          }
+        },
+        {
+          "type": "WorkshopCredit",
+          "fields": {
+            "amount": 3090,
+            "hidden": false
+          }
+        }
+      ],
+      "timeline": [
+        {
+          "state": "Accepted",
+          "gameSeconds": 347605.04945179733,
+          "realUtc": "2026-04-24T14:51:53.7209062Z",
+          "isTerminal": false
+        }
+      ],
+      "isActive": true,
+      "acceptedAtGameSeconds": 347605.04945179733
+    },
+    {
+      "storyId": "",
+      "missionInstanceId": "3471bd76-235b-4301-ae08-d5301eed78ff",
+      "missionName": "Recover Encrypted System Data",
+      "missionSubclass": "Mission",
+      "missionLevel": 0,
+      "sourceStationId": "580e4e20-4ae1-43bf-b0e0-b7a38fea8a11",
+      "sourceStationName": "Fort Opportunity",
+      "sourceSystemId": "d920e93f-c7cd-4350-9779-234fb8e332c5",
+      "sourceSystemName": "Venerable Graveyard",
+      "sourceFaction": "SalvageGuild",
+      "playerLevel": 0,
+      "playerCurrentSystemId": "d920e93f-c7cd-4350-9779-234fb8e332c5",
+      "steps": [
+        {
+          "requireAllObjectives": true,
+          "hidden": false,
+          "objectives": [
+            {
+              "type": "Salvage",
+              "fields": {
+                "itemType": "SalvageMissionItem2",
+                "requiredAmount": 1,
+                "targetPOI": "829e62f9-64ed-49ce-a492-ac728df7c144",
+                "gameplayType": "Salvage",
+                "currentAmount": 0,
+                "triggeredBy": "ItemCollected"
+              }
+            }
+          ]
+        },
+        {
+          "requireAllObjectives": true,
+          "hidden": false,
+          "objectives": [
+            {
+              "type": "TradeOffer",
+              "fields": {
+                "itemType": "SalvageMissionItem2",
+                "requiredAmount": 1,
+                "deliverTo": "580e4e20-4ae1-43bf-b0e0-b7a38fea8a11",
+                "currentAmount": 0,
+                "displayedAmount": 0,
+                "cargoSpaceRequired": 1.0,
+                "gameplayType": "Generic"
+              }
+            }
+          ]
+        }
+      ],
+      "rewards": [
+        {
+          "type": "Credits",
+          "fields": {
+            "amount": 3667,
+            "hidden": false
+          }
+        },
+        {
+          "type": "Reputation",
+          "fields": {
+            "amount": 20,
+            "faction": "SalvageGuild",
+            "hidden": false
+          }
+        },
+        {
+          "type": "WorkshopCredit",
+          "fields": {
+            "amount": 3598,
+            "hidden": false
+          }
+        }
+      ],
+      "timeline": [
+        {
+          "state": "Accepted",
+          "gameSeconds": 347750.952285159,
+          "realUtc": "2026-04-24T14:54:19.6230561Z",
+          "isTerminal": false
+        }
+      ],
+      "isActive": true,
+      "acceptedAtGameSeconds": 347750.952285159
+    },
+    {
+      "storyId": "",
+      "missionInstanceId": "c67aca8a-857f-481a-8e14-9db08b0a210c",
+      "missionName": "Recover Black Box",
+      "missionSubclass": "Mission",
+      "missionLevel": 0,
+      "sourceStationId": "580e4e20-4ae1-43bf-b0e0-b7a38fea8a11",
+      "sourceStationName": "Fort Opportunity",
+      "sourceSystemId": "d920e93f-c7cd-4350-9779-234fb8e332c5",
+      "sourceSystemName": "Venerable Graveyard",
+      "sourceFaction": "SalvageGuild",
+      "playerLevel": 0,
+      "playerCurrentSystemId": "d920e93f-c7cd-4350-9779-234fb8e332c5",
+      "steps": [
+        {
+          "requireAllObjectives": true,
+          "hidden": false,
+          "objectives": [
+            {
+              "type": "Salvage",
+              "fields": {
+                "itemType": "SalvageMissionItem0",
+                "requiredAmount": 1,
+                "targetPOI": "4979de01-67e3-4e88-8606-2d14c41fbd76",
+                "gameplayType": "Salvage",
+                "currentAmount": 0,
+                "triggeredBy": "ItemCollected"
+              }
+            }
+          ]
+        },
+        {
+          "requireAllObjectives": true,
+          "hidden": false,
+          "objectives": [
+            {
+              "type": "TradeOffer",
+              "fields": {
+                "itemType": "SalvageMissionItem0",
+                "requiredAmount": 1,
+                "deliverTo": "580e4e20-4ae1-43bf-b0e0-b7a38fea8a11",
+                "currentAmount": 0,
+                "displayedAmount": 0,
+                "cargoSpaceRequired": 1.0,
+                "gameplayType": "Generic"
+              }
+            }
+          ]
+        }
+      ],
+      "rewards": [
+        {
+          "type": "Credits",
+          "fields": {
+            "amount": 4465,
+            "hidden": false
+          }
+        },
+        {
+          "type": "Reputation",
+          "fields": {
+            "amount": 35,
+            "faction": "SalvageGuild",
+            "hidden": false
+          }
+        },
+        {
+          "type": "WorkshopCredit",
+          "fields": {
+            "amount": 4359,
+            "hidden": false
+          }
+        }
+      ],
+      "timeline": [
+        {
+          "state": "Accepted",
+          "gameSeconds": 347923.8820380313,
+          "realUtc": "2026-04-24T14:57:12.5529209Z",
+          "isTerminal": false
+        }
+      ],
+      "isActive": true,
+      "acceptedAtGameSeconds": 347923.8820380313
+    },
+    {
+      "storyId": "",
+      "missionInstanceId": "621c5bc1-ee1f-4955-be51-dc9127ec8044",
+      "missionName": "Salvage Ancient Plates",
+      "missionSubclass": "Mission",
+      "missionLevel": 0,
+      "sourceStationId": "580e4e20-4ae1-43bf-b0e0-b7a38fea8a11",
+      "sourceStationName": "Fort Opportunity",
+      "sourceSystemId": "d920e93f-c7cd-4350-9779-234fb8e332c5",
+      "sourceSystemName": "Venerable Graveyard",
+      "sourceFaction": "SalvageGuild",
+      "playerLevel": 0,
+      "playerCurrentSystemId": "d920e93f-c7cd-4350-9779-234fb8e332c5",
+      "steps": [
+        {
+          "requireAllObjectives": true,
+          "hidden": false,
+          "objectives": [
+            {
+              "type": "Salvage",
+              "fields": {
+                "itemType": "SalvageOreMissionItem2",
+                "requiredAmount": 15,
+                "targetLayer": "Surface",
+                "gameplayType": "Salvage",
+                "currentAmount": 0,
+                "triggeredBy": "ItemCollected"
+              }
+            }
+          ]
+        },
+        {
+          "requireAllObjectives": true,
+          "hidden": false,
+          "objectives": [
+            {
+              "type": "TradeOffer",
+              "fields": {
+                "itemType": "SalvageOreMissionItem2",
+                "requiredAmount": 15,
+                "deliverTo": "580e4e20-4ae1-43bf-b0e0-b7a38fea8a11",
+                "currentAmount": 0,
+                "displayedAmount": 0,
+                "cargoSpaceRequired": 75.0,
+                "gameplayType": "Generic"
+              }
+            }
+          ]
+        }
+      ],
+      "rewards": [
+        {
+          "type": "Credits",
+          "fields": {
+            "amount": 3993,
+            "hidden": false
+          }
+        },
+        {
+          "type": "Reputation",
+          "fields": {
+            "amount": 25,
+            "faction": "SalvageGuild",
+            "hidden": false
+          }
+        },
+        {
+          "type": "WorkshopCredit",
+          "fields": {
+            "amount": 3204,
+            "hidden": false
+          }
+        }
+      ],
+      "timeline": [
+        {
+          "state": "Accepted",
+          "gameSeconds": 348080.63879102428,
+          "realUtc": "2026-04-24T14:59:49.3110012Z",
+          "isTerminal": false
+        }
+      ],
+      "isActive": true,
+      "acceptedAtGameSeconds": 348080.63879102428
+    },
+    {
+      "storyId": "",
+      "missionInstanceId": "83404a33-8d97-47ea-8c92-7dee13f98c20",
+      "missionName": "Salvage Ancient Plates",
+      "missionSubclass": "Mission",
+      "missionLevel": 0,
+      "sourceStationId": "580e4e20-4ae1-43bf-b0e0-b7a38fea8a11",
+      "sourceStationName": "Fort Opportunity",
+      "sourceSystemId": "d920e93f-c7cd-4350-9779-234fb8e332c5",
+      "sourceSystemName": "Venerable Graveyard",
+      "sourceFaction": "SalvageGuild",
+      "playerLevel": 0,
+      "playerCurrentSystemId": "d920e93f-c7cd-4350-9779-234fb8e332c5",
+      "steps": [
+        {
+          "requireAllObjectives": true,
+          "hidden": false,
+          "objectives": [
+            {
+              "type": "Salvage",
+              "fields": {
+                "itemType": "SalvageOreMissionItem2",
+                "requiredAmount": 18,
+                "targetLayer": "Surface",
+                "gameplayType": "Salvage",
+                "currentAmount": 0,
+                "triggeredBy": "ItemCollected"
+              }
+            }
+          ]
+        },
+        {
+          "requireAllObjectives": true,
+          "hidden": false,
+          "objectives": [
+            {
+              "type": "TradeOffer",
+              "fields": {
+                "itemType": "SalvageOreMissionItem2",
+                "requiredAmount": 18,
+                "deliverTo": "580e4e20-4ae1-43bf-b0e0-b7a38fea8a11",
+                "currentAmount": 0,
+                "displayedAmount": 0,
+                "cargoSpaceRequired": 90.0,
+                "gameplayType": "Generic"
+              }
+            }
+          ]
+        }
+      ],
+      "rewards": [
+        {
+          "type": "Credits",
+          "fields": {
+            "amount": 3167,
+            "hidden": false
+          }
+        },
+        {
+          "type": "Reputation",
+          "fields": {
+            "amount": 35,
+            "faction": "SalvageGuild",
+            "hidden": false
+          }
+        },
+        {
+          "type": "WorkshopCredit",
+          "fields": {
+            "amount": 4010,
+            "hidden": false
+          }
+        }
+      ],
+      "timeline": [
+        {
+          "state": "Accepted",
+          "gameSeconds": 348298.75977898581,
+          "realUtc": "2026-04-24T15:03:27.4311290Z",
+          "isTerminal": false
+        }
+      ],
+      "isActive": true,
+      "acceptedAtGameSeconds": 348298.75977898581
+    },
+    {
+      "storyId": "",
+      "missionInstanceId": "d3a515b4-6d73-45e6-9bb4-33d02104f746",
+      "missionName": "Salvage Ancient Fiber",
+      "missionSubclass": "Mission",
+      "missionLevel": 0,
+      "sourceStationId": "580e4e20-4ae1-43bf-b0e0-b7a38fea8a11",
+      "sourceStationName": "Fort Opportunity",
+      "sourceSystemId": "d920e93f-c7cd-4350-9779-234fb8e332c5",
+      "sourceSystemName": "Venerable Graveyard",
+      "sourceFaction": "SalvageGuild",
+      "playerLevel": 0,
+      "playerCurrentSystemId": "d920e93f-c7cd-4350-9779-234fb8e332c5",
+      "steps": [
+        {
+          "requireAllObjectives": true,
+          "hidden": false,
+          "objectives": [
+            {
+              "type": "Salvage",
+              "fields": {
+                "itemType": "SalvageOreMissionItem3",
+                "requiredAmount": 15,
+                "targetLayer": "Surface",
+                "gameplayType": "Salvage",
+                "currentAmount": 0,
+                "triggeredBy": "ItemCollected"
+              }
+            }
+          ]
+        },
+        {
+          "requireAllObjectives": true,
+          "hidden": false,
+          "objectives": [
+            {
+              "type": "TradeOffer",
+              "fields": {
+                "itemType": "SalvageOreMissionItem3",
+                "requiredAmount": 15,
+                "deliverTo": "580e4e20-4ae1-43bf-b0e0-b7a38fea8a11",
+                "currentAmount": 0,
+                "displayedAmount": 0,
+                "cargoSpaceRequired": 75.0,
+                "gameplayType": "Generic"
+              }
+            }
+          ]
+        }
+      ],
+      "rewards": [
+        {
+          "type": "Credits",
+          "fields": {
+            "amount": 4013,
+            "hidden": false
+          }
+        },
+        {
+          "type": "Reputation",
+          "fields": {
+            "amount": 25,
+            "faction": "SalvageGuild",
+            "hidden": false
+          }
+        },
+        {
+          "type": "WorkshopCredit",
+          "fields": {
+            "amount": 3159,
+            "hidden": false
+          }
+        }
+      ],
+      "timeline": [
+        {
+          "state": "Accepted",
+          "gameSeconds": 348482.1774759554,
+          "realUtc": "2026-04-24T15:06:30.8490844Z",
+          "isTerminal": false
+        }
+      ],
+      "isActive": true,
+      "acceptedAtGameSeconds": 348482.1774759554
+    },
+    {
+      "storyId": "",
+      "missionInstanceId": "0223ccad-b8db-44d1-ac70-35616f9fd983",
+      "missionName": "Salvage Ancient Chunks",
+      "missionSubclass": "Mission",
+      "missionLevel": 0,
+      "sourceStationId": "580e4e20-4ae1-43bf-b0e0-b7a38fea8a11",
+      "sourceStationName": "Fort Opportunity",
+      "sourceSystemId": "d920e93f-c7cd-4350-9779-234fb8e332c5",
+      "sourceSystemName": "Venerable Graveyard",
+      "sourceFaction": "SalvageGuild",
+      "playerLevel": 0,
+      "playerCurrentSystemId": "d920e93f-c7cd-4350-9779-234fb8e332c5",
+      "steps": [
+        {
+          "requireAllObjectives": true,
+          "hidden": false,
+          "objectives": [
+            {
+              "type": "Salvage",
+              "fields": {
+                "itemType": "SalvageOreMissionItem1",
+                "requiredAmount": 14,
+                "targetLayer": "Surface",
+                "gameplayType": "Salvage",
+                "currentAmount": 0,
+                "triggeredBy": "ItemCollected"
+              }
+            }
+          ]
+        },
+        {
+          "requireAllObjectives": true,
+          "hidden": false,
+          "objectives": [
+            {
+              "type": "TradeOffer",
+              "fields": {
+                "itemType": "SalvageOreMissionItem1",
+                "requiredAmount": 14,
+                "deliverTo": "580e4e20-4ae1-43bf-b0e0-b7a38fea8a11",
+                "currentAmount": 0,
+                "displayedAmount": 0,
+                "cargoSpaceRequired": 70.0,
+                "gameplayType": "Generic"
+              }
+            }
+          ]
+        }
+      ],
+      "rewards": [
+        {
+          "type": "Credits",
+          "fields": {
+            "amount": 3716,
+            "hidden": false
+          }
+        },
+        {
+          "type": "Reputation",
+          "fields": {
+            "amount": 35,
+            "faction": "SalvageGuild",
+            "hidden": false
+          }
+        },
+        {
+          "type": "WorkshopCredit",
+          "fields": {
+            "amount": 3803,
+            "hidden": false
+          }
+        }
+      ],
+      "timeline": [
+        {
+          "state": "Accepted",
+          "gameSeconds": 348650.35732083308,
+          "realUtc": "2026-04-24T15:09:19.0296102Z",
+          "isTerminal": false
+        }
+      ],
+      "isActive": true,
+      "acceptedAtGameSeconds": 348650.35732083308
+    },
+    {
+      "storyId": "",
+      "missionInstanceId": "7eed5e14-ea91-4ba4-9b26-548b7e15fd7b",
+      "missionName": "Recover Scientific Samples",
+      "missionSubclass": "Mission",
+      "missionLevel": 0,
+      "sourceStationId": "580e4e20-4ae1-43bf-b0e0-b7a38fea8a11",
+      "sourceStationName": "Fort Opportunity",
+      "sourceSystemId": "d920e93f-c7cd-4350-9779-234fb8e332c5",
+      "sourceSystemName": "Venerable Graveyard",
+      "sourceFaction": "SalvageGuild",
+      "playerLevel": 0,
+      "playerCurrentSystemId": "d920e93f-c7cd-4350-9779-234fb8e332c5",
+      "steps": [
+        {
+          "requireAllObjectives": true,
+          "hidden": false,
+          "objectives": [
+            {
+              "type": "Salvage",
+              "fields": {
+                "itemType": "SalvageMissionItem1",
+                "requiredAmount": 1,
+                "targetPOI": "ef41121d-9b71-4d8b-8b77-387f05949e23",
+                "gameplayType": "Salvage",
+                "currentAmount": 0,
+                "triggeredBy": "ItemCollected"
+              }
+            }
+          ]
+        },
+        {
+          "requireAllObjectives": true,
+          "hidden": false,
+          "objectives": [
+            {
+              "type": "TradeOffer",
+              "fields": {
+                "itemType": "SalvageMissionItem1",
+                "requiredAmount": 1,
+                "deliverTo": "580e4e20-4ae1-43bf-b0e0-b7a38fea8a11",
+                "currentAmount": 0,
+                "displayedAmount": 0,
+                "cargoSpaceRequired": 1.0,
+                "gameplayType": "Generic"
+              }
+            }
+          ]
+        }
+      ],
+      "rewards": [
+        {
+          "type": "Credits",
+          "fields": {
+            "amount": 3630,
+            "hidden": false
+          }
+        },
+        {
+          "type": "Reputation",
+          "fields": {
+            "amount": 25,
+            "faction": "SalvageGuild",
+            "hidden": false
+          }
+        },
+        {
+          "type": "WorkshopCredit",
+          "fields": {
+            "amount": 3198,
+            "hidden": false
+          }
+        }
+      ],
+      "timeline": [
+        {
+          "state": "Accepted",
+          "gameSeconds": 348776.15591903409,
+          "realUtc": "2026-04-24T15:11:24.8285890Z",
+          "isTerminal": false
+        }
+      ],
+      "isActive": true,
+      "acceptedAtGameSeconds": 348776.15591903409
+    },
+    {
+      "storyId": "",
+      "missionInstanceId": "bf1656e8-2143-4738-9ab6-0d5ba1a3721f",
+      "missionName": "Salvage Ancient Fiber",
+      "missionSubclass": "Mission",
+      "missionLevel": 0,
+      "sourceStationId": "580e4e20-4ae1-43bf-b0e0-b7a38fea8a11",
+      "sourceStationName": "Fort Opportunity",
+      "sourceSystemId": "d920e93f-c7cd-4350-9779-234fb8e332c5",
+      "sourceSystemName": "Venerable Graveyard",
+      "sourceFaction": "SalvageGuild",
+      "playerLevel": 0,
+      "playerCurrentSystemId": "d920e93f-c7cd-4350-9779-234fb8e332c5",
+      "steps": [
+        {
+          "requireAllObjectives": true,
+          "hidden": false,
+          "objectives": [
+            {
+              "type": "Salvage",
+              "fields": {
+                "itemType": "SalvageOreMissionItem3",
+                "requiredAmount": 16,
+                "targetLayer": "Surface",
+                "gameplayType": "Salvage",
+                "currentAmount": 0,
+                "triggeredBy": "ItemCollected"
+              }
+            }
+          ]
+        },
+        {
+          "requireAllObjectives": true,
+          "hidden": false,
+          "objectives": [
+            {
+              "type": "TradeOffer",
+              "fields": {
+                "itemType": "SalvageOreMissionItem3",
+                "requiredAmount": 16,
+                "deliverTo": "580e4e20-4ae1-43bf-b0e0-b7a38fea8a11",
+                "currentAmount": 0,
+                "displayedAmount": 0,
+                "cargoSpaceRequired": 80.0,
+                "gameplayType": "Generic"
+              }
+            }
+          ]
+        }
+      ],
+      "rewards": [
+        {
+          "type": "Credits",
+          "fields": {
+            "amount": 4357,
+            "hidden": false
+          }
+        },
+        {
+          "type": "Reputation",
+          "fields": {
+            "amount": 30,
+            "faction": "SalvageGuild",
+            "hidden": false
+          }
+        },
+        {
+          "type": "WorkshopCredit",
+          "fields": {
+            "amount": 4016,
+            "hidden": false
+          }
+        }
+      ],
+      "timeline": [
+        {
+          "state": "Accepted",
+          "gameSeconds": 348927.01280043047,
+          "realUtc": "2026-04-24T15:13:55.6843122Z",
+          "isTerminal": false
+        }
+      ],
+      "isActive": true,
+      "acceptedAtGameSeconds": 348927.01280043047
+    },
+    {
+      "storyId": "",
+      "missionInstanceId": "122fd320-da4e-40e2-b96c-56a7ec7496cb",
+      "missionName": "Salvage Ancient Fiber",
+      "missionSubclass": "Mission",
+      "missionLevel": 0,
+      "sourceStationId": "580e4e20-4ae1-43bf-b0e0-b7a38fea8a11",
+      "sourceStationName": "Fort Opportunity",
+      "sourceSystemId": "d920e93f-c7cd-4350-9779-234fb8e332c5",
+      "sourceSystemName": "Venerable Graveyard",
+      "sourceFaction": "SalvageGuild",
+      "playerLevel": 0,
+      "playerCurrentSystemId": "d920e93f-c7cd-4350-9779-234fb8e332c5",
+      "steps": [
+        {
+          "requireAllObjectives": true,
+          "hidden": false,
+          "objectives": [
+            {
+              "type": "Salvage",
+              "fields": {
+                "itemType": "SalvageOreMissionItem3",
+                "requiredAmount": 15,
+                "targetLayer": "Surface",
+                "gameplayType": "Salvage",
+                "currentAmount": 0,
+                "triggeredBy": "ItemCollected"
+              }
+            }
+          ]
+        },
+        {
+          "requireAllObjectives": true,
+          "hidden": false,
+          "objectives": [
+            {
+              "type": "TradeOffer",
+              "fields": {
+                "itemType": "SalvageOreMissionItem3",
+                "requiredAmount": 15,
+                "deliverTo": "580e4e20-4ae1-43bf-b0e0-b7a38fea8a11",
+                "currentAmount": 0,
+                "displayedAmount": 0,
+                "cargoSpaceRequired": 75.0,
+                "gameplayType": "Generic"
+              }
+            }
+          ]
+        }
+      ],
+      "rewards": [
+        {
+          "type": "Credits",
+          "fields": {
+            "amount": 4249,
+            "hidden": false
+          }
+        },
+        {
+          "type": "Reputation",
+          "fields": {
+            "amount": 35,
+            "faction": "SalvageGuild",
+            "hidden": false
+          }
+        },
+        {
+          "type": "WorkshopCredit",
+          "fields": {
+            "amount": 3801,
+            "hidden": false
+          }
+        }
+      ],
+      "timeline": [
+        {
+          "state": "Accepted",
+          "gameSeconds": 349126.03152222984,
+          "realUtc": "2026-04-24T15:17:14.7035289Z",
+          "isTerminal": false
+        }
+      ],
+      "isActive": true,
+      "acceptedAtGameSeconds": 349126.03152222984
+    },
+    {
+      "storyId": "",
+      "missionInstanceId": "1d6499a6-7220-48c2-8cb8-4397a77a589e",
+      "missionName": "Recover Encrypted System Data",
+      "missionSubclass": "Mission",
+      "missionLevel": 0,
+      "sourceStationId": "580e4e20-4ae1-43bf-b0e0-b7a38fea8a11",
+      "sourceStationName": "Fort Opportunity",
+      "sourceSystemId": "d920e93f-c7cd-4350-9779-234fb8e332c5",
+      "sourceSystemName": "Venerable Graveyard",
+      "sourceFaction": "SalvageGuild",
+      "playerLevel": 0,
+      "playerCurrentSystemId": "d920e93f-c7cd-4350-9779-234fb8e332c5",
+      "steps": [
+        {
+          "requireAllObjectives": true,
+          "hidden": false,
+          "objectives": [
+            {
+              "type": "Salvage",
+              "fields": {
+                "itemType": "SalvageMissionItem2",
+                "requiredAmount": 1,
+                "targetPOI": "11d7d635-b983-4025-ad97-25e5ee4aead2",
+                "gameplayType": "Salvage",
+                "currentAmount": 0,
+                "triggeredBy": "ItemCollected"
+              }
+            }
+          ]
+        },
+        {
+          "requireAllObjectives": true,
+          "hidden": false,
+          "objectives": [
+            {
+              "type": "TradeOffer",
+              "fields": {
+                "itemType": "SalvageMissionItem2",
+                "requiredAmount": 1,
+                "deliverTo": "580e4e20-4ae1-43bf-b0e0-b7a38fea8a11",
+                "currentAmount": 0,
+                "displayedAmount": 0,
+                "cargoSpaceRequired": 1.0,
+                "gameplayType": "Generic"
+              }
+            }
+          ]
+        }
+      ],
+      "rewards": [
+        {
+          "type": "Credits",
+          "fields": {
+            "amount": 4100,
+            "hidden": false
+          }
+        },
+        {
+          "type": "Reputation",
+          "fields": {
+            "amount": 30,
+            "faction": "SalvageGuild",
+            "hidden": false
+          }
+        },
+        {
+          "type": "WorkshopCredit",
+          "fields": {
+            "amount": 3418,
+            "hidden": false
+          }
+        }
+      ],
+      "timeline": [
+        {
+          "state": "Accepted",
+          "gameSeconds": 349291.05870183889,
+          "realUtc": "2026-04-24T15:19:59.7302378Z",
+          "isTerminal": false
+        }
+      ],
+      "isActive": true,
+      "acceptedAtGameSeconds": 349291.05870183889
+    },
+    {
+      "storyId": "",
+      "missionInstanceId": "c00cb22a-7c3b-46d9-881a-c1d65df1ebca",
+      "missionName": "Salvage Ancient Fragments",
+      "missionSubclass": "Mission",
+      "missionLevel": 0,
+      "sourceStationId": "580e4e20-4ae1-43bf-b0e0-b7a38fea8a11",
+      "sourceStationName": "Fort Opportunity",
+      "sourceSystemId": "d920e93f-c7cd-4350-9779-234fb8e332c5",
+      "sourceSystemName": "Venerable Graveyard",
+      "sourceFaction": "SalvageGuild",
+      "playerLevel": 0,
+      "playerCurrentSystemId": "d920e93f-c7cd-4350-9779-234fb8e332c5",
+      "steps": [
+        {
+          "requireAllObjectives": true,
+          "hidden": false,
+          "objectives": [
+            {
+              "type": "Salvage",
+              "fields": {
+                "itemType": "SalvageOreMissionItem0",
+                "requiredAmount": 15,
+                "targetLayer": "Surface",
+                "gameplayType": "Salvage",
+                "currentAmount": 0,
+                "triggeredBy": "ItemCollected"
+              }
+            }
+          ]
+        },
+        {
+          "requireAllObjectives": true,
+          "hidden": false,
+          "objectives": [
+            {
+              "type": "TradeOffer",
+              "fields": {
+                "itemType": "SalvageOreMissionItem0",
+                "requiredAmount": 15,
+                "deliverTo": "580e4e20-4ae1-43bf-b0e0-b7a38fea8a11",
+                "currentAmount": 0,
+                "displayedAmount": 0,
+                "cargoSpaceRequired": 75.0,
+                "gameplayType": "Generic"
+              }
+            }
+          ]
+        }
+      ],
+      "rewards": [
+        {
+          "type": "Item",
+          "fields": {
+            "item": "SmallSalvageLaser",
+            "amount": 1,
+            "hidden": false
+          }
+        },
+        {
+          "type": "Reputation",
+          "fields": {
+            "amount": 30,
+            "faction": "SalvageGuild",
+            "hidden": false
+          }
+        },
+        {
+          "type": "WorkshopCredit",
+          "fields": {
+            "amount": 3811,
+            "hidden": false
+          }
+        }
+      ],
+      "timeline": [
+        {
+          "state": "Accepted",
+          "gameSeconds": 349476.87789845333,
+          "realUtc": "2026-04-24T15:23:05.5503085Z",
+          "isTerminal": false
+        }
+      ],
+      "isActive": true,
+      "acceptedAtGameSeconds": 349476.87789845333
+    },
+    {
+      "storyId": "",
+      "missionInstanceId": "893f6985-87a5-4b9a-ae2e-6618decd062c",
+      "missionName": "Salvage Ancient Plates",
+      "missionSubclass": "Mission",
+      "missionLevel": 0,
+      "sourceStationId": "580e4e20-4ae1-43bf-b0e0-b7a38fea8a11",
+      "sourceStationName": "Fort Opportunity",
+      "sourceSystemId": "d920e93f-c7cd-4350-9779-234fb8e332c5",
+      "sourceSystemName": "Venerable Graveyard",
+      "sourceFaction": "SalvageGuild",
+      "playerLevel": 0,
+      "playerCurrentSystemId": "d920e93f-c7cd-4350-9779-234fb8e332c5",
+      "steps": [
+        {
+          "requireAllObjectives": true,
+          "hidden": false,
+          "objectives": [
+            {
+              "type": "Salvage",
+              "fields": {
+                "itemType": "SalvageOreMissionItem2",
+                "requiredAmount": 10,
+                "targetLayer": "Surface",
+                "gameplayType": "Salvage",
+                "currentAmount": 0,
+                "triggeredBy": "ItemCollected"
+              }
+            }
+          ]
+        },
+        {
+          "requireAllObjectives": true,
+          "hidden": false,
+          "objectives": [
+            {
+              "type": "TradeOffer",
+              "fields": {
+                "itemType": "SalvageOreMissionItem2",
+                "requiredAmount": 10,
+                "deliverTo": "580e4e20-4ae1-43bf-b0e0-b7a38fea8a11",
+                "currentAmount": 0,
+                "displayedAmount": 0,
+                "cargoSpaceRequired": 50.0,
+                "gameplayType": "Generic"
+              }
+            }
+          ]
+        }
+      ],
+      "rewards": [
+        {
+          "type": "Item",
+          "fields": {
+            "item": "WarpFuelTemplate",
+            "amount": 1,
+            "hidden": false
+          }
+        },
+        {
+          "type": "Credits",
+          "fields": {
+            "amount": 4455,
+            "hidden": false
+          }
+        },
+        {
+          "type": "Reputation",
+          "fields": {
+            "amount": 25,
+            "faction": "SalvageGuild",
+            "hidden": false
+          }
+        },
+        {
+          "type": "WorkshopCredit",
+          "fields": {
+            "amount": 3935,
+            "hidden": false
+          }
+        }
+      ],
+      "timeline": [
+        {
+          "state": "Accepted",
+          "gameSeconds": 349678.50362378691,
+          "realUtc": "2026-04-24T15:26:27.1747338Z",
+          "isTerminal": false
+        }
+      ],
+      "isActive": true,
+      "acceptedAtGameSeconds": 349678.50362378691
+    },
+    {
+      "storyId": "",
+      "missionInstanceId": "4c51ad3f-f796-48b1-95fa-a3dd4f994959",
+      "missionName": "Salvage Ancient Plates",
+      "missionSubclass": "Mission",
+      "missionLevel": 0,
+      "sourceStationId": "580e4e20-4ae1-43bf-b0e0-b7a38fea8a11",
+      "sourceStationName": "Fort Opportunity",
+      "sourceSystemId": "d920e93f-c7cd-4350-9779-234fb8e332c5",
+      "sourceSystemName": "Venerable Graveyard",
+      "sourceFaction": "SalvageGuild",
+      "playerLevel": 0,
+      "playerCurrentSystemId": "d920e93f-c7cd-4350-9779-234fb8e332c5",
+      "steps": [
+        {
+          "requireAllObjectives": true,
+          "hidden": false,
+          "objectives": [
+            {
+              "type": "Salvage",
+              "fields": {
+                "itemType": "SalvageOreMissionItem2",
+                "requiredAmount": 19,
+                "targetLayer": "Surface",
+                "gameplayType": "Salvage",
+                "currentAmount": 0,
+                "triggeredBy": "ItemCollected"
+              }
+            }
+          ]
+        },
+        {
+          "requireAllObjectives": true,
+          "hidden": false,
+          "objectives": [
+            {
+              "type": "TradeOffer",
+              "fields": {
+                "itemType": "SalvageOreMissionItem2",
+                "requiredAmount": 19,
+                "deliverTo": "580e4e20-4ae1-43bf-b0e0-b7a38fea8a11",
+                "currentAmount": 0,
+                "displayedAmount": 0,
+                "cargoSpaceRequired": 95.0,
+                "gameplayType": "Generic"
+              }
+            }
+          ]
+        }
+      ],
+      "rewards": [
+        {
+          "type": "Credits",
+          "fields": {
+            "amount": 3785,
+            "hidden": false
+          }
+        },
+        {
+          "type": "Reputation",
+          "fields": {
+            "amount": 35,
+            "faction": "SalvageGuild",
+            "hidden": false
+          }
+        },
+        {
+          "type": "WorkshopCredit",
+          "fields": {
+            "amount": 3330,
+            "hidden": false
+          }
+        }
+      ],
+      "timeline": [
+        {
+          "state": "Accepted",
+          "gameSeconds": 349847.11494292557,
+          "realUtc": "2026-04-24T15:29:15.7859727Z",
+          "isTerminal": false
+        }
+      ],
+      "isActive": true,
+      "acceptedAtGameSeconds": 349847.11494292557
+    },
+    {
+      "storyId": "",
+      "missionInstanceId": "255a8ced-ea0a-42c9-8614-dde6ee276bd2",
+      "missionName": "Salvage Ancient Fragments",
+      "missionSubclass": "Mission",
+      "missionLevel": 0,
+      "sourceStationId": "580e4e20-4ae1-43bf-b0e0-b7a38fea8a11",
+      "sourceStationName": "Fort Opportunity",
+      "sourceSystemId": "d920e93f-c7cd-4350-9779-234fb8e332c5",
+      "sourceSystemName": "Venerable Graveyard",
+      "sourceFaction": "SalvageGuild",
+      "playerLevel": 0,
+      "playerCurrentSystemId": "d920e93f-c7cd-4350-9779-234fb8e332c5",
+      "steps": [
+        {
+          "requireAllObjectives": true,
+          "hidden": false,
+          "objectives": [
+            {
+              "type": "Salvage",
+              "fields": {
+                "itemType": "SalvageOreMissionItem0",
+                "requiredAmount": 16,
+                "targetLayer": "Surface",
+                "gameplayType": "Salvage",
+                "currentAmount": 0,
+                "triggeredBy": "ItemCollected"
+              }
+            }
+          ]
+        },
+        {
+          "requireAllObjectives": true,
+          "hidden": false,
+          "objectives": [
+            {
+              "type": "TradeOffer",
+              "fields": {
+                "itemType": "SalvageOreMissionItem0",
+                "requiredAmount": 16,
+                "deliverTo": "580e4e20-4ae1-43bf-b0e0-b7a38fea8a11",
+                "currentAmount": 0,
+                "displayedAmount": 0,
+                "cargoSpaceRequired": 80.0,
+                "gameplayType": "Generic"
+              }
+            }
+          ]
+        }
+      ],
+      "rewards": [
+        {
+          "type": "Credits",
+          "fields": {
+            "amount": 4397,
+            "hidden": false
+          }
+        },
+        {
+          "type": "Reputation",
+          "fields": {
+            "amount": 30,
+            "faction": "SalvageGuild",
+            "hidden": false
+          }
+        },
+        {
+          "type": "WorkshopCredit",
+          "fields": {
+            "amount": 3469,
+            "hidden": false
+          }
+        }
+      ],
+      "timeline": [
+        {
+          "state": "Accepted",
+          "gameSeconds": 350041.14457492722,
+          "realUtc": "2026-04-24T15:32:29.8159163Z",
+          "isTerminal": false
+        }
+      ],
+      "isActive": true,
+      "acceptedAtGameSeconds": 350041.14457492722
+    },
+    {
+      "storyId": "",
+      "missionInstanceId": "2a791003-d189-47ca-a2c6-601161842503",
+      "missionName": "Recover Encrypted System Data",
+      "missionSubclass": "Mission",
+      "missionLevel": 0,
+      "sourceStationId": "580e4e20-4ae1-43bf-b0e0-b7a38fea8a11",
+      "sourceStationName": "Fort Opportunity",
+      "sourceSystemId": "d920e93f-c7cd-4350-9779-234fb8e332c5",
+      "sourceSystemName": "Venerable Graveyard",
+      "sourceFaction": "SalvageGuild",
+      "playerLevel": 0,
+      "playerCurrentSystemId": "d920e93f-c7cd-4350-9779-234fb8e332c5",
+      "steps": [
+        {
+          "requireAllObjectives": true,
+          "hidden": false,
+          "objectives": [
+            {
+              "type": "Salvage",
+              "fields": {
+                "itemType": "SalvageMissionItem2",
+                "requiredAmount": 1,
+                "targetPOI": "790ebc1f-b197-4c9f-bc8f-2c9b5b279226",
+                "gameplayType": "Salvage",
+                "currentAmount": 0,
+                "triggeredBy": "ItemCollected"
+              }
+            }
+          ]
+        },
+        {
+          "requireAllObjectives": true,
+          "hidden": false,
+          "objectives": [
+            {
+              "type": "TradeOffer",
+              "fields": {
+                "itemType": "SalvageMissionItem2",
+                "requiredAmount": 1,
+                "deliverTo": "580e4e20-4ae1-43bf-b0e0-b7a38fea8a11",
+                "currentAmount": 0,
+                "displayedAmount": 0,
+                "cargoSpaceRequired": 1.0,
+                "gameplayType": "Generic"
+              }
+            }
+          ]
+        }
+      ],
+      "rewards": [
+        {
+          "type": "Credits",
+          "fields": {
+            "amount": 4714,
+            "hidden": false
+          }
+        },
+        {
+          "type": "Reputation",
+          "fields": {
+            "amount": 30,
+            "faction": "SalvageGuild",
+            "hidden": false
+          }
+        },
+        {
+          "type": "WorkshopCredit",
+          "fields": {
+            "amount": 3860,
+            "hidden": false
+          }
+        }
+      ],
+      "timeline": [
+        {
+          "state": "Accepted",
+          "gameSeconds": 350245.53904357512,
+          "realUtc": "2026-04-24T15:35:54.2105273Z",
+          "isTerminal": false
+        }
+      ],
+      "isActive": true,
+      "acceptedAtGameSeconds": 350245.53904357512
+    },
+    {
+      "storyId": "",
+      "missionInstanceId": "749ff4c6-e650-4294-b37e-66e235d14cae",
+      "missionName": "Salvage Ancient Fragments",
+      "missionSubclass": "Mission",
+      "missionLevel": 0,
+      "sourceStationId": "580e4e20-4ae1-43bf-b0e0-b7a38fea8a11",
+      "sourceStationName": "Fort Opportunity",
+      "sourceSystemId": "d920e93f-c7cd-4350-9779-234fb8e332c5",
+      "sourceSystemName": "Venerable Graveyard",
+      "sourceFaction": "SalvageGuild",
+      "playerLevel": 0,
+      "playerCurrentSystemId": "d920e93f-c7cd-4350-9779-234fb8e332c5",
+      "steps": [
+        {
+          "requireAllObjectives": true,
+          "hidden": false,
+          "objectives": [
+            {
+              "type": "Salvage",
+              "fields": {
+                "itemType": "SalvageOreMissionItem0",
+                "requiredAmount": 16,
+                "targetLayer": "Surface",
+                "gameplayType": "Salvage",
+                "currentAmount": 0,
+                "triggeredBy": "ItemCollected"
+              }
+            }
+          ]
+        },
+        {
+          "requireAllObjectives": true,
+          "hidden": false,
+          "objectives": [
+            {
+              "type": "TradeOffer",
+              "fields": {
+                "itemType": "SalvageOreMissionItem0",
+                "requiredAmount": 16,
+                "deliverTo": "580e4e20-4ae1-43bf-b0e0-b7a38fea8a11",
+                "currentAmount": 0,
+                "displayedAmount": 0,
+                "cargoSpaceRequired": 80.0,
+                "gameplayType": "Generic"
+              }
+            }
+          ]
+        }
+      ],
+      "rewards": [
+        {
+          "type": "Item",
+          "fields": {
+            "item": "SmallMissileLauncher",
+            "amount": 1,
+            "hidden": false
+          }
+        },
+        {
+          "type": "Reputation",
+          "fields": {
+            "amount": 35,
+            "faction": "SalvageGuild",
+            "hidden": false
+          }
+        },
+        {
+          "type": "WorkshopCredit",
+          "fields": {
+            "amount": 3542,
+            "hidden": false
+          }
+        }
+      ],
+      "timeline": [
+        {
+          "state": "Accepted",
+          "gameSeconds": 350332.06053696672,
+          "realUtc": "2026-04-24T15:37:20.7323970Z",
+          "isTerminal": false
+        }
+      ],
+      "isActive": true,
+      "acceptedAtGameSeconds": 350332.06053696672
+    },
+    {
+      "storyId": "",
+      "missionInstanceId": "f37efcf5-942c-4143-8bd0-2a1c2a31e959",
+      "missionName": "Recover Scientific Samples",
+      "missionSubclass": "Mission",
+      "missionLevel": 0,
+      "sourceStationId": "580e4e20-4ae1-43bf-b0e0-b7a38fea8a11",
+      "sourceStationName": "Fort Opportunity",
+      "sourceSystemId": "d920e93f-c7cd-4350-9779-234fb8e332c5",
+      "sourceSystemName": "Venerable Graveyard",
+      "sourceFaction": "SalvageGuild",
+      "playerLevel": 0,
+      "playerCurrentSystemId": "d920e93f-c7cd-4350-9779-234fb8e332c5",
+      "steps": [
+        {
+          "requireAllObjectives": true,
+          "hidden": false,
+          "objectives": [
+            {
+              "type": "Salvage",
+              "fields": {
+                "itemType": "SalvageMissionItem1",
+                "requiredAmount": 1,
+                "targetPOI": "4a0d9787-c51e-4ace-bae2-9e2a61b9693b",
+                "gameplayType": "Salvage",
+                "currentAmount": 0,
+                "triggeredBy": "ItemCollected"
+              }
+            }
+          ]
+        },
+        {
+          "requireAllObjectives": true,
+          "hidden": false,
+          "objectives": [
+            {
+              "type": "TradeOffer",
+              "fields": {
+                "itemType": "SalvageMissionItem1",
+                "requiredAmount": 1,
+                "deliverTo": "580e4e20-4ae1-43bf-b0e0-b7a38fea8a11",
+                "currentAmount": 0,
+                "displayedAmount": 0,
+                "cargoSpaceRequired": 1.0,
+                "gameplayType": "Generic"
+              }
+            }
+          ]
+        }
+      ],
+      "rewards": [
+        {
+          "type": "Credits",
+          "fields": {
+            "amount": 4510,
+            "hidden": false
+          }
+        },
+        {
+          "type": "Reputation",
+          "fields": {
+            "amount": 20,
+            "faction": "SalvageGuild",
+            "hidden": false
+          }
+        },
+        {
+          "type": "WorkshopCredit",
+          "fields": {
+            "amount": 4340,
+            "hidden": false
+          }
+        }
+      ],
+      "timeline": [
+        {
+          "state": "Accepted",
+          "gameSeconds": 350636.38250372006,
+          "realUtc": "2026-04-24T15:42:25.0532471Z",
+          "isTerminal": false
+        }
+      ],
+      "isActive": true,
+      "acceptedAtGameSeconds": 350636.38250372006
+    },
+    {
+      "storyId": "",
+      "missionInstanceId": "cc568ec5-f8bd-4c55-929e-ac5b70cf2fcd",
+      "missionName": "Salvage Ancient Plates",
+      "missionSubclass": "Mission",
+      "missionLevel": 0,
+      "sourceStationId": "580e4e20-4ae1-43bf-b0e0-b7a38fea8a11",
+      "sourceStationName": "Fort Opportunity",
+      "sourceSystemId": "d920e93f-c7cd-4350-9779-234fb8e332c5",
+      "sourceSystemName": "Venerable Graveyard",
+      "sourceFaction": "SalvageGuild",
+      "playerLevel": 0,
+      "playerCurrentSystemId": "d920e93f-c7cd-4350-9779-234fb8e332c5",
+      "steps": [
+        {
+          "requireAllObjectives": true,
+          "hidden": false,
+          "objectives": [
+            {
+              "type": "Salvage",
+              "fields": {
+                "itemType": "SalvageOreMissionItem2",
+                "requiredAmount": 10,
+                "targetLayer": "Surface",
+                "gameplayType": "Salvage",
+                "currentAmount": 0,
+                "triggeredBy": "ItemCollected"
+              }
+            }
+          ]
+        },
+        {
+          "requireAllObjectives": true,
+          "hidden": false,
+          "objectives": [
+            {
+              "type": "TradeOffer",
+              "fields": {
+                "itemType": "SalvageOreMissionItem2",
+                "requiredAmount": 10,
+                "deliverTo": "580e4e20-4ae1-43bf-b0e0-b7a38fea8a11",
+                "currentAmount": 0,
+                "displayedAmount": 0,
+                "cargoSpaceRequired": 50.0,
+                "gameplayType": "Generic"
+              }
+            }
+          ]
+        }
+      ],
+      "rewards": [
+        {
+          "type": "Item",
+          "fields": {
+            "item": "MediumAutocannon",
+            "amount": 1,
+            "hidden": false
+          }
+        },
+        {
+          "type": "Reputation",
+          "fields": {
+            "amount": 30,
+            "faction": "SalvageGuild",
+            "hidden": false
+          }
+        },
+        {
+          "type": "WorkshopCredit",
+          "fields": {
+            "amount": 4349,
+            "hidden": false
+          }
+        }
+      ],
+      "timeline": [
+        {
+          "state": "Accepted",
+          "gameSeconds": 350774.46273407765,
+          "realUtc": "2026-04-24T15:44:43.1346269Z",
+          "isTerminal": false
+        }
+      ],
+      "isActive": true,
+      "acceptedAtGameSeconds": 350774.46273407765
+    },
+    {
+      "storyId": "",
+      "missionInstanceId": "ef1b87a3-067c-4841-82a0-45e4bb771097",
+      "missionName": "Salvage Ancient Fiber",
+      "missionSubclass": "Mission",
+      "missionLevel": 0,
+      "sourceStationId": "580e4e20-4ae1-43bf-b0e0-b7a38fea8a11",
+      "sourceStationName": "Fort Opportunity",
+      "sourceSystemId": "d920e93f-c7cd-4350-9779-234fb8e332c5",
+      "sourceSystemName": "Venerable Graveyard",
+      "sourceFaction": "SalvageGuild",
+      "playerLevel": 0,
+      "playerCurrentSystemId": "d920e93f-c7cd-4350-9779-234fb8e332c5",
+      "steps": [
+        {
+          "requireAllObjectives": true,
+          "hidden": false,
+          "objectives": [
+            {
+              "type": "Salvage",
+              "fields": {
+                "itemType": "SalvageOreMissionItem3",
+                "requiredAmount": 13,
+                "targetLayer": "Surface",
+                "gameplayType": "Salvage",
+                "currentAmount": 0,
+                "triggeredBy": "ItemCollected"
+              }
+            }
+          ]
+        },
+        {
+          "requireAllObjectives": true,
+          "hidden": false,
+          "objectives": [
+            {
+              "type": "TradeOffer",
+              "fields": {
+                "itemType": "SalvageOreMissionItem3",
+                "requiredAmount": 13,
+                "deliverTo": "580e4e20-4ae1-43bf-b0e0-b7a38fea8a11",
+                "currentAmount": 0,
+                "displayedAmount": 0,
+                "cargoSpaceRequired": 65.0,
+                "gameplayType": "Generic"
+              }
+            }
+          ]
+        }
+      ],
+      "rewards": [
+        {
+          "type": "Credits",
+          "fields": {
+            "amount": 4377,
+            "hidden": false
+          }
+        },
+        {
+          "type": "Reputation",
+          "fields": {
+            "amount": 30,
+            "faction": "SalvageGuild",
+            "hidden": false
+          }
+        },
+        {
+          "type": "WorkshopCredit",
+          "fields": {
+            "amount": 3127,
+            "hidden": false
+          }
+        }
+      ],
+      "timeline": [
+        {
+          "state": "Accepted",
+          "gameSeconds": 350995.35411693208,
+          "realUtc": "2026-04-24T15:48:24.0257357Z",
+          "isTerminal": false
+        }
+      ],
+      "isActive": true,
+      "acceptedAtGameSeconds": 350995.35411693208
+    },
+    {
+      "storyId": "",
+      "missionInstanceId": "91cf2f4d-db35-46fe-93b1-b55263bb0baf",
+      "missionName": "Salvage Ancient Fragments",
+      "missionSubclass": "Mission",
+      "missionLevel": 0,
+      "sourceStationId": "580e4e20-4ae1-43bf-b0e0-b7a38fea8a11",
+      "sourceStationName": "Fort Opportunity",
+      "sourceSystemId": "d920e93f-c7cd-4350-9779-234fb8e332c5",
+      "sourceSystemName": "Venerable Graveyard",
+      "sourceFaction": "SalvageGuild",
+      "playerLevel": 0,
+      "playerCurrentSystemId": "d920e93f-c7cd-4350-9779-234fb8e332c5",
+      "steps": [
+        {
+          "requireAllObjectives": true,
+          "hidden": false,
+          "objectives": [
+            {
+              "type": "Salvage",
+              "fields": {
+                "itemType": "SalvageOreMissionItem0",
+                "requiredAmount": 14,
+                "targetLayer": "Surface",
+                "gameplayType": "Salvage",
+                "currentAmount": 0,
+                "triggeredBy": "ItemCollected"
+              }
+            }
+          ]
+        },
+        {
+          "requireAllObjectives": true,
+          "hidden": false,
+          "objectives": [
+            {
+              "type": "TradeOffer",
+              "fields": {
+                "itemType": "SalvageOreMissionItem0",
+                "requiredAmount": 14,
+                "deliverTo": "580e4e20-4ae1-43bf-b0e0-b7a38fea8a11",
+                "currentAmount": 0,
+                "displayedAmount": 0,
+                "cargoSpaceRequired": 70.0,
+                "gameplayType": "Generic"
+              }
+            }
+          ]
+        }
+      ],
+      "rewards": [
+        {
+          "type": "Item",
+          "fields": {
+            "item": "Blueprint",
+            "amount": 1,
+            "hidden": false
+          }
+        },
+        {
+          "type": "Reputation",
+          "fields": {
+            "amount": 30,
+            "faction": "SalvageGuild",
+            "hidden": false
+          }
+        },
+        {
+          "type": "WorkshopCredit",
+          "fields": {
+            "amount": 2851,
+            "hidden": false
+          }
+        }
+      ],
+      "timeline": [
+        {
+          "state": "Accepted",
+          "gameSeconds": 351173.95074084267,
+          "realUtc": "2026-04-24T15:51:22.6236168Z",
+          "isTerminal": false
+        }
+      ],
+      "isActive": true,
+      "acceptedAtGameSeconds": 351173.95074084267
+    },
+    {
+      "storyId": "",
+      "missionInstanceId": "61f0121d-6de2-48ee-a1ec-a0070696057e",
+      "missionName": "Salvage Ancient Plates",
+      "missionSubclass": "Mission",
+      "missionLevel": 0,
+      "sourceStationId": "580e4e20-4ae1-43bf-b0e0-b7a38fea8a11",
+      "sourceStationName": "Fort Opportunity",
+      "sourceSystemId": "d920e93f-c7cd-4350-9779-234fb8e332c5",
+      "sourceSystemName": "Venerable Graveyard",
+      "sourceFaction": "SalvageGuild",
+      "playerLevel": 0,
+      "playerCurrentSystemId": "d920e93f-c7cd-4350-9779-234fb8e332c5",
+      "steps": [
+        {
+          "requireAllObjectives": true,
+          "hidden": false,
+          "objectives": [
+            {
+              "type": "Salvage",
+              "fields": {
+                "itemType": "SalvageOreMissionItem2",
+                "requiredAmount": 12,
+                "targetLayer": "Surface",
+                "gameplayType": "Salvage",
+                "currentAmount": 0,
+                "triggeredBy": "ItemCollected"
+              }
+            }
+          ]
+        },
+        {
+          "requireAllObjectives": true,
+          "hidden": false,
+          "objectives": [
+            {
+              "type": "TradeOffer",
+              "fields": {
+                "itemType": "SalvageOreMissionItem2",
+                "requiredAmount": 12,
+                "deliverTo": "580e4e20-4ae1-43bf-b0e0-b7a38fea8a11",
+                "currentAmount": 0,
+                "displayedAmount": 0,
+                "cargoSpaceRequired": 60.0,
+                "gameplayType": "Generic"
+              }
+            }
+          ]
+        }
+      ],
+      "rewards": [
+        {
+          "type": "Credits",
+          "fields": {
+            "amount": 4017,
+            "hidden": false
+          }
+        },
+        {
+          "type": "Reputation",
+          "fields": {
+            "amount": 35,
+            "faction": "SalvageGuild",
+            "hidden": false
+          }
+        },
+        {
+          "type": "WorkshopCredit",
+          "fields": {
+            "amount": 4396,
+            "hidden": false
+          }
+        }
+      ],
+      "timeline": [
+        {
+          "state": "Accepted",
+          "gameSeconds": 351325.85830365593,
+          "realUtc": "2026-04-24T15:53:54.5304980Z",
+          "isTerminal": false
+        }
+      ],
+      "isActive": true,
+      "acceptedAtGameSeconds": 351325.85830365593
+    },
+    {
+      "storyId": "",
+      "missionInstanceId": "47e07155-f5a0-4500-942c-622193db1a84",
+      "missionName": "Recover Black Box",
+      "missionSubclass": "Mission",
+      "missionLevel": 0,
+      "sourceStationId": "580e4e20-4ae1-43bf-b0e0-b7a38fea8a11",
+      "sourceStationName": "Fort Opportunity",
+      "sourceSystemId": "d920e93f-c7cd-4350-9779-234fb8e332c5",
+      "sourceSystemName": "Venerable Graveyard",
+      "sourceFaction": "SalvageGuild",
+      "playerLevel": 0,
+      "playerCurrentSystemId": "d920e93f-c7cd-4350-9779-234fb8e332c5",
+      "steps": [
+        {
+          "requireAllObjectives": true,
+          "hidden": false,
+          "objectives": [
+            {
+              "type": "Salvage",
+              "fields": {
+                "itemType": "SalvageMissionItem0",
+                "requiredAmount": 1,
+                "targetPOI": "13a46d22-2134-48cd-bb7d-996d1b2b6c5b",
+                "gameplayType": "Salvage",
+                "currentAmount": 0,
+                "triggeredBy": "ItemCollected"
+              }
+            }
+          ]
+        },
+        {
+          "requireAllObjectives": true,
+          "hidden": false,
+          "objectives": [
+            {
+              "type": "TradeOffer",
+              "fields": {
+                "itemType": "SalvageMissionItem0",
+                "requiredAmount": 1,
+                "deliverTo": "580e4e20-4ae1-43bf-b0e0-b7a38fea8a11",
+                "currentAmount": 0,
+                "displayedAmount": 0,
+                "cargoSpaceRequired": 1.0,
+                "gameplayType": "Generic"
+              }
+            }
+          ]
+        }
+      ],
+      "rewards": [
+        {
+          "type": "Item",
+          "fields": {
+            "item": "SmallCombatLaser",
+            "amount": 1,
+            "hidden": false
+          }
+        },
+        {
+          "type": "Reputation",
+          "fields": {
+            "amount": 35,
+            "faction": "SalvageGuild",
+            "hidden": false
+          }
+        },
+        {
+          "type": "WorkshopCredit",
+          "fields": {
+            "amount": 3925,
+            "hidden": false
+          }
+        }
+      ],
+      "timeline": [
+        {
+          "state": "Accepted",
+          "gameSeconds": 351497.96903652843,
+          "realUtc": "2026-04-24T15:56:46.6424454Z",
+          "isTerminal": false
+        }
+      ],
+      "isActive": true,
+      "acceptedAtGameSeconds": 351497.96903652843
+    },
+    {
+      "storyId": "",
+      "missionInstanceId": "0e0e8c9e-a59d-41d0-88cb-46837c515326",
+      "missionName": "Recover Exotic Cargo",
+      "missionSubclass": "Mission",
+      "missionLevel": 0,
+      "sourceStationId": "580e4e20-4ae1-43bf-b0e0-b7a38fea8a11",
+      "sourceStationName": "Fort Opportunity",
+      "sourceSystemId": "d920e93f-c7cd-4350-9779-234fb8e332c5",
+      "sourceSystemName": "Venerable Graveyard",
+      "sourceFaction": "SalvageGuild",
+      "playerLevel": 0,
+      "playerCurrentSystemId": "d920e93f-c7cd-4350-9779-234fb8e332c5",
+      "steps": [
+        {
+          "requireAllObjectives": true,
+          "hidden": false,
+          "objectives": [
+            {
+              "type": "Salvage",
+              "fields": {
+                "itemType": "SalvageMissionItem3",
+                "requiredAmount": 1,
+                "targetPOI": "ff16f227-0205-434f-967f-7d1bd074f75e",
+                "gameplayType": "Salvage",
+                "currentAmount": 0,
+                "triggeredBy": "ItemCollected"
+              }
+            }
+          ]
+        },
+        {
+          "requireAllObjectives": true,
+          "hidden": false,
+          "objectives": [
+            {
+              "type": "TradeOffer",
+              "fields": {
+                "itemType": "SalvageMissionItem3",
+                "requiredAmount": 1,
+                "deliverTo": "580e4e20-4ae1-43bf-b0e0-b7a38fea8a11",
+                "currentAmount": 0,
+                "displayedAmount": 0,
+                "cargoSpaceRequired": 1.0,
+                "gameplayType": "Generic"
+              }
+            }
+          ]
+        }
+      ],
+      "rewards": [
+        {
+          "type": "Credits",
+          "fields": {
+            "amount": 3256,
+            "hidden": false
+          }
+        },
+        {
+          "type": "Reputation",
+          "fields": {
+            "amount": 25,
+            "faction": "SalvageGuild",
+            "hidden": false
+          }
+        },
+        {
+          "type": "WorkshopCredit",
+          "fields": {
+            "amount": 2909,
+            "hidden": false
+          }
+        }
+      ],
+      "timeline": [
+        {
+          "state": "Accepted",
+          "gameSeconds": 351670.47834745428,
+          "realUtc": "2026-04-24T15:59:39.1491373Z",
+          "isTerminal": false
+        }
+      ],
+      "isActive": true,
+      "acceptedAtGameSeconds": 351670.47834745428
+    },
+    {
+      "storyId": "",
+      "missionInstanceId": "46ecf41f-746f-44ef-9e88-9e0c2bcc79c6",
+      "missionName": "Salvage Ancient Fiber",
+      "missionSubclass": "Mission",
+      "missionLevel": 0,
+      "sourceStationId": "580e4e20-4ae1-43bf-b0e0-b7a38fea8a11",
+      "sourceStationName": "Fort Opportunity",
+      "sourceSystemId": "d920e93f-c7cd-4350-9779-234fb8e332c5",
+      "sourceSystemName": "Venerable Graveyard",
+      "sourceFaction": "SalvageGuild",
+      "playerLevel": 0,
+      "playerCurrentSystemId": "d920e93f-c7cd-4350-9779-234fb8e332c5",
+      "steps": [
+        {
+          "requireAllObjectives": true,
+          "hidden": false,
+          "objectives": [
+            {
+              "type": "Salvage",
+              "fields": {
+                "itemType": "SalvageOreMissionItem3",
+                "requiredAmount": 19,
+                "targetLayer": "Surface",
+                "gameplayType": "Salvage",
+                "currentAmount": 0,
+                "triggeredBy": "ItemCollected"
+              }
+            }
+          ]
+        },
+        {
+          "requireAllObjectives": true,
+          "hidden": false,
+          "objectives": [
+            {
+              "type": "TradeOffer",
+              "fields": {
+                "itemType": "SalvageOreMissionItem3",
+                "requiredAmount": 19,
+                "deliverTo": "580e4e20-4ae1-43bf-b0e0-b7a38fea8a11",
+                "currentAmount": 0,
+                "displayedAmount": 0,
+                "cargoSpaceRequired": 95.0,
+                "gameplayType": "Generic"
+              }
+            }
+          ]
+        }
+      ],
+      "rewards": [
+        {
+          "type": "Credits",
+          "fields": {
+            "amount": 3919,
+            "hidden": false
+          }
+        },
+        {
+          "type": "Reputation",
+          "fields": {
+            "amount": 35,
+            "faction": "SalvageGuild",
+            "hidden": false
+          }
+        },
+        {
+          "type": "WorkshopCredit",
+          "fields": {
+            "amount": 3348,
+            "hidden": false
+          }
+        }
+      ],
+      "timeline": [
+        {
+          "state": "Accepted",
+          "gameSeconds": 351884.30730131414,
+          "realUtc": "2026-04-24T16:03:12.9798969Z",
+          "isTerminal": false
+        }
+      ],
+      "isActive": true,
+      "acceptedAtGameSeconds": 351884.30730131414
+    }
+  ]
+}
