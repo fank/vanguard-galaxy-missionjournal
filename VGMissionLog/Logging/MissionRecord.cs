@@ -11,9 +11,10 @@ namespace VGMissionLog.Logging;
 /// and terminates with exactly one of Completed / Failed / Abandoned.
 ///
 /// <para><b>Identifiers.</b> <see cref="StoryId"/> is populated for authored
-/// story missions (Tutorial, Puppeteers); otherwise a synthesized
-/// <c>"anon:&lt;guid&gt;"</c> fills it. <see cref="MissionInstanceId"/> is a
-/// session-local GUID (does not survive save/load).</para>
+/// story missions (Tutorial, Puppeteers); for generator-produced missions
+/// vanilla leaves it empty ("") — consumers needing a stable per-record
+/// key should use <see cref="MissionInstanceId"/>. <see cref="MissionInstanceId"/>
+/// is a session-local GUID (does not survive save/load).</para>
 ///
 /// <para><b>Rewards.</b> One unified list covering every reward subtype. Typed
 /// credits/experience/reputation fields from the v1 schema are gone — read
