@@ -1,0 +1,49 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.1</TargetFramework>
+    <AssemblyName>VGMissionJournal</AssemblyName>
+    <Product>Vanguard Galaxy Mission Journal</Product>
+    <Version>0.1.0</Version>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <RootNamespace>VGMissionJournal</RootNamespace>
+    <RestoreAdditionalProjectSources>
+      https://api.nuget.org/v3/index.json;
+      https://nuget.bepinex.dev/v3/index.json;
+    </RestoreAdditionalProjectSources>
+    <!-- BepInEx / HarmonyX / UnityEngine.Modules / Newtonsoft.Json are compile-only
+         (the game ships them at runtime) so they stay out of bin. Log-shape is
+         all primitive / nullable-primitive records — no TypeNameHandling.Auto
+         surface, so we need no System.Text.Json fallback and no
+         ISerializationBinder. CopyLocalLockFileAssemblies stays on to catch any
+         future runtime-only dep that genuinely needs to ship. -->
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="BepInEx.Analyzers" Version="1.*" PrivateAssets="all" />
+    <PackageReference Include="BepInEx.Core" Version="5.*" IncludeAssets="compile" />
+    <PackageReference Include="BepInEx.PluginInfoProps" Version="2.*" IncludeAssets="compile" />
+    <PackageReference Include="UnityEngine.Modules" Version="6000.2.6" IncludeAssets="compile" />
+    <PackageReference Include="HarmonyX" Version="2.10.*" IncludeAssets="compile" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" IncludeAssets="compile" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Publicized stub of the game's Assembly-CSharp.dll. Symlinked from the
+         sibling VGTTS checkout (single source of truth) via `make link-asm`.
+         Conditional so an un-linked checkout can still `dotnet restore` for
+         nuget-only operations; build will fail later if the stub is missing
+         and any code references game types. -->
+    <Reference Include="Assembly-CSharp" Condition="Exists('lib/Assembly-CSharp.dll')">
+      <HintPath>lib/Assembly-CSharp.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="VGMissionJournal.Tests" />
+  </ItemGroup>
+
+</Project>

@@ -1,6 +1,6 @@
 # Consumer API
 
-Everything a modder needs to read mission history from VGMissionLog. If you want to integrate, start here.
+Everything a modder needs to read mission history from VGMissionJournal. If you want to integrate, start here.
 
 ## Integration
 
@@ -8,37 +8,37 @@ Two paths, same behaviour. Pick one.
 
 ### Typed reference (recommended)
 
-Drop `VGMissionLog.dll` into your plugin's `libs/` folder and add a `<Reference>` in your csproj. Then soft-dep on the plugin GUID and put API usage behind a presence-check so your mod still loads when VGMissionLog isn't installed.
+Drop `VGMissionJournal.dll` into your plugin's `libs/` folder and add a `<Reference>` in your csproj. Then soft-dep on the plugin GUID and put API usage behind a presence-check so your mod still loads when VGMissionJournal isn't installed.
 
 Public API surface spans two namespaces:
 
-- `VGMissionLog.Api` — the facade (`MissionLogApi`), the query interface (`IMissionLogQuery`), and `SystemActivity`.
-- `VGMissionLog.Logging` — the record types returned by the query methods (`MissionRecord`, `MissionStepDefinition`, `MissionObjectiveDefinition`, `MissionRewardSnapshot`, `TimelineEntry`, `TimelineState`, `Outcome`).
+- `VGMissionJournal.Api` — the facade (`MissionJournalApi`), the query interface (`IMissionJournalQuery`), and `SystemActivity`.
+- `VGMissionJournal.Logging` — the record types returned by the query methods (`MissionRecord`, `MissionStepDefinition`, `MissionObjectiveDefinition`, `MissionRewardSnapshot`, `TimelineEntry`, `TimelineState`, `Outcome`).
 
 Consumers typically `using` both.
 
 ```csharp
 using BepInEx;
 using BepInEx.Bootstrap;
-using VGMissionLog.Api;
-using VGMissionLog.Logging;
+using VGMissionJournal.Api;
+using VGMissionJournal.Logging;
 
 [BepInPlugin("my.consumer", "My Consumer", "1.0.0")]
-[BepInDependency("vgmissionlog", BepInDependency.DependencyFlags.SoftDependency)]
+[BepInDependency("vgmissionjournal", BepInDependency.DependencyFlags.SoftDependency)]
 public class MyPlugin : BaseUnityPlugin
 {
     private void Awake()
     {
-        if (Chainloader.PluginInfos.ContainsKey("vgmissionlog"))
+        if (Chainloader.PluginInfos.ContainsKey("vgmissionjournal"))
             UseMissionLog();
     }
 
-    // Separate method so the JIT doesn't resolve VGMissionLog types
+    // Separate method so the JIT doesn't resolve VGMissionJournal types
     // until this branch is actually taken (important when the plugin
     // isn't installed — referenced assembly would otherwise fail to load).
     private void UseMissionLog()
     {
-        if (MissionLogApi.Current is not { } api) return;
+        if (MissionJournalApi.Current is not { } api) return;
         foreach (var m in api.GetRecentMissions(10))
             Logger.LogInfo($"{m.MissionSubclass} {m.Outcome?.ToString() ?? "active"}");
     }
@@ -52,7 +52,7 @@ Field renames on `MissionRecord` are compile-time errors — you learn about sch
 For scripting-style mods that can't add a compile-time reference. Query methods now return `MissionRecord` (and sub-record) instances instead of dictionaries — read fields off each record via `PropertyInfo`. The lookup cost is the same as dict indexing and the failure mode (missing property) is clearer.
 
 ```csharp
-var facade = Type.GetType("VGMissionLog.Api.MissionLogApi, VGMissionLog");
+var facade = Type.GetType("VGMissionJournal.Api.MissionJournalApi, VGMissionJournal");
 var api    = facade?.GetProperty("Current")?.GetValue(null);
 if (api is null) return;  // plugin not installed
 
@@ -70,9 +70,9 @@ foreach (var m in missions)
 
 Both paths hand back the same `MissionRecord` shape described under [MissionRecord](#missionrecord) below.
 
-## `MissionLogApi.Current`
+## `MissionJournalApi.Current`
 
-Static property on `VGMissionLog.Api.MissionLogApi`. Returns an `IMissionLogQuery` once the plugin has finished loading, or `null` when:
+Static property on `VGMissionJournal.Api.MissionJournalApi`. Returns an `IMissionJournalQuery` once the plugin has finished loading, or `null` when:
 
 - The plugin isn't installed.
 - BepInEx has loaded the plugin assembly but `Awake` hasn't run yet (rare — consumers that query from their own `Awake` should use the `Chainloader.PluginInfos` guard shown above).
@@ -80,7 +80,7 @@ Static property on `VGMissionLog.Api.MissionLogApi`. Returns an `IMissionLogQuer
 
 Always null-check.
 
-## `IMissionLogQuery`
+## `IMissionJournalQuery`
 
 All query methods return typed `MissionRecord` aggregates (or small typed records like `SystemActivity`). Consumers get IntelliSense, nullable flow-analysis, and compile-time errors on field renames.
 
@@ -112,7 +112,7 @@ All filters that accept a time window (`sinceGameSeconds`, `untilGameSeconds`) a
 
 ### Proximity
 
-VGMissionLog doesn't walk the galaxy graph itself — you pass a delegate that reports jumps between two systems.
+VGMissionJournal doesn't walk the galaxy graph itself — you pass a delegate that reports jumps between two systems.
 
 ```csharp
 int JumpDistance(string fromSystemId, string toSystemId) => /* -1 if unreachable */;
@@ -275,7 +275,7 @@ The sidecar mirrors `MissionRecord` with camelCase keys:
 
 ## Sidecar format
 
-If you'd rather read the log without loading VGMissionLog (offline analysis, external tooling), the sidecar JSON uses the same shape. File lives at `<GameDir>/Saves/<saveName>.save.vgmissionlog.json`:
+If you'd rather read the log without loading VGMissionJournal (offline analysis, external tooling), the sidecar JSON uses the same shape. File lives at `<GameDir>/Saves/<saveName>.save.vgmissionjournal.json`:
 
 ```json
 {
@@ -288,7 +288,7 @@ If you'd rather read the log without loading VGMissionLog (offline analysis, ext
 ```
 
 - Written atomically via tmp+rename, so partial files are never observed.
-- Corrupt / unsupported-version files are quarantined to `<saveName>.save.vgmissionlog.corrupt.<UTC>.json` and replaced by an empty log — VGMissionLog never blocks vanilla's load on a bad sidecar.
+- Corrupt / unsupported-version files are quarantined to `<saveName>.save.vgmissionjournal.corrupt.<UTC>.json` and replaced by an empty log — VGMissionJournal never blocks vanilla's load on a bad sidecar.
 - `version` bumps on breaking schema changes. Additive changes (new optional fields) stay at the current version.
 
 ## Migration
@@ -310,11 +310,11 @@ These are documented limitations of the current shipping version. Consumers shou
 
 The log defaults to a soft cap of **2000 missions per save**, with FIFO eviction once exceeded — oldest-accepted missions drop off first. Consumers should not assume the full playtime is always available; use `OldestAcceptedGameSeconds` if you need to know how far back the log reaches.
 
-The cap is configurable via `Logging.MaxMissions` in `vgmissionlog.cfg`. Setting it to **`0` disables the cap entirely** — the log then retains every mission for the save's lifetime, at the cost of an unbounded sidecar size. A user with 50 000 captured missions would sit around 25 MB on disk (rough estimate at ~500 bytes per record).
+The cap is configurable via `Logging.MaxMissions` in `vgmissionjournal.cfg`. Setting it to **`0` disables the cap entirely** — the log then retains every mission for the save's lifetime, at the cost of an unbounded sidecar size. A user with 50 000 captured missions would sit around 25 MB on disk (rough estimate at ~500 bytes per record).
 
 ## Stability
 
-- **Method signatures on `IMissionLogQuery`** are part of the public API contract. Breaking changes require a major-version bump and release notes.
+- **Method signatures on `IMissionJournalQuery`** are part of the public API contract. Breaking changes require a major-version bump and release notes.
 - **New methods are additive** — adding a method doesn't bump major. Gate on `SchemaVersion` if you want to call a newer method conditionally.
 - **`MissionRecord`'s property set** follows the same rules: additions are non-breaking; renames / removals are breaking.
 - **The sidecar `version` field** tracks only on-disk format changes. An additive API change doesn't necessarily bump it.

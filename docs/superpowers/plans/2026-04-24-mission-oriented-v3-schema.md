@@ -18,50 +18,50 @@
 
 ### New files
 
-- `VGMissionLog/Logging/TimelineState.cs` — enum (`Accepted`, `Completed`, `Failed`, `Abandoned`).
-- `VGMissionLog/Logging/TimelineEntry.cs` — record `(TimelineState State, double GameSeconds, string? RealUtc)`.
-- `VGMissionLog/Logging/MissionStepDefinition.cs` — immutable step structure (no `IsComplete`, no `StatusText`).
-- `VGMissionLog/Logging/MissionObjectiveDefinition.cs` — immutable objective structure `(string Type, IReadOnlyDictionary<string, object?>? Fields)`.
-- `VGMissionLog/Logging/MissionRecord.cs` — aggregate (identity + `Steps` + `Rewards` + `Timeline` + helpers `IsActive`, `Outcome`, `AcceptedAtGameSeconds`, `TerminalAtGameSeconds`, `AgeSeconds(now)`).
-- `VGMissionLog/Logging/MissionStore.cs` — replaces `ActivityLog`. In-memory store keyed by a synthesized mission key (explained in Task 6). Indexes by source system / source faction. Holds the lifecycle event `OnMissionChanged`.
-- `VGMissionLog/Logging/MissionRecordBuilder.cs` — replaces `ActivityEventBuilder`. Exposes `CreateFromAccept(mission)` (snapshots identity + steps + rewards) and `AppendTransition(record, TimelineState, gameSeconds)`.
-- `VGMissionLog/Persistence/V1ToV3Migrator.cs` — migration from legacy `LogSchema` (v1 `events[]`) to v3 `missions[]`.
-- `VGMissionLog/Api/MissionRecordMapper.cs` — replaces `ActivityEventMapper`. Maps `MissionRecord` → neutral-shape dictionary.
+- `VGMissionJournal/Logging/TimelineState.cs` — enum (`Accepted`, `Completed`, `Failed`, `Abandoned`).
+- `VGMissionJournal/Logging/TimelineEntry.cs` — record `(TimelineState State, double GameSeconds, string? RealUtc)`.
+- `VGMissionJournal/Logging/MissionStepDefinition.cs` — immutable step structure (no `IsComplete`, no `StatusText`).
+- `VGMissionJournal/Logging/MissionObjectiveDefinition.cs` — immutable objective structure `(string Type, IReadOnlyDictionary<string, object?>? Fields)`.
+- `VGMissionJournal/Logging/MissionRecord.cs` — aggregate (identity + `Steps` + `Rewards` + `Timeline` + helpers `IsActive`, `Outcome`, `AcceptedAtGameSeconds`, `TerminalAtGameSeconds`, `AgeSeconds(now)`).
+- `VGMissionJournal/Logging/MissionStore.cs` — replaces `ActivityLog`. In-memory store keyed by a synthesized mission key (explained in Task 6). Indexes by source system / source faction. Holds the lifecycle event `OnMissionChanged`.
+- `VGMissionJournal/Logging/MissionRecordBuilder.cs` — replaces `ActivityEventBuilder`. Exposes `CreateFromAccept(mission)` (snapshots identity + steps + rewards) and `AppendTransition(record, TimelineState, gameSeconds)`.
+- `VGMissionJournal/Persistence/V1ToV3Migrator.cs` — migration from legacy `JournalSchema` (v1 `events[]`) to v3 `missions[]`.
+- `VGMissionJournal/Api/MissionRecordMapper.cs` — replaces `ActivityEventMapper`. Maps `MissionRecord` → neutral-shape dictionary.
 
 ### Modified files
 
-- `VGMissionLog/Persistence/LogSchema.cs` — bump `CurrentVersion` to 3; replace `Events` array with `Missions` array; remove `AllowIntegerValues` commentary (moot — no legacy).
-- `VGMissionLog/Persistence/LogIO.cs` — on load, if `schema.Version == 1` route through `V1ToV3Migrator`; if `== 3` load as-is; otherwise quarantine.
-- `VGMissionLog/Api/IMissionLogQuery.cs` — replace event-oriented methods with mission-oriented ones (see Task 10).
-- `VGMissionLog/Api/MissionLogQueryAdapter.cs` — adapt `MissionStore` queries.
-- `VGMissionLog/Api/MissionLogApi.cs` — wire `MissionStore` instead of `ActivityLog`.
-- `VGMissionLog/Patches/MissionAcceptPatch.cs` — call `MissionStore.RecordAccept(mission)`.
-- `VGMissionLog/Patches/MissionCompletePatch.cs` — call `MissionStore.RecordTerminal(mission, TimelineState.Completed)`; keep archive-race dedup (`InFlightStoryIds`).
-- `VGMissionLog/Patches/MissionFailPatch.cs` — `RecordTerminal(..., Failed)`.
-- `VGMissionLog/Patches/MissionAbandonPatch.cs` — `RecordTerminal(..., Abandoned)`.
-- `VGMissionLog/Patches/MissionArchivePatch.cs` — backstop: if no terminal timeline entry on the record, synthesize one (`Completed`).
-- `VGMissionLog/Patches/PatchWiring.cs` — wire `MissionStore` + `MissionRecordBuilder`.
-- `VGMissionLog/Plugin.cs` — config key rename `Logging.MaxEvents` → `Logging.MaxMissions`.
+- `VGMissionJournal/Persistence/JournalSchema.cs` — bump `CurrentVersion` to 3; replace `Events` array with `Missions` array; remove `AllowIntegerValues` commentary (moot — no legacy).
+- `VGMissionJournal/Persistence/JournalIO.cs` — on load, if `schema.Version == 1` route through `V1ToV3Migrator`; if `== 3` load as-is; otherwise quarantine.
+- `VGMissionJournal/Api/IMissionJournalQuery.cs` — replace event-oriented methods with mission-oriented ones (see Task 10).
+- `VGMissionJournal/Api/MissionJournalQueryAdapter.cs` — adapt `MissionStore` queries.
+- `VGMissionJournal/Api/MissionJournalApi.cs` — wire `MissionStore` instead of `ActivityLog`.
+- `VGMissionJournal/Patches/MissionAcceptPatch.cs` — call `MissionStore.RecordAccept(mission)`.
+- `VGMissionJournal/Patches/MissionCompletePatch.cs` — call `MissionStore.RecordTerminal(mission, TimelineState.Completed)`; keep archive-race dedup (`InFlightStoryIds`).
+- `VGMissionJournal/Patches/MissionFailPatch.cs` — `RecordTerminal(..., Failed)`.
+- `VGMissionJournal/Patches/MissionAbandonPatch.cs` — `RecordTerminal(..., Abandoned)`.
+- `VGMissionJournal/Patches/MissionArchivePatch.cs` — backstop: if no terminal timeline entry on the record, synthesize one (`Completed`).
+- `VGMissionJournal/Patches/PatchWiring.cs` — wire `MissionStore` + `MissionRecordBuilder`.
+- `VGMissionJournal/Plugin.cs` — config key rename `Logging.MaxEvents` → `Logging.MaxMissions`.
 - `docs/api.md` — complete rewrite of the data-shape + query sections.
 - `README.md` — spot-check and update any referenced fields / method names.
 
 ### Deleted files
 
-- `VGMissionLog/Logging/ActivityEvent.cs`
-- `VGMissionLog/Logging/ActivityEventType.cs`
-- `VGMissionLog/Logging/ActivityLog.cs`
-- `VGMissionLog/Logging/ActivityEventBuilder.cs` (replaced by `MissionRecordBuilder`)
-- `VGMissionLog/Logging/MissionStepSnapshot.cs`
-- `VGMissionLog/Logging/MissionObjectiveSnapshot.cs`
-- `VGMissionLog/Api/ActivityEventMapper.cs`
+- `VGMissionJournal/Logging/ActivityEvent.cs`
+- `VGMissionJournal/Logging/ActivityEventType.cs`
+- `VGMissionJournal/Logging/ActivityLog.cs`
+- `VGMissionJournal/Logging/ActivityEventBuilder.cs` (replaced by `MissionRecordBuilder`)
+- `VGMissionJournal/Logging/MissionStepSnapshot.cs`
+- `VGMissionJournal/Logging/MissionObjectiveSnapshot.cs`
+- `VGMissionJournal/Api/ActivityEventMapper.cs`
 - Old test files that only cover deleted types (see Task 16).
 
 ### Kept
 
-- `VGMissionLog/Logging/Outcome.cs` — still useful as a `{Completed, Failed, Abandoned}` enum returned by `MissionRecord.Outcome`. `TimelineState` is the transition kind; `Outcome` is the terminal kind.
-- `VGMissionLog/Logging/MissionRewardSnapshot.cs` — keep; still the right shape for `rewards[]` entries.
-- `VGMissionLog/Logging/RepReward.cs` — used by reward snapshots.
-- `VGMissionLog/Logging/IClock.cs`, `GameClock.cs` — still the time source.
+- `VGMissionJournal/Logging/Outcome.cs` — still useful as a `{Completed, Failed, Abandoned}` enum returned by `MissionRecord.Outcome`. `TimelineState` is the transition kind; `Outcome` is the terminal kind.
+- `VGMissionJournal/Logging/MissionRewardSnapshot.cs` — keep; still the right shape for `rewards[]` entries.
+- `VGMissionJournal/Logging/RepReward.cs` — used by reward snapshots.
+- `VGMissionJournal/Logging/IClock.cs`, `GameClock.cs` — still the time source.
 
 ---
 
@@ -93,7 +93,7 @@ Expected: `On branch feat/v3-mission-oriented` / `nothing to commit, working tre
 
 - [ ] **Step 3: Confirm baseline build + tests pass**
 
-Run: `DOTNET_ROLL_FORWARD=LatestMajor dotnet test VGMissionLog.sln --nologo 2>&1 | tail -3`
+Run: `DOTNET_ROLL_FORWARD=LatestMajor dotnet test VGMissionJournal.sln --nologo 2>&1 | tail -3`
 Expected: `Passed! - Failed:     0, Passed:   177, Skipped:     0, Total:   177`
 
 ---
@@ -101,19 +101,19 @@ Expected: `Passed! - Failed:     0, Passed:   177, Skipped:     0, Total:   177`
 ## Task 1: `TimelineState` enum + `TimelineEntry` record
 
 **Files:**
-- Create: `VGMissionLog/Logging/TimelineState.cs`
-- Create: `VGMissionLog/Logging/TimelineEntry.cs`
-- Test: `VGMissionLog.Tests/Logging/TimelineEntryTests.cs`
+- Create: `VGMissionJournal/Logging/TimelineState.cs`
+- Create: `VGMissionJournal/Logging/TimelineEntry.cs`
+- Test: `VGMissionJournal.Tests/Logging/TimelineEntryTests.cs`
 
 - [ ] **Step 1: Write the failing test**
 
-Create `VGMissionLog.Tests/Logging/TimelineEntryTests.cs`:
+Create `VGMissionJournal.Tests/Logging/TimelineEntryTests.cs`:
 
 ```csharp
-using VGMissionLog.Logging;
+using VGMissionJournal.Logging;
 using Xunit;
 
-namespace VGMissionLog.Tests.Logging;
+namespace VGMissionJournal.Tests.Logging;
 
 public class TimelineEntryTests
 {
@@ -148,15 +148,15 @@ public class TimelineEntryTests
 
 - [ ] **Step 2: Run the test to verify it fails**
 
-Run: `DOTNET_ROLL_FORWARD=LatestMajor dotnet test VGMissionLog.sln --nologo --filter "TimelineEntryTests"`
+Run: `DOTNET_ROLL_FORWARD=LatestMajor dotnet test VGMissionJournal.sln --nologo --filter "TimelineEntryTests"`
 Expected: build FAILS with "type or namespace 'TimelineState' not found" / "TimelineEntry not found".
 
 - [ ] **Step 3: Write minimal implementation**
 
-Create `VGMissionLog/Logging/TimelineState.cs`:
+Create `VGMissionJournal/Logging/TimelineState.cs`:
 
 ```csharp
-namespace VGMissionLog.Logging;
+namespace VGMissionJournal.Logging;
 
 /// <summary>
 /// Mission lifecycle transition kinds recorded in <see cref="MissionRecord.Timeline"/>.
@@ -172,10 +172,10 @@ public enum TimelineState
 }
 ```
 
-Create `VGMissionLog/Logging/TimelineEntry.cs`:
+Create `VGMissionJournal/Logging/TimelineEntry.cs`:
 
 ```csharp
-namespace VGMissionLog.Logging;
+namespace VGMissionJournal.Logging;
 
 /// <summary>
 /// One transition in a mission's timeline. <see cref="RealUtc"/> is optional —
@@ -194,13 +194,13 @@ public sealed record TimelineEntry(
 
 - [ ] **Step 4: Run tests to verify they pass**
 
-Run: `DOTNET_ROLL_FORWARD=LatestMajor dotnet test VGMissionLog.sln --nologo --filter "TimelineEntryTests"`
+Run: `DOTNET_ROLL_FORWARD=LatestMajor dotnet test VGMissionJournal.sln --nologo --filter "TimelineEntryTests"`
 Expected: `Passed! - Failed: 0, Passed: 5`.
 
 - [ ] **Step 5: Commit**
 
 ```bash
-git add VGMissionLog/Logging/TimelineState.cs VGMissionLog/Logging/TimelineEntry.cs VGMissionLog.Tests/Logging/TimelineEntryTests.cs
+git add VGMissionJournal/Logging/TimelineState.cs VGMissionJournal/Logging/TimelineEntry.cs VGMissionJournal.Tests/Logging/TimelineEntryTests.cs
 git commit -m "feat(logging): add TimelineState enum + TimelineEntry record
 
 Foundation for the v3 mission-oriented schema. Timeline entries are the
@@ -212,20 +212,20 @@ explicit state-transition log on each MissionRecord."
 ## Task 2: `MissionStepDefinition` + `MissionObjectiveDefinition` (immutable structure)
 
 **Files:**
-- Create: `VGMissionLog/Logging/MissionObjectiveDefinition.cs`
-- Create: `VGMissionLog/Logging/MissionStepDefinition.cs`
-- Test: `VGMissionLog.Tests/Logging/MissionStepDefinitionTests.cs`
+- Create: `VGMissionJournal/Logging/MissionObjectiveDefinition.cs`
+- Create: `VGMissionJournal/Logging/MissionStepDefinition.cs`
+- Test: `VGMissionJournal.Tests/Logging/MissionStepDefinitionTests.cs`
 
 - [ ] **Step 1: Write the failing test**
 
-Create `VGMissionLog.Tests/Logging/MissionStepDefinitionTests.cs`:
+Create `VGMissionJournal.Tests/Logging/MissionStepDefinitionTests.cs`:
 
 ```csharp
 using System.Collections.Generic;
-using VGMissionLog.Logging;
+using VGMissionJournal.Logging;
 using Xunit;
 
-namespace VGMissionLog.Tests.Logging;
+namespace VGMissionJournal.Tests.Logging;
 
 public class MissionStepDefinitionTests
 {
@@ -270,17 +270,17 @@ public class MissionStepDefinitionTests
 
 - [ ] **Step 2: Run the test — expect build failure**
 
-Run: `DOTNET_ROLL_FORWARD=LatestMajor dotnet test VGMissionLog.sln --nologo --filter "MissionStepDefinitionTests"`
+Run: `DOTNET_ROLL_FORWARD=LatestMajor dotnet test VGMissionJournal.sln --nologo --filter "MissionStepDefinitionTests"`
 Expected: build FAILS, types not found.
 
 - [ ] **Step 3: Write minimal implementations**
 
-Create `VGMissionLog/Logging/MissionObjectiveDefinition.cs`:
+Create `VGMissionJournal/Logging/MissionObjectiveDefinition.cs`:
 
 ```csharp
 using System.Collections.Generic;
 
-namespace VGMissionLog.Logging;
+namespace VGMissionJournal.Logging;
 
 /// <summary>
 /// Immutable description of one objective within a <see cref="MissionStepDefinition"/>.
@@ -295,12 +295,12 @@ public sealed record MissionObjectiveDefinition(
     IReadOnlyDictionary<string, object?>? Fields);
 ```
 
-Create `VGMissionLog/Logging/MissionStepDefinition.cs`:
+Create `VGMissionJournal/Logging/MissionStepDefinition.cs`:
 
 ```csharp
 using System.Collections.Generic;
 
-namespace VGMissionLog.Logging;
+namespace VGMissionJournal.Logging;
 
 /// <summary>
 /// Immutable description of one step in a mission's plan. See
@@ -315,13 +315,13 @@ public sealed record MissionStepDefinition(
 
 - [ ] **Step 4: Run tests**
 
-Run: `DOTNET_ROLL_FORWARD=LatestMajor dotnet test VGMissionLog.sln --nologo --filter "MissionStepDefinitionTests"`
+Run: `DOTNET_ROLL_FORWARD=LatestMajor dotnet test VGMissionJournal.sln --nologo --filter "MissionStepDefinitionTests"`
 Expected: `Passed! - Failed: 0, Passed: 3`.
 
 - [ ] **Step 5: Commit**
 
 ```bash
-git add VGMissionLog/Logging/MissionObjectiveDefinition.cs VGMissionLog/Logging/MissionStepDefinition.cs VGMissionLog.Tests/Logging/MissionStepDefinitionTests.cs
+git add VGMissionJournal/Logging/MissionObjectiveDefinition.cs VGMissionJournal/Logging/MissionStepDefinition.cs VGMissionJournal.Tests/Logging/MissionStepDefinitionTests.cs
 git commit -m "feat(logging): add immutable step + objective definition records
 
 v3 captures mission structure once at accept time. Dynamic progress
@@ -334,19 +334,19 @@ doesn't mutate mission structure post-generation."
 ## Task 3: `MissionRecord` aggregate + helpers
 
 **Files:**
-- Create: `VGMissionLog/Logging/MissionRecord.cs`
-- Test: `VGMissionLog.Tests/Logging/MissionRecordTests.cs`
+- Create: `VGMissionJournal/Logging/MissionRecord.cs`
+- Test: `VGMissionJournal.Tests/Logging/MissionRecordTests.cs`
 
 - [ ] **Step 1: Write the failing tests**
 
-Create `VGMissionLog.Tests/Logging/MissionRecordTests.cs`:
+Create `VGMissionJournal.Tests/Logging/MissionRecordTests.cs`:
 
 ```csharp
 using System.Collections.Generic;
-using VGMissionLog.Logging;
+using VGMissionJournal.Logging;
 using Xunit;
 
-namespace VGMissionLog.Tests.Logging;
+namespace VGMissionJournal.Tests.Logging;
 
 public class MissionRecordTests
 {
@@ -423,18 +423,18 @@ public class MissionRecordTests
 
 - [ ] **Step 2: Run test — expect build failure**
 
-Run: `DOTNET_ROLL_FORWARD=LatestMajor dotnet test VGMissionLog.sln --nologo --filter "MissionRecordTests"`
+Run: `DOTNET_ROLL_FORWARD=LatestMajor dotnet test VGMissionJournal.sln --nologo --filter "MissionRecordTests"`
 Expected: build FAILS, `MissionRecord` not found.
 
 - [ ] **Step 3: Write the implementation**
 
-Create `VGMissionLog/Logging/MissionRecord.cs`:
+Create `VGMissionJournal/Logging/MissionRecord.cs`:
 
 ```csharp
 using System;
 using System.Collections.Generic;
 
-namespace VGMissionLog.Logging;
+namespace VGMissionJournal.Logging;
 
 /// <summary>
 /// One mission's complete record in the log. Identity fields are captured
@@ -507,13 +507,13 @@ public sealed record MissionRecord(
 
 - [ ] **Step 4: Run tests**
 
-Run: `DOTNET_ROLL_FORWARD=LatestMajor dotnet test VGMissionLog.sln --nologo --filter "MissionRecordTests"`
+Run: `DOTNET_ROLL_FORWARD=LatestMajor dotnet test VGMissionJournal.sln --nologo --filter "MissionRecordTests"`
 Expected: `Passed! - Failed: 0, Passed: 7`.
 
 - [ ] **Step 5: Commit**
 
 ```bash
-git add VGMissionLog/Logging/MissionRecord.cs VGMissionLog.Tests/Logging/MissionRecordTests.cs
+git add VGMissionJournal/Logging/MissionRecord.cs VGMissionJournal.Tests/Logging/MissionRecordTests.cs
 git commit -m "feat(logging): add MissionRecord aggregate with timeline helpers
 
 IsActive / Outcome / AgeSeconds / AcceptedAtGameSeconds /
@@ -526,21 +526,21 @@ for mission state, no redundant flags."
 ## Task 4: `MissionStore` — in-memory mission store
 
 **Files:**
-- Create: `VGMissionLog/Logging/MissionStore.cs`
-- Test: `VGMissionLog.Tests/Logging/MissionStoreTests.cs`
+- Create: `VGMissionJournal/Logging/MissionStore.cs`
+- Test: `VGMissionJournal.Tests/Logging/MissionStoreTests.cs`
 
 **Design note:** `MissionStore` keys missions by a stable string key. Use `MissionInstanceId` as the primary key (session-local but guaranteed unique within a session). `StoryId` for story missions would collide across sessions on sidecar reload; since sidecar keeps v3 records by instance id + story id both, we route by instance id. After migration from v1 a record may have an instance id synthesized by the migrator.
 
 - [ ] **Step 1: Write failing tests**
 
-Create `VGMissionLog.Tests/Logging/MissionStoreTests.cs`:
+Create `VGMissionJournal.Tests/Logging/MissionStoreTests.cs`:
 
 ```csharp
 using System.Linq;
-using VGMissionLog.Logging;
+using VGMissionJournal.Logging;
 using Xunit;
 
-namespace VGMissionLog.Tests.Logging;
+namespace VGMissionJournal.Tests.Logging;
 
 public class MissionStoreTests
 {
@@ -644,18 +644,18 @@ public class MissionStoreTests
 
 - [ ] **Step 2: Run test — expect build failure**
 
-Run: `DOTNET_ROLL_FORWARD=LatestMajor dotnet test VGMissionLog.sln --nologo --filter "MissionStoreTests"`
+Run: `DOTNET_ROLL_FORWARD=LatestMajor dotnet test VGMissionJournal.sln --nologo --filter "MissionStoreTests"`
 Expected: build FAILS, `MissionStore` not found.
 
 - [ ] **Step 3: Write implementation**
 
-Create `VGMissionLog/Logging/MissionStore.cs`:
+Create `VGMissionJournal/Logging/MissionStore.cs`:
 
 ```csharp
 using System;
 using System.Collections.Generic;
 
-namespace VGMissionLog.Logging;
+namespace VGMissionJournal.Logging;
 
 /// <summary>
 /// In-memory store of <see cref="MissionRecord"/> aggregates, keyed by
@@ -786,13 +786,13 @@ internal sealed class MissionStore
 
 - [ ] **Step 4: Run tests**
 
-Run: `DOTNET_ROLL_FORWARD=LatestMajor dotnet test VGMissionLog.sln --nologo --filter "MissionStoreTests"`
+Run: `DOTNET_ROLL_FORWARD=LatestMajor dotnet test VGMissionJournal.sln --nologo --filter "MissionStoreTests"`
 Expected: `Passed! - Failed: 0, Passed: 7`.
 
 - [ ] **Step 5: Commit**
 
 ```bash
-git add VGMissionLog/Logging/MissionStore.cs VGMissionLog.Tests/Logging/MissionStoreTests.cs
+git add VGMissionJournal/Logging/MissionStore.cs VGMissionJournal.Tests/Logging/MissionStoreTests.cs
 git commit -m "feat(logging): add MissionStore keyed by MissionInstanceId
 
 Replaces ActivityLog's event store. Upsert updates in place; eviction
@@ -804,8 +804,8 @@ drops oldest-accepted; LoadFrom rebuilds from a sidecar read."
 ## Task 5: `MissionRecordBuilder` — snapshots + transitions
 
 **Files:**
-- Create: `VGMissionLog/Logging/MissionRecordBuilder.cs`
-- Test: `VGMissionLog.Tests/Logging/MissionRecordBuilderTests.cs`
+- Create: `VGMissionJournal/Logging/MissionRecordBuilder.cs`
+- Test: `VGMissionJournal.Tests/Logging/MissionRecordBuilderTests.cs`
 
 **Design note:** This is the one place that touches Unity game types via reflection. The existing `ActivityEventBuilder` is 451 lines; its reflection logic for reading steps/objectives/rewards/faction/system is all reusable. **Copy that logic verbatim** — don't re-derive. The new builder's public surface is:
 - `CreateFromAccept(Mission mission) → MissionRecord` — full structure snapshot + `Timeline = [ Accepted ]`.
@@ -813,19 +813,19 @@ drops oldest-accepted; LoadFrom rebuilds from a sidecar read."
 
 - [ ] **Step 1: Port the reflection block from ActivityEventBuilder**
 
-Read `VGMissionLog/Logging/ActivityEventBuilder.cs` in full. The private static fields (`_missionStepsField`, `_stepObjectivesField`, `_itemTypeIdentifierField`), `ReadPrimitiveFields`, `ExtractSteps`, `SnapshotStep`, `SnapshotObjective`, `ExtractRewards`, `ResolveItemIdentifier`, `StripCloneSuffix`, `SafeGet`, and the reward-type skiplist all carry over unchanged. Copy them into `MissionRecordBuilder.cs` as private members.
+Read `VGMissionJournal/Logging/ActivityEventBuilder.cs` in full. The private static fields (`_missionStepsField`, `_stepObjectivesField`, `_itemTypeIdentifierField`), `ReadPrimitiveFields`, `ExtractSteps`, `SnapshotStep`, `SnapshotObjective`, `ExtractRewards`, `ResolveItemIdentifier`, `StripCloneSuffix`, `SafeGet`, and the reward-type skiplist all carry over unchanged. Copy them into `MissionRecordBuilder.cs` as private members.
 
 - [ ] **Step 2: Write failing tests**
 
-Create `VGMissionLog.Tests/Logging/MissionRecordBuilderTests.cs`:
+Create `VGMissionJournal.Tests/Logging/MissionRecordBuilderTests.cs`:
 
 ```csharp
 using System.Linq;
-using VGMissionLog.Logging;
-using VGMissionLog.Tests.Support;
+using VGMissionJournal.Logging;
+using VGMissionJournal.Tests.Support;
 using Xunit;
 
-namespace VGMissionLog.Tests.Logging;
+namespace VGMissionJournal.Tests.Logging;
 
 public class MissionRecordBuilderTests
 {
@@ -874,19 +874,19 @@ public class MissionRecordBuilderTests
 
 - [ ] **Step 3: Run tests — expect build failure**
 
-Run: `DOTNET_ROLL_FORWARD=LatestMajor dotnet test VGMissionLog.sln --nologo --filter "MissionRecordBuilderTests"`
+Run: `DOTNET_ROLL_FORWARD=LatestMajor dotnet test VGMissionJournal.sln --nologo --filter "MissionRecordBuilderTests"`
 Expected: build FAILS, `MissionRecordBuilder` not found.
 
 - [ ] **Step 4: Write the builder**
 
-Create `VGMissionLog/Logging/MissionRecordBuilder.cs`. Public surface:
+Create `VGMissionJournal/Logging/MissionRecordBuilder.cs`. Public surface:
 
 ```csharp
 using System;
 using System.Collections.Generic;
 using Source.MissionSystem;
 
-namespace VGMissionLog.Logging;
+namespace VGMissionJournal.Logging;
 
 internal sealed class MissionRecordBuilder
 {
@@ -947,13 +947,13 @@ Fill in the commented sections by lifting the code from `ActivityEventBuilder.cs
 
 - [ ] **Step 5: Run tests**
 
-Run: `DOTNET_ROLL_FORWARD=LatestMajor dotnet test VGMissionLog.sln --nologo --filter "MissionRecordBuilderTests"`
+Run: `DOTNET_ROLL_FORWARD=LatestMajor dotnet test VGMissionJournal.sln --nologo --filter "MissionRecordBuilderTests"`
 Expected: `Passed! - Failed: 0, Passed: 3`.
 
 - [ ] **Step 6: Commit**
 
 ```bash
-git add VGMissionLog/Logging/MissionRecordBuilder.cs VGMissionLog.Tests/Logging/MissionRecordBuilderTests.cs
+git add VGMissionJournal/Logging/MissionRecordBuilder.cs VGMissionJournal.Tests/Logging/MissionRecordBuilderTests.cs
 git commit -m "feat(logging): port ActivityEventBuilder → MissionRecordBuilder
 
 CreateFromAccept snapshots identity + steps + rewards. AppendTransition
@@ -966,12 +966,12 @@ mission (final authoritative set)."
 ## Task 6: Wire patches to `MissionStore`
 
 **Files:**
-- Modify: `VGMissionLog/Patches/MissionAcceptPatch.cs`
-- Modify: `VGMissionLog/Patches/MissionCompletePatch.cs`
-- Modify: `VGMissionLog/Patches/MissionFailPatch.cs`
-- Modify: `VGMissionLog/Patches/MissionAbandonPatch.cs`
-- Modify: `VGMissionLog/Patches/MissionArchivePatch.cs`
-- Modify: `VGMissionLog/Patches/PatchWiring.cs`
+- Modify: `VGMissionJournal/Patches/MissionAcceptPatch.cs`
+- Modify: `VGMissionJournal/Patches/MissionCompletePatch.cs`
+- Modify: `VGMissionJournal/Patches/MissionFailPatch.cs`
+- Modify: `VGMissionJournal/Patches/MissionAbandonPatch.cs`
+- Modify: `VGMissionJournal/Patches/MissionArchivePatch.cs`
+- Modify: `VGMissionJournal/Patches/PatchWiring.cs`
 
 **Design:** Each patch now holds two statics: `MissionRecordBuilder Builder` and `MissionStore Store`. The transition recording is:
 
@@ -991,7 +991,7 @@ The **mission-instance key** problem: our session-local instance id comes from `
 
 - [ ] **Step 1: Expose `GetInstanceId` on the builder**
 
-Modify `VGMissionLog/Logging/MissionRecordBuilder.cs` — the ported `_instanceIds` ConditionalWeakTable and its accessor need to be public so patches can resolve a mission to its key without rebuilding an entire record:
+Modify `VGMissionJournal/Logging/MissionRecordBuilder.cs` — the ported `_instanceIds` ConditionalWeakTable and its accessor need to be public so patches can resolve a mission to its key without rebuilding an entire record:
 
 ```csharp
 public string GetInstanceId(Mission mission) =>
@@ -1093,13 +1093,13 @@ Note: `mission: null` means rewards won't be re-read here — archive is a backs
 
 - [ ] **Step 5: Update PatchWiring**
 
-Modify `VGMissionLog/Patches/PatchWiring.cs` signature:
+Modify `VGMissionJournal/Patches/PatchWiring.cs` signature:
 
 ```csharp
 public static void WireAll(
     MissionRecordBuilder builder,
     MissionStore         store,
-    LogIO                io,
+    JournalIO                io,
     ManualLogSource      bepLog)
 {
     MissionAcceptPatch.Builder  = MissionCompletePatch.Builder =
@@ -1119,8 +1119,8 @@ public static void WireAll(
 
 - [ ] **Step 6: Build**
 
-Run: `DOTNET_ROLL_FORWARD=LatestMajor dotnet build VGMissionLog.sln -v q 2>&1 | tail -5`
-Expected: build fails because `LogIO` / `SaveLoadPatch` / `SaveWritePatch` still reference the old types. Defer those — they get rewritten in Tasks 7-9. Commit what compiles; leave the build red at this point is OK temporarily only if the task dictates — **don't commit a broken build**. Instead, do Tasks 7-9 before any commit that spans the patch wiring.
+Run: `DOTNET_ROLL_FORWARD=LatestMajor dotnet build VGMissionJournal.sln -v q 2>&1 | tail -5`
+Expected: build fails because `JournalIO` / `SaveLoadPatch` / `SaveWritePatch` still reference the old types. Defer those — they get rewritten in Tasks 7-9. Commit what compiles; leave the build red at this point is OK temporarily only if the task dictates — **don't commit a broken build**. Instead, do Tasks 7-9 before any commit that spans the patch wiring.
 
 - [ ] **Step 7: Defer commit; jump to Task 7**
 
@@ -1128,25 +1128,25 @@ No commit yet. The full wiring of Tasks 6-9 lands as one commit at the end of Ta
 
 ---
 
-## Task 7: `LogSchema` v3 shape
+## Task 7: `JournalSchema` v3 shape
 
 **Files:**
-- Modify: `VGMissionLog/Persistence/LogSchema.cs`
+- Modify: `VGMissionJournal/Persistence/JournalSchema.cs`
 
-- [ ] **Step 1: Rewrite LogSchema**
+- [ ] **Step 1: Rewrite JournalSchema**
 
-Replace the existing `LogSchema.cs` content with:
+Replace the existing `JournalSchema.cs` content with:
 
 ```csharp
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Serialization;
-using VGMissionLog.Logging;
+using VGMissionJournal.Logging;
 
-namespace VGMissionLog.Persistence;
+namespace VGMissionJournal.Persistence;
 
 /// <summary>
-/// Top-level shape of a <c>&lt;save&gt;.save.vgmissionlog.json</c> sidecar
+/// Top-level shape of a <c>&lt;save&gt;.save.vgmissionjournal.json</c> sidecar
 /// at v3 (mission-oriented). The array is keyed by mission, not by event;
 /// each element is a <see cref="MissionRecord"/> with identity + structure +
 /// rewards + timeline.
@@ -1154,7 +1154,7 @@ namespace VGMissionLog.Persistence;
 /// <para>v1 sidecars migrate on load via <see cref="V1ToV3Migrator"/>;
 /// writes are always v3. No legacy fields.</para>
 /// </summary>
-internal sealed record LogSchema(
+internal sealed record JournalSchema(
     [property: JsonProperty("version")]  int Version,
     [property: JsonProperty("missions")] MissionRecord[] Missions)
 {
@@ -1175,31 +1175,31 @@ internal sealed record LogSchema(
 
 - [ ] **Step 2: Build**
 
-Run: `DOTNET_ROLL_FORWARD=LatestMajor dotnet build VGMissionLog.sln -v q 2>&1 | tail -5`
-Expected: still failing — `LogIO` references old `ActivityEvent`-typed schema and `SaveLoadPatch` consumes v1 shape. That's fixed in Task 8/9.
+Run: `DOTNET_ROLL_FORWARD=LatestMajor dotnet build VGMissionJournal.sln -v q 2>&1 | tail -5`
+Expected: still failing — `JournalIO` references old `ActivityEvent`-typed schema and `SaveLoadPatch` consumes v1 shape. That's fixed in Task 8/9.
 
 ---
 
 ## Task 8: `V1ToV3Migrator`
 
 **Files:**
-- Create: `VGMissionLog/Persistence/V1ToV3Migrator.cs`
-- Test: `VGMissionLog.Tests/Persistence/V1ToV3MigratorTests.cs`
+- Create: `VGMissionJournal/Persistence/V1ToV3Migrator.cs`
+- Test: `VGMissionJournal.Tests/Persistence/V1ToV3MigratorTests.cs`
 - Create (temporary): a compat record of the v1 shape so the migrator can deserialize it without referencing the soon-to-be-deleted `ActivityEvent` type. See step 1.
 
 **Design:** We need to deserialize old v1 payloads after we've deleted `ActivityEvent`. Solution: define a `V1Event` POCO inside `V1ToV3Migrator.cs` — a private nested type that mirrors the v1 field set (camelCase JSON, all primitive/nullable). This keeps the obsolete shape confined to the migrator and free of any runtime import.
 
 - [ ] **Step 1: Write failing test**
 
-Create `VGMissionLog.Tests/Persistence/V1ToV3MigratorTests.cs`:
+Create `VGMissionJournal.Tests/Persistence/V1ToV3MigratorTests.cs`:
 
 ```csharp
 using System.Linq;
-using VGMissionLog.Logging;
-using VGMissionLog.Persistence;
+using VGMissionJournal.Logging;
+using VGMissionJournal.Persistence;
 using Xunit;
 
-namespace VGMissionLog.Tests.Persistence;
+namespace VGMissionJournal.Tests.Persistence;
 
 public class V1ToV3MigratorTests
 {
@@ -1274,12 +1274,12 @@ public class V1ToV3MigratorTests
 
 - [ ] **Step 2: Run test — expect build failure**
 
-Run: `DOTNET_ROLL_FORWARD=LatestMajor dotnet test VGMissionLog.sln --nologo --filter "V1ToV3MigratorTests"`
+Run: `DOTNET_ROLL_FORWARD=LatestMajor dotnet test VGMissionJournal.sln --nologo --filter "V1ToV3MigratorTests"`
 Expected: build FAILS (`V1ToV3Migrator` not found).
 
 - [ ] **Step 3: Write migrator**
 
-Create `VGMissionLog/Persistence/V1ToV3Migrator.cs`:
+Create `VGMissionJournal/Persistence/V1ToV3Migrator.cs`:
 
 ```csharp
 using System;
@@ -1288,14 +1288,14 @@ using System.Linq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Serialization;
-using VGMissionLog.Logging;
+using VGMissionJournal.Logging;
 
-namespace VGMissionLog.Persistence;
+namespace VGMissionJournal.Persistence;
 
 /// <summary>
 /// Upgrades a v1 sidecar (flat <c>events[]</c>) into a v3 sidecar
 /// (<c>missions[]</c> with explicit timelines). Called only by
-/// <see cref="LogIO.Read"/> when <c>schema.Version == 1</c>.
+/// <see cref="JournalIO.Read"/> when <c>schema.Version == 1</c>.
 ///
 /// <para>Fidelity: v1 did not record per-step transitions, so migrated
 /// timelines hold <see cref="TimelineState.Accepted"/> and one terminal
@@ -1310,7 +1310,7 @@ namespace VGMissionLog.Persistence;
 /// </summary>
 internal static class V1ToV3Migrator
 {
-    public static LogSchema Migrate(string v1Payload)
+    public static JournalSchema Migrate(string v1Payload)
     {
         var v1 = JsonConvert.DeserializeObject<V1Schema>(v1Payload, V1SerializerSettings)
                  ?? throw new JsonException("V1 schema was null");
@@ -1387,7 +1387,7 @@ internal static class V1ToV3Migrator
                 Timeline:              timeline));
         }
 
-        return new LogSchema(Version: LogSchema.CurrentVersion, Missions: records.ToArray());
+        return new JournalSchema(Version: JournalSchema.CurrentVersion, Missions: records.ToArray());
     }
 
     private static IReadOnlyList<MissionRewardSnapshot> FoldRewards(V1Event e)
@@ -1463,48 +1463,48 @@ internal static class V1ToV3Migrator
 
 - [ ] **Step 4: Run tests**
 
-Run: `DOTNET_ROLL_FORWARD=LatestMajor dotnet test VGMissionLog.sln --nologo --filter "V1ToV3MigratorTests"`
+Run: `DOTNET_ROLL_FORWARD=LatestMajor dotnet test VGMissionJournal.sln --nologo --filter "V1ToV3MigratorTests"`
 Expected: `Passed! - Failed: 0, Passed: 2`.
 
 ---
 
-## Task 9: `LogIO` + `SaveLoadPatch` + `SaveWritePatch`
+## Task 9: `JournalIO` + `SaveLoadPatch` + `SaveWritePatch`
 
 **Files:**
-- Modify: `VGMissionLog/Persistence/LogIO.cs`
-- Modify: `VGMissionLog/Patches/SaveLoadPatch.cs`
-- Modify: `VGMissionLog/Patches/SaveWritePatch.cs`
+- Modify: `VGMissionJournal/Persistence/JournalIO.cs`
+- Modify: `VGMissionJournal/Patches/SaveLoadPatch.cs`
+- Modify: `VGMissionJournal/Patches/SaveWritePatch.cs`
 
-- [ ] **Step 1: Update LogIO.Read to route v1 through the migrator**
+- [ ] **Step 1: Update JournalIO.Read to route v1 through the migrator**
 
-In `VGMissionLog/Persistence/LogIO.cs`:
+In `VGMissionJournal/Persistence/JournalIO.cs`:
 
 ```csharp
-public LogReadResult Read(string sidecarPath)
+public JournalReadResult Read(string sidecarPath)
 {
     if (!File.Exists(sidecarPath))
-        return new LogReadResult(LogReadStatus.MissingFile, null, null);
+        return new JournalReadResult(JournalReadStatus.MissingFile, null, null);
 
     string raw;
     try { raw = File.ReadAllText(sidecarPath); }
-    catch (IOException) { return new LogReadResult(LogReadStatus.MissingFile, null, null); }
+    catch (IOException) { return new JournalReadResult(JournalReadStatus.MissingFile, null, null); }
 
     // First pass: read just the version.
     int version;
     try
     {
-        var probe = JsonConvert.DeserializeObject<VersionProbe>(raw, LogSchema.SerializerSettings);
+        var probe = JsonConvert.DeserializeObject<VersionProbe>(raw, JournalSchema.SerializerSettings);
         version = probe?.Version ?? 0;
     }
-    catch (JsonException) { return Quarantine(sidecarPath, LogReadStatus.Corrupted); }
+    catch (JsonException) { return Quarantine(sidecarPath, JournalReadStatus.Corrupted); }
 
-    if (version == LogSchema.CurrentVersion)
+    if (version == JournalSchema.CurrentVersion)
     {
-        LogSchema? schema;
-        try { schema = JsonConvert.DeserializeObject<LogSchema>(raw, LogSchema.SerializerSettings); }
-        catch (JsonException) { return Quarantine(sidecarPath, LogReadStatus.Corrupted); }
-        if (schema is null) return Quarantine(sidecarPath, LogReadStatus.Corrupted);
-        return new LogReadResult(LogReadStatus.Loaded, schema, null);
+        JournalSchema? schema;
+        try { schema = JsonConvert.DeserializeObject<JournalSchema>(raw, JournalSchema.SerializerSettings); }
+        catch (JsonException) { return Quarantine(sidecarPath, JournalReadStatus.Corrupted); }
+        if (schema is null) return Quarantine(sidecarPath, JournalReadStatus.Corrupted);
+        return new JournalReadResult(JournalReadStatus.Loaded, schema, null);
     }
 
     if (version == 1)
@@ -1512,12 +1512,12 @@ public LogReadResult Read(string sidecarPath)
         try
         {
             var migrated = V1ToV3Migrator.Migrate(raw);
-            return new LogReadResult(LogReadStatus.Loaded, migrated, null);
+            return new JournalReadResult(JournalReadStatus.Loaded, migrated, null);
         }
-        catch (Exception) { return Quarantine(sidecarPath, LogReadStatus.Corrupted); }
+        catch (Exception) { return Quarantine(sidecarPath, JournalReadStatus.Corrupted); }
     }
 
-    return Quarantine(sidecarPath, LogReadStatus.UnsupportedVersion);
+    return Quarantine(sidecarPath, JournalReadStatus.UnsupportedVersion);
 }
 
 private sealed class VersionProbe
@@ -1533,11 +1533,11 @@ Both patches currently hold `ActivityLog Log` slots. Replace with `MissionStore 
 ```csharp
 // SaveLoadPatch Postfix
 var result = IO.Read(sidecarPath);
-if (result.Status == LogReadStatus.Loaded && result.Schema is not null)
+if (result.Status == JournalReadStatus.Loaded && result.Schema is not null)
 {
     Store.LoadFrom(result.Schema.Missions);
 }
-else if (result.Status != LogReadStatus.MissingFile)
+else if (result.Status != JournalReadStatus.MissingFile)
 {
     BepLog.LogWarning($"Sidecar load failed: {result.Status}, quarantined to {result.QuarantinedTo}");
 }
@@ -1549,7 +1549,7 @@ On save:
 // SaveWritePatch Postfix
 try
 {
-    var schema = new LogSchema(LogSchema.CurrentVersion, Store.AllMissions.ToArray());
+    var schema = new JournalSchema(JournalSchema.CurrentVersion, Store.AllMissions.ToArray());
     IO.Write(sidecarPath, schema);
 }
 catch (Exception e)
@@ -1560,8 +1560,8 @@ catch (Exception e)
 
 - [ ] **Step 3: Build and run all tests**
 
-Run: `DOTNET_ROLL_FORWARD=LatestMajor dotnet build VGMissionLog.sln -v q 2>&1 | tail -5`
-Expected: build still fails — `ActivityLog`, `ActivityEvent`, `ActivityEventMapper`, `IMissionLogQuery` old methods, old tests. Continue through Tasks 10-13 before trying green.
+Run: `DOTNET_ROLL_FORWARD=LatestMajor dotnet build VGMissionJournal.sln -v q 2>&1 | tail -5`
+Expected: build still fails — `ActivityLog`, `ActivityEvent`, `ActivityEventMapper`, `IMissionJournalQuery` old methods, old tests. Continue through Tasks 10-13 before trying green.
 
 - [ ] **Step 4: Defer commit**
 
@@ -1569,20 +1569,20 @@ Commits land together after Task 13.
 
 ---
 
-## Task 10: `IMissionLogQuery` v3 surface
+## Task 10: `IMissionJournalQuery` v3 surface
 
 **Files:**
-- Modify: `VGMissionLog/Api/IMissionLogQuery.cs`
+- Modify: `VGMissionJournal/Api/IMissionJournalQuery.cs`
 
 - [ ] **Step 1: Rewrite the interface**
 
-Replace `VGMissionLog/Api/IMissionLogQuery.cs` with:
+Replace `VGMissionJournal/Api/IMissionJournalQuery.cs` with:
 
 ```csharp
 using System;
 using System.Collections.Generic;
 
-namespace VGMissionLog.Api;
+namespace VGMissionJournal.Api;
 
 /// <summary>
 /// Neutral-shape query interface for cross-mod consumers. v3 is mission-oriented:
@@ -1598,7 +1598,7 @@ namespace VGMissionLog.Api;
 ///
 /// <para>Adding new methods is non-breaking; changing existing signatures is.</para>
 /// </summary>
-public interface IMissionLogQuery
+public interface IMissionJournalQuery
 {
     int SchemaVersion { get; }
     int TotalMissionCount { get; }
@@ -1678,20 +1678,20 @@ public interface IMissionLogQuery
 ## Task 11: `MissionRecordMapper` (replaces `ActivityEventMapper`)
 
 **Files:**
-- Create: `VGMissionLog/Api/MissionRecordMapper.cs`
-- Test: `VGMissionLog.Tests/Api/MissionRecordMapperTests.cs`
+- Create: `VGMissionJournal/Api/MissionRecordMapper.cs`
+- Test: `VGMissionJournal.Tests/Api/MissionRecordMapperTests.cs`
 
 - [ ] **Step 1: Write failing test**
 
-Create `VGMissionLog.Tests/Api/MissionRecordMapperTests.cs`:
+Create `VGMissionJournal.Tests/Api/MissionRecordMapperTests.cs`:
 
 ```csharp
 using System.Collections.Generic;
-using VGMissionLog.Api;
-using VGMissionLog.Logging;
+using VGMissionJournal.Api;
+using VGMissionJournal.Logging;
 using Xunit;
 
-namespace VGMissionLog.Tests.Api;
+namespace VGMissionJournal.Tests.Api;
 
 public class MissionRecordMapperTests
 {
@@ -1742,18 +1742,18 @@ public class MissionRecordMapperTests
 
 - [ ] **Step 2: Run test — expect build failure**
 
-Run: `DOTNET_ROLL_FORWARD=LatestMajor dotnet test VGMissionLog.sln --nologo --filter "MissionRecordMapperTests"`
+Run: `DOTNET_ROLL_FORWARD=LatestMajor dotnet test VGMissionJournal.sln --nologo --filter "MissionRecordMapperTests"`
 Expected: build FAILS.
 
 - [ ] **Step 3: Write the mapper**
 
-Create `VGMissionLog/Api/MissionRecordMapper.cs`:
+Create `VGMissionJournal/Api/MissionRecordMapper.cs`:
 
 ```csharp
 using System.Collections.Generic;
-using VGMissionLog.Logging;
+using VGMissionJournal.Logging;
 
-namespace VGMissionLog.Api;
+namespace VGMissionJournal.Api;
 
 internal static class MissionRecordMapper
 {
@@ -1850,40 +1850,40 @@ internal static class MissionRecordMapper
 
 - [ ] **Step 4: Run tests**
 
-Run: `DOTNET_ROLL_FORWARD=LatestMajor dotnet test VGMissionLog.sln --nologo --filter "MissionRecordMapperTests"`
+Run: `DOTNET_ROLL_FORWARD=LatestMajor dotnet test VGMissionJournal.sln --nologo --filter "MissionRecordMapperTests"`
 Expected: `Passed! - Failed: 0, Passed: 2`.
 
 ---
 
-## Task 12: `MissionLogQueryAdapter` rewrite
+## Task 12: `MissionJournalQueryAdapter` rewrite
 
 **Files:**
-- Modify: `VGMissionLog/Api/MissionLogQueryAdapter.cs`
-- Test: `VGMissionLog.Tests/Api/MissionLogQueryAdapterTests.cs` (rewrite)
+- Modify: `VGMissionJournal/Api/MissionJournalQueryAdapter.cs`
+- Test: `VGMissionJournal.Tests/Api/MissionJournalQueryAdapterTests.cs` (rewrite)
 
 - [ ] **Step 1: Rewrite adapter**
 
-Replace the body of `VGMissionLog/Api/MissionLogQueryAdapter.cs`:
+Replace the body of `VGMissionJournal/Api/MissionJournalQueryAdapter.cs`:
 
 ```csharp
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using VGMissionLog.Logging;
-using VGMissionLog.Persistence;
+using VGMissionJournal.Logging;
+using VGMissionJournal.Persistence;
 
-namespace VGMissionLog.Api;
+namespace VGMissionJournal.Api;
 
-internal sealed class MissionLogQueryAdapter : IMissionLogQuery
+internal sealed class MissionJournalQueryAdapter : IMissionJournalQuery
 {
     private readonly MissionStore _store;
 
-    public MissionLogQueryAdapter(MissionStore store)
+    public MissionJournalQueryAdapter(MissionStore store)
     {
         _store = store ?? throw new ArgumentNullException(nameof(store));
     }
 
-    public int SchemaVersion            => LogSchema.CurrentVersion;
+    public int SchemaVersion            => JournalSchema.CurrentVersion;
     public int TotalMissionCount        => _store.TotalMissionCount;
 
     public double? OldestAcceptedGameSeconds =>
@@ -2064,7 +2064,7 @@ internal sealed class MissionLogQueryAdapter : IMissionLogQuery
 
 - [ ] **Step 2: Rewrite adapter tests**
 
-Replace `VGMissionLog.Tests/Api/MissionLogQueryAdapterTests.cs` body. Keep the `[Collection("MissionLogApi.Current")]` attribute. Sample fixture builds 3-4 mission records directly (bypassing the builder — tests of the adapter). Assert the shape of returned dicts uses camelCase keys and derived fields.
+Replace `VGMissionJournal.Tests/Api/MissionJournalQueryAdapterTests.cs` body. Keep the `[Collection("MissionJournalApi.Current")]` attribute. Sample fixture builds 3-4 mission records directly (bypassing the builder — tests of the adapter). Assert the shape of returned dicts uses camelCase keys and derived fields.
 
 A representative test:
 
@@ -2076,7 +2076,7 @@ public void GetMissionsByOutcome_Completed_ReturnsOnlyCompletedMissions()
     store.Upsert(SampleRecord("i1", outcome: null));      // active
     store.Upsert(SampleRecord("i2", outcome: TimelineState.Completed));
     store.Upsert(SampleRecord("i3", outcome: TimelineState.Failed));
-    var adapter = new MissionLogQueryAdapter(store);
+    var adapter = new MissionJournalQueryAdapter(store);
 
     var completed = adapter.GetMissionsByOutcome("Completed");
     Assert.Single(completed);
@@ -2091,40 +2091,40 @@ Cover: `GetMission`, `GetActiveMissions`, `GetMissionsByOutcome`, `GetMissionsWi
 ## Task 13: Remove dead files + full build green
 
 **Files to delete:**
-- `VGMissionLog/Logging/ActivityEvent.cs`
-- `VGMissionLog/Logging/ActivityEventType.cs`
-- `VGMissionLog/Logging/ActivityLog.cs`
-- `VGMissionLog/Logging/ActivityEventBuilder.cs`
-- `VGMissionLog/Logging/MissionStepSnapshot.cs`
-- `VGMissionLog/Logging/MissionObjectiveSnapshot.cs`
-- `VGMissionLog/Api/ActivityEventMapper.cs`
-- Any test files that only test the above: `VGMissionLog.Tests/Logging/ActivityEventBuilderTests.cs`, `ActivityLogTests.cs`, `ActivityLogQueryTests.cs`, `ActivityLogAggregateTests.cs`, `ActivityLogProximityTests.cs`, `VGMissionLog.Tests/Api/ActivityEventMapperTests.cs`.
+- `VGMissionJournal/Logging/ActivityEvent.cs`
+- `VGMissionJournal/Logging/ActivityEventType.cs`
+- `VGMissionJournal/Logging/ActivityLog.cs`
+- `VGMissionJournal/Logging/ActivityEventBuilder.cs`
+- `VGMissionJournal/Logging/MissionStepSnapshot.cs`
+- `VGMissionJournal/Logging/MissionObjectiveSnapshot.cs`
+- `VGMissionJournal/Api/ActivityEventMapper.cs`
+- Any test files that only test the above: `VGMissionJournal.Tests/Logging/ActivityEventBuilderTests.cs`, `ActivityLogTests.cs`, `ActivityLogQueryTests.cs`, `ActivityLogAggregateTests.cs`, `ActivityLogProximityTests.cs`, `VGMissionJournal.Tests/Api/ActivityEventMapperTests.cs`.
 
 - [ ] **Step 1: Delete**
 
 ```bash
-git rm VGMissionLog/Logging/ActivityEvent.cs VGMissionLog/Logging/ActivityEventType.cs \
-       VGMissionLog/Logging/ActivityLog.cs VGMissionLog/Logging/ActivityEventBuilder.cs \
-       VGMissionLog/Logging/MissionStepSnapshot.cs VGMissionLog/Logging/MissionObjectiveSnapshot.cs \
-       VGMissionLog/Api/ActivityEventMapper.cs
-git rm VGMissionLog.Tests/Logging/ActivityEventBuilderTests.cs \
-       VGMissionLog.Tests/Logging/ActivityLogTests.cs \
-       VGMissionLog.Tests/Logging/ActivityLogQueryTests.cs \
-       VGMissionLog.Tests/Logging/ActivityLogAggregateTests.cs \
-       VGMissionLog.Tests/Logging/ActivityLogProximityTests.cs \
-       VGMissionLog.Tests/Api/ActivityEventMapperTests.cs
+git rm VGMissionJournal/Logging/ActivityEvent.cs VGMissionJournal/Logging/ActivityEventType.cs \
+       VGMissionJournal/Logging/ActivityLog.cs VGMissionJournal/Logging/ActivityEventBuilder.cs \
+       VGMissionJournal/Logging/MissionStepSnapshot.cs VGMissionJournal/Logging/MissionObjectiveSnapshot.cs \
+       VGMissionJournal/Api/ActivityEventMapper.cs
+git rm VGMissionJournal.Tests/Logging/ActivityEventBuilderTests.cs \
+       VGMissionJournal.Tests/Logging/ActivityLogTests.cs \
+       VGMissionJournal.Tests/Logging/ActivityLogQueryTests.cs \
+       VGMissionJournal.Tests/Logging/ActivityLogAggregateTests.cs \
+       VGMissionJournal.Tests/Logging/ActivityLogProximityTests.cs \
+       VGMissionJournal.Tests/Api/ActivityEventMapperTests.cs
 ```
 
 - [ ] **Step 2: Update TestEvents support helper**
 
-Delete `VGMissionLog.Tests/Support/TestEvents.cs` — it built `ActivityEvent` which no longer exists. Replace with `TestRecords.cs`:
+Delete `VGMissionJournal.Tests/Support/TestEvents.cs` — it built `ActivityEvent` which no longer exists. Replace with `TestRecords.cs`:
 
 ```csharp
 using System;
 using System.Collections.Generic;
-using VGMissionLog.Logging;
+using VGMissionJournal.Logging;
 
-namespace VGMissionLog.Tests.Support;
+namespace VGMissionJournal.Tests.Support;
 
 internal static class TestRecords
 {
@@ -2160,14 +2160,14 @@ internal static class TestRecords
 
 - [ ] **Step 3: Build**
 
-Run: `DOTNET_ROLL_FORWARD=LatestMajor dotnet build VGMissionLog.sln -v q 2>&1 | tail -10`
+Run: `DOTNET_ROLL_FORWARD=LatestMajor dotnet build VGMissionJournal.sln -v q 2>&1 | tail -10`
 Expected: build errors in patch tests referring to old types. That's Task 16. Fix any non-test compile errors first; leave test compile errors for Task 16.
 
-If the non-test build still fails here, there are references to the deleted types somewhere — look for `using VGMissionLog.Logging;` and `ActivityEvent`/`ActivityLog` identifiers. Fix them all before moving on.
+If the non-test build still fails here, there are references to the deleted types somewhere — look for `using VGMissionJournal.Logging;` and `ActivityEvent`/`ActivityLog` identifiers. Fix them all before moving on.
 
 - [ ] **Step 4: Verify non-test build**
 
-Run: `DOTNET_ROLL_FORWARD=LatestMajor dotnet build VGMissionLog/VGMissionLog.csproj -v q 2>&1 | tail -5`
+Run: `DOTNET_ROLL_FORWARD=LatestMajor dotnet build VGMissionJournal/VGMissionJournal.csproj -v q 2>&1 | tail -5`
 Expected: `Build succeeded. 0 Warning(s). 0 Error(s).`
 
 - [ ] **Step 5: Commit the mega-commit**
@@ -2189,10 +2189,10 @@ structure, rewards, and an explicit timeline[] of state transitions.
   ported verbatim
 - All 5 mission patches route through Store.Upsert instead of
   Log.Append; archive backstop unchanged in behavior
-- LogSchema bumps to v3: top-level missions[] replaces events[]
+- JournalSchema bumps to v3: top-level missions[] replaces events[]
 - V1ToV3Migrator upgrades v1 sidecars on load; typed reward fields fold
   into Rewards[] as Credits / Experience / Reputation entries
-- IMissionLogQuery / MissionLogQueryAdapter reshaped around missions
+- IMissionJournalQuery / MissionJournalQueryAdapter reshaped around missions
 - docs/api.md and README.md updated (follow-up task)
 
 Fidelity note on migration: v1 didn't capture per-step transitions, so
@@ -2207,27 +2207,27 @@ EOF
 ## Task 14: Rename `Logging.MaxEvents` config → `Logging.MaxMissions`
 
 **Files:**
-- Modify: `VGMissionLog/Plugin.cs`
+- Modify: `VGMissionJournal/Plugin.cs`
 
 - [ ] **Step 1: Find the config binding**
 
-Run: `grep -n "MaxEvents\|Logging.MaxEvents" VGMissionLog/ -r`
+Run: `grep -n "MaxEvents\|Logging.MaxEvents" VGMissionJournal/ -r`
 
 - [ ] **Step 2: Rewrite the binding**
 
-In `VGMissionLog/Plugin.cs`, rename the config entry string from `"MaxEvents"` to `"MaxMissions"` and update the default to `MissionStore.DefaultMaxMissions` (2000). Update any descriptive text to reflect "cap on in-memory mission records" rather than events.
+In `VGMissionJournal/Plugin.cs`, rename the config entry string from `"MaxEvents"` to `"MaxMissions"` and update the default to `MissionStore.DefaultMaxMissions` (2000). Update any descriptive text to reflect "cap on in-memory mission records" rather than events.
 
 Note: BepInEx config keys are stored in the user's BepInEx/config/*.cfg file; renaming means users' existing config entries become orphans. That's fine — the old key won't be found, new key gets written with the default. Document in the commit message.
 
 - [ ] **Step 3: Run all tests**
 
-Run: `DOTNET_ROLL_FORWARD=LatestMajor dotnet test VGMissionLog.sln --nologo 2>&1 | tail -5`
+Run: `DOTNET_ROLL_FORWARD=LatestMajor dotnet test VGMissionJournal.sln --nologo 2>&1 | tail -5`
 Expected: all green (test-side adjustments happen in Task 16).
 
 - [ ] **Step 4: Commit**
 
 ```bash
-git add VGMissionLog/Plugin.cs
+git add VGMissionJournal/Plugin.cs
 git commit -m "chore(config): rename Logging.MaxEvents → Logging.MaxMissions
 
 The cap is now over MissionRecord count, not ActivityEvent count. Old
@@ -2254,7 +2254,7 @@ New sections to write:
 - **Timeline**: how to read state transitions; how to derive age/outcome/active; semantics of accept-time anchoring for time windows.
 - **Rewards**: one unified list with `type` + `fields`; list the ~14 subtypes and their fields.
 - **Identifier rule**: keep the existing paragraph about resolved identifiers ≠ translated names.
-- **Query API**: re-document each `IMissionLogQuery` method.
+- **Query API**: re-document each `IMissionJournalQuery` method.
 - **Retention**: `MaxMissions` cap, `Unbounded = 0`, eviction drops oldest-accepted.
 - **Schema migration**: v1 saves auto-migrate on first load; migrated missions have sparse timelines (accept + terminal only).
 
@@ -2279,22 +2279,22 @@ caveat for migrated v1 sidecars."
 ## Task 16: Port / rewrite remaining test files
 
 **Files:**
-- Rewrite: `VGMissionLog.Tests/Patches/MissionAcceptPatchTests.cs`
-- Rewrite: `VGMissionLog.Tests/Patches/MissionCompletePatchTests.cs`
-- Rewrite: `VGMissionLog.Tests/Patches/MissionFailPatchTests.cs`
-- Rewrite: `VGMissionLog.Tests/Patches/MissionAbandonPatchTests.cs`
-- Rewrite: `VGMissionLog.Tests/Patches/MissionArchivePatchTests.cs`
-- Rewrite: `VGMissionLog.Tests/Patches/SavePatchTests.cs`
-- Rewrite: `VGMissionLog.Tests/Patches/PatchWiringTests.cs`
-- Keep: `VGMissionLog.Tests/Support/FakeClock.cs`, `TestMission.cs`
-- Delete: `VGMissionLog.Tests/Support/TestEvents.cs` (if not already done in Task 13 step 2)
+- Rewrite: `VGMissionJournal.Tests/Patches/MissionAcceptPatchTests.cs`
+- Rewrite: `VGMissionJournal.Tests/Patches/MissionCompletePatchTests.cs`
+- Rewrite: `VGMissionJournal.Tests/Patches/MissionFailPatchTests.cs`
+- Rewrite: `VGMissionJournal.Tests/Patches/MissionAbandonPatchTests.cs`
+- Rewrite: `VGMissionJournal.Tests/Patches/MissionArchivePatchTests.cs`
+- Rewrite: `VGMissionJournal.Tests/Patches/SavePatchTests.cs`
+- Rewrite: `VGMissionJournal.Tests/Patches/PatchWiringTests.cs`
+- Keep: `VGMissionJournal.Tests/Support/FakeClock.cs`, `TestMission.cs`
+- Delete: `VGMissionJournal.Tests/Support/TestEvents.cs` (if not already done in Task 13 step 2)
 
 **Strategy:** One file at a time. For each patch test file: open, identify what invariant each test captures (e.g. "postfix emits Accepted event → under v3 that becomes: postfix upserts a new MissionRecord into Store"). Rewrite tests to assert the new invariant. Keep test count roughly similar; drop tests whose invariant no longer applies (e.g. "ObjectiveProgressed event is appended").
 
 Run tests after each file is rewritten:
 
 ```bash
-DOTNET_ROLL_FORWARD=LatestMajor dotnet test VGMissionLog.sln --nologo --filter "MissionAcceptPatchTests"
+DOTNET_ROLL_FORWARD=LatestMajor dotnet test VGMissionJournal.sln --nologo --filter "MissionAcceptPatchTests"
 ```
 
 - [ ] **Step 1: `MissionAcceptPatchTests`**
@@ -2338,7 +2338,7 @@ Update the fixture to build a `MissionRecordBuilder` + `MissionStore`:
 ```csharp
 var builder = new MissionRecordBuilder(new FakeClock(), () => null);
 var store   = new MissionStore();
-var io      = new LogIO(() => DateTime.UtcNow);
+var io      = new JournalIO(() => DateTime.UtcNow);
 var bepLog  = new ManualLogSource("test");
 PatchWiring.WireAll(builder, store, io, bepLog);
 ```
@@ -2367,13 +2367,13 @@ public void SaveLoadPatch_MigratesV1SidecarOnLoad()
 
 - [ ] **Step 5: Run full suite**
 
-Run: `DOTNET_ROLL_FORWARD=LatestMajor dotnet test VGMissionLog.sln --nologo 2>&1 | tail -5`
+Run: `DOTNET_ROLL_FORWARD=LatestMajor dotnet test VGMissionJournal.sln --nologo 2>&1 | tail -5`
 Expected: all passing. Count will be different from 177 — some tests deleted, new ones added. A reasonable target is 130-180 tests; all green.
 
 - [ ] **Step 6: Commit**
 
 ```bash
-git add VGMissionLog.Tests/
+git add VGMissionJournal.Tests/
 git commit -m "test: port patch + save tests to v3 schema
 
 Every patch test now asserts MissionStore state instead of ActivityLog
@@ -2386,12 +2386,12 @@ SavePatchTests covers both v3 round-trip and v1→v3 migration on load."
 ## Task 17: End-to-end smoke test on a real v1 sidecar
 
 **Files:**
-- Create: `VGMissionLog.Tests/Persistence/V1SidecarSmokeTests.cs`
-- Optional asset: `VGMissionLog.Tests/Fixtures/sample-v1.vgmissionlog.json` (copied from user's real save, redacted if needed).
+- Create: `VGMissionJournal.Tests/Persistence/V1SidecarSmokeTests.cs`
+- Optional asset: `VGMissionJournal.Tests/Fixtures/sample-v1.vgmissionjournal.json` (copied from user's real save, redacted if needed).
 
 - [ ] **Step 1: Capture a v1 fixture**
 
-Copy a real v1 sidecar from `/mnt/c/Users/info/AppData/LocalLow/Bat Roost Games/VanguardGalaxy/Saves/*.vgmissionlog.json` into `VGMissionLog.Tests/Fixtures/sample-v1.vgmissionlog.json`. Confirm it has `"version": 1`.
+Copy a real v1 sidecar from `/mnt/c/Users/info/AppData/LocalLow/Bat Roost Games/VanguardGalaxy/Saves/*.vgmissionjournal.json` into `VGMissionJournal.Tests/Fixtures/sample-v1.vgmissionjournal.json`. Confirm it has `"version": 1`.
 
 If privacy is a concern, redact player-name / ship-name fields in the fixture.
 
@@ -2399,22 +2399,22 @@ If privacy is a concern, redact player-name / ship-name fields in the fixture.
 
 ```csharp
 using System.IO;
-using VGMissionLog.Logging;
-using VGMissionLog.Persistence;
+using VGMissionJournal.Logging;
+using VGMissionJournal.Persistence;
 using Xunit;
 
-namespace VGMissionLog.Tests.Persistence;
+namespace VGMissionJournal.Tests.Persistence;
 
 public class V1SidecarSmokeTests
 {
     [Fact]
     public void RealV1Sidecar_MigratesWithoutError()
     {
-        var path = Path.Combine("Fixtures", "sample-v1.vgmissionlog.json");
+        var path = Path.Combine("Fixtures", "sample-v1.vgmissionjournal.json");
         var raw  = File.ReadAllText(path);
         var v3   = V1ToV3Migrator.Migrate(raw);
 
-        Assert.Equal(LogSchema.CurrentVersion, v3.Version);
+        Assert.Equal(JournalSchema.CurrentVersion, v3.Version);
         Assert.NotEmpty(v3.Missions);
         // Spot-check: every migrated record has exactly 1 Accepted entry.
         foreach (var m in v3.Missions)
@@ -2426,7 +2426,7 @@ public class V1SidecarSmokeTests
 }
 ```
 
-Mark the fixture to copy to output in `VGMissionLog.Tests.csproj`:
+Mark the fixture to copy to output in `VGMissionJournal.Tests.csproj`:
 
 ```xml
 <ItemGroup>
@@ -2438,15 +2438,15 @@ Mark the fixture to copy to output in `VGMissionLog.Tests.csproj`:
 
 - [ ] **Step 3: Run**
 
-Run: `DOTNET_ROLL_FORWARD=LatestMajor dotnet test VGMissionLog.sln --nologo --filter "V1SidecarSmokeTests"`
+Run: `DOTNET_ROLL_FORWARD=LatestMajor dotnet test VGMissionJournal.sln --nologo --filter "V1SidecarSmokeTests"`
 Expected: `Passed! - Failed: 0, Passed: 1`.
 
 - [ ] **Step 4: Commit**
 
 ```bash
-git add VGMissionLog.Tests/Persistence/V1SidecarSmokeTests.cs \
-        VGMissionLog.Tests/Fixtures/sample-v1.vgmissionlog.json \
-        VGMissionLog.Tests/VGMissionLog.Tests.csproj
+git add VGMissionJournal.Tests/Persistence/V1SidecarSmokeTests.cs \
+        VGMissionJournal.Tests/Fixtures/sample-v1.vgmissionjournal.json \
+        VGMissionJournal.Tests/VGMissionJournal.Tests.csproj
 git commit -m "test: smoke-migrate a real v1 sidecar
 
 Belt-and-suspenders check — V1ToV3Migrator unit tests cover the shape,
@@ -2459,12 +2459,12 @@ this test covers an actual game-produced payload."
 
 - [ ] **Step 1: Full test run**
 
-Run: `DOTNET_ROLL_FORWARD=LatestMajor dotnet test VGMissionLog.sln --nologo 2>&1 | tail -5`
+Run: `DOTNET_ROLL_FORWARD=LatestMajor dotnet test VGMissionJournal.sln --nologo 2>&1 | tail -5`
 Expected: `Passed! - Failed: 0, Passed: N, Skipped: 0, Total: N`.
 
 - [ ] **Step 2: Build the plugin DLL**
 
-Run: `dotnet build VGMissionLog/VGMissionLog.csproj -c Release -v q 2>&1 | tail -5`
+Run: `dotnet build VGMissionJournal/VGMissionJournal.csproj -c Release -v q 2>&1 | tail -5`
 Expected: `Build succeeded. 0 Warning(s). 0 Error(s).`
 
 - [ ] **Step 3: Eyeball the built DLL**

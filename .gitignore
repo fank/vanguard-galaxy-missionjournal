@@ -1,12 +1,12 @@
 # .NET build artifacts
-VGMissionLog/bin/
-VGMissionLog/obj/
-VGMissionLog.Tests/bin/
-VGMissionLog.Tests/obj/
+VGMissionJournal/bin/
+VGMissionJournal/obj/
+VGMissionJournal.Tests/bin/
+VGMissionJournal.Tests/obj/
 dist/
 
 # Publicized stub — symlinked by `make link-asm`; do not commit
-VGMissionLog/lib/
+VGMissionJournal/lib/
 
 # Editor cruft
 .vs/
