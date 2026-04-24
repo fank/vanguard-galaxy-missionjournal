@@ -34,7 +34,7 @@
     <!-- Newtonsoft.Json is also compile-only in VGMissionJournal (game provides
          it), but xUnit needs it at runtime to exercise the persistence
          roundtrip tests in Phase 3. -->
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
   </ItemGroup>
 
   <ItemGroup>
