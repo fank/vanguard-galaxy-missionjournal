@@ -5,8 +5,14 @@ VGMissionJournal.Tests/bin/
 VGMissionJournal.Tests/obj/
 dist/
 
-# Publicized stub — symlinked by `make link-asm`; do not commit
-VGMissionJournal/lib/
+# Plugin's compile-time reference
+# - Assembly-CSharp.dll: publicized STUB of the game's assembly (method
+#   signatures only, no IL bodies). Committed so CI can build.
+# Regenerate after game updates via:
+#   assembly-publicizer --strip <game>/VanguardGalaxy_Data/Managed/Assembly-CSharp.dll \
+#                       -o VGMissionJournal/lib/Assembly-CSharp.dll
+# --strip is REQUIRED: it replaces every method body with `throw null;` so the
+# committed artifact carries no game IL.
 
 # Editor cruft
 .vs/

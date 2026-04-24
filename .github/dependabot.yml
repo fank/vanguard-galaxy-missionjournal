@@ -1,0 +1,52 @@
+version: 2
+updates:
+  - package-ecosystem: "nuget"
+    directory: "/VGMissionJournal"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 5
+    # Match the repo's conventional-commits style: "chore(deps): bump X from Y to Z".
+    commit-message:
+      prefix: "chore"
+      include: "scope"
+    groups:
+      bepinex:
+        patterns:
+          - "BepInEx.*"
+    ignore:
+      # Pinned to the game's Unity runtime — bumping would desync stubs.
+      - dependency-name: "UnityEngine.Modules"
+      # BepInEx 6 is a separate major branch with a different plugin API.
+      # Stay on the 5.x stable line until there's a deliberate migration.
+      - dependency-name: "BepInEx.Core"
+        update-types: ["version-update:semver-major"]
+
+  - package-ecosystem: "nuget"
+    directory: "/VGMissionJournal.Tests"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: "chore"
+      include: "scope"
+    groups:
+      bepinex:
+        patterns:
+          - "BepInEx.*"
+    ignore:
+      - dependency-name: "UnityEngine.Modules"
+      - dependency-name: "BepInEx.Core"
+        update-types: ["version-update:semver-major"]
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: "chore"
+      include: "scope"
+    groups:
+      actions:
+        patterns:
+          - "*"
