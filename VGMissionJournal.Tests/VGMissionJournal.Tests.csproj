@@ -30,7 +30,7 @@
          transitive-assets filter. BepInEx.Core is a meta-package; BepInEx.dll
          itself ships in BaseLib. -->
     <PackageReference Include="BepInEx.BaseLib" Version="5.*" />
-    <PackageReference Include="HarmonyX" Version="2.16.*" />
+    <PackageReference Include="HarmonyX" Version="2.10.*" />
     <!-- Newtonsoft.Json is also compile-only in VGMissionJournal (game provides
          it), but xUnit needs it at runtime to exercise the persistence
          roundtrip tests in Phase 3. -->

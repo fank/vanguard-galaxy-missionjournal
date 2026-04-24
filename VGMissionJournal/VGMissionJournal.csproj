@@ -4,7 +4,7 @@
     <TargetFramework>netstandard2.1</TargetFramework>
     <AssemblyName>VGMissionJournal</AssemblyName>
     <Product>Vanguard Galaxy Mission Journal</Product>
-    <Version>0.1.0</Version>
+    <Version>0.1.1</Version>
     <LangVersion>latest</LangVersion>
     <Nullable>enable</Nullable>
     <RootNamespace>VGMissionJournal</RootNamespace>
@@ -26,7 +26,12 @@
     <PackageReference Include="BepInEx.Core" Version="5.*" IncludeAssets="compile" />
     <PackageReference Include="BepInEx.PluginInfoProps" Version="2.*" IncludeAssets="compile" />
     <PackageReference Include="UnityEngine.Modules" Version="6000.2.6" IncludeAssets="compile" />
-    <PackageReference Include="HarmonyX" Version="2.16.*" IncludeAssets="compile" />
+    <!-- Pinned to 2.10.x: BepInEx 5 ships HarmonyX 2.10, and 2.16 adds a
+         transitive dep on MonoMod.Backports that BepInEx 5 doesn't load at
+         runtime (FileNotFoundException on plugin startup). Dependabot is
+         instructed to leave this one alone until BepInEx 5 bumps HarmonyX
+         or we ship the MonoMod runtime DLLs ourselves. -->
+    <PackageReference Include="HarmonyX" Version="2.10.*" IncludeAssets="compile" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.4" IncludeAssets="compile" />
   </ItemGroup>
 
