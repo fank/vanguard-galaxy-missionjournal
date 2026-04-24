@@ -23,75 +23,67 @@ internal sealed class MissionLogQueryAdapter : IMissionLogQuery
     public double? NewestAcceptedGameSeconds =>
         _store.AllMissions.Count == 0 ? null : _store.AllMissions.Max(r => r.AcceptedAtGameSeconds);
 
-    public IReadOnlyDictionary<string, object?>? GetMission(string missionInstanceId)
-    {
-        var r = _store.GetByInstanceId(missionInstanceId);
-        return r is null ? null : MissionRecordMapper.ToDict(r);
-    }
+    public MissionRecord? GetMission(string missionInstanceId) =>
+        _store.GetByInstanceId(missionInstanceId);
 
-    public IReadOnlyList<IReadOnlyDictionary<string, object?>> GetActiveMissions() =>
-        MissionRecordMapper.ToDicts(_store.GetActiveMissions());
+    public IReadOnlyList<MissionRecord> GetActiveMissions() =>
+        _store.GetActiveMissions();
 
-    public IReadOnlyList<IReadOnlyDictionary<string, object?>> GetAllMissions() =>
-        MissionRecordMapper.ToDicts(_store.AllMissions);
+    public IReadOnlyList<MissionRecord> GetAllMissions() =>
+        _store.AllMissions;
 
-    public IReadOnlyList<IReadOnlyDictionary<string, object?>> GetMissionsInSystem(
+    public IReadOnlyList<MissionRecord> GetMissionsInSystem(
         string systemId, double sinceGameSeconds = 0.0, double untilGameSeconds = double.MaxValue) =>
-        MissionRecordMapper.ToDicts(FilterByAcceptedTime(_store.GetMissionsInSystem(systemId),
-            sinceGameSeconds, untilGameSeconds));
+        FilterByAcceptedTime(_store.GetMissionsInSystem(systemId), sinceGameSeconds, untilGameSeconds);
 
-    public IReadOnlyList<IReadOnlyDictionary<string, object?>> GetMissionsByFaction(
+    public IReadOnlyList<MissionRecord> GetMissionsByFaction(
         string factionId, double sinceGameSeconds = 0.0, double untilGameSeconds = double.MaxValue) =>
-        MissionRecordMapper.ToDicts(FilterByAcceptedTime(_store.GetMissionsByFaction(factionId),
-            sinceGameSeconds, untilGameSeconds));
+        FilterByAcceptedTime(_store.GetMissionsByFaction(factionId), sinceGameSeconds, untilGameSeconds);
 
-    public IReadOnlyList<IReadOnlyDictionary<string, object?>> GetMissionsByMissionSubclass(
+    public IReadOnlyList<MissionRecord> GetMissionsByMissionSubclass(
         string missionSubclass, double sinceGameSeconds = 0.0, double untilGameSeconds = double.MaxValue)
     {
         var matched = _store.AllMissions.Where(r =>
             string.Equals(r.MissionSubclass, missionSubclass, StringComparison.Ordinal)).ToList();
-        return MissionRecordMapper.ToDicts(FilterByAcceptedTime(matched, sinceGameSeconds, untilGameSeconds));
+        return FilterByAcceptedTime(matched, sinceGameSeconds, untilGameSeconds);
     }
 
-    public IReadOnlyList<IReadOnlyDictionary<string, object?>> GetMissionsByOutcome(
-        string outcome, double sinceGameSeconds = 0.0, double untilGameSeconds = double.MaxValue)
+    public IReadOnlyList<MissionRecord> GetMissionsByOutcome(
+        Outcome outcome, double sinceGameSeconds = 0.0, double untilGameSeconds = double.MaxValue)
     {
-        if (!Enum.TryParse<Outcome>(outcome, ignoreCase: false, out var parsed))
-            return Array.Empty<IReadOnlyDictionary<string, object?>>();
-        var matched = _store.AllMissions.Where(r => r.Outcome == parsed).ToList();
-        return MissionRecordMapper.ToDicts(FilterByAcceptedTime(matched, sinceGameSeconds, untilGameSeconds));
+        var matched = _store.AllMissions.Where(r => r.Outcome == outcome).ToList();
+        return FilterByAcceptedTime(matched, sinceGameSeconds, untilGameSeconds);
     }
 
-    public IReadOnlyList<IReadOnlyDictionary<string, object?>> GetMissionsWithObjective(
+    public IReadOnlyList<MissionRecord> GetMissionsWithObjective(
         string objectiveType, double sinceGameSeconds = 0.0, double untilGameSeconds = double.MaxValue)
     {
         if (string.IsNullOrEmpty(objectiveType))
-            return Array.Empty<IReadOnlyDictionary<string, object?>>();
+            return Array.Empty<MissionRecord>();
         var matched = _store.AllMissions.Where(r => RecordHasObjective(r, objectiveType)).ToList();
-        return MissionRecordMapper.ToDicts(FilterByAcceptedTime(matched, sinceGameSeconds, untilGameSeconds));
+        return FilterByAcceptedTime(matched, sinceGameSeconds, untilGameSeconds);
     }
 
-    public IReadOnlyList<IReadOnlyDictionary<string, object?>> GetMissionsForStoryId(string storyId) =>
-        MissionRecordMapper.ToDicts(_store.AllMissions
+    public IReadOnlyList<MissionRecord> GetMissionsForStoryId(string storyId) =>
+        _store.AllMissions
             .Where(r => string.Equals(r.StoryId, storyId, StringComparison.Ordinal))
-            .ToList());
+            .ToList();
 
-    public IReadOnlyList<IReadOnlyDictionary<string, object?>> GetRecentMissions(int count)
+    public IReadOnlyList<MissionRecord> GetRecentMissions(int count)
     {
-        if (count <= 0) return Array.Empty<IReadOnlyDictionary<string, object?>>();
-        var ordered = _store.AllMissions
+        if (count <= 0) return Array.Empty<MissionRecord>();
+        return _store.AllMissions
             .OrderByDescending(r => r.AcceptedAtGameSeconds)
             .Take(count)
             .ToList();
-        return MissionRecordMapper.ToDicts(ordered);
     }
 
-    public IReadOnlyList<IReadOnlyDictionary<string, object?>> GetMissionsWithinJumps(
+    public IReadOnlyList<MissionRecord> GetMissionsWithinJumps(
         string pivotSystemId, int maxJumps, Func<string, string, int> jumpDistance,
         double sinceGameSeconds = 0.0, double untilGameSeconds = double.MaxValue)
     {
         if (jumpDistance is null) throw new ArgumentNullException(nameof(jumpDistance));
-        if (maxJumps < 0) return Array.Empty<IReadOnlyDictionary<string, object?>>();
+        if (maxJumps < 0) return Array.Empty<MissionRecord>();
         var matched = new List<MissionRecord>();
         foreach (var r in _store.AllMissions)
         {
@@ -100,7 +92,7 @@ internal sealed class MissionLogQueryAdapter : IMissionLogQuery
             if (jumps < 0 || jumps > maxJumps) continue;
             matched.Add(r);
         }
-        return MissionRecordMapper.ToDicts(FilterByAcceptedTime(matched, sinceGameSeconds, untilGameSeconds));
+        return FilterByAcceptedTime(matched, sinceGameSeconds, untilGameSeconds);
     }
 
     public IReadOnlyDictionary<string, int> CountByMissionSubclass(
@@ -108,10 +100,18 @@ internal sealed class MissionLogQueryAdapter : IMissionLogQuery
         Tally(FilterByAcceptedTime(_store.AllMissions, sinceGameSeconds, untilGameSeconds),
               r => r.MissionSubclass);
 
-    public IReadOnlyDictionary<string, int> CountByOutcome(
-        double sinceGameSeconds = 0.0, double untilGameSeconds = double.MaxValue) =>
-        Tally(FilterByAcceptedTime(_store.AllMissions, sinceGameSeconds, untilGameSeconds)
-                .Where(r => r.Outcome.HasValue), r => r.Outcome!.ToString()!);
+    public IReadOnlyDictionary<Outcome, int> CountByOutcome(
+        double sinceGameSeconds = 0.0, double untilGameSeconds = double.MaxValue)
+    {
+        var result = new Dictionary<Outcome, int>();
+        foreach (var r in FilterByAcceptedTime(_store.AllMissions, sinceGameSeconds, untilGameSeconds))
+        {
+            if (r.Outcome is not Outcome o) continue;
+            result.TryGetValue(o, out var n);
+            result[o] = n + 1;
+        }
+        return result;
+    }
 
     public IReadOnlyDictionary<string, int> CountBySystem(
         double sinceGameSeconds = 0.0, double untilGameSeconds = double.MaxValue) =>
@@ -123,12 +123,12 @@ internal sealed class MissionLogQueryAdapter : IMissionLogQuery
         Tally(FilterByAcceptedTime(_store.AllMissions, sinceGameSeconds, untilGameSeconds)
                 .Where(r => !string.IsNullOrEmpty(r.SourceFaction)), r => r.SourceFaction!);
 
-    public IReadOnlyList<IReadOnlyDictionary<string, object?>> MostActiveSystemsInRange(
+    public IReadOnlyList<SystemActivity> MostActiveSystemsInRange(
         string pivotSystemId, Func<string, string, int> jumpDistance, int maxJumps, int topN,
         double sinceGameSeconds = 0.0, double untilGameSeconds = double.MaxValue)
     {
         if (jumpDistance is null) throw new ArgumentNullException(nameof(jumpDistance));
-        if (topN <= 0 || maxJumps < 0) return Array.Empty<IReadOnlyDictionary<string, object?>>();
+        if (topN <= 0 || maxJumps < 0) return Array.Empty<SystemActivity>();
 
         var counts        = new Dictionary<string, int>();
         var jumpsBySystem = new Dictionary<string, int>();
@@ -149,12 +149,7 @@ internal sealed class MissionLogQueryAdapter : IMissionLogQuery
             .OrderByDescending(kv => kv.Value)
             .ThenBy(kv => kv.Key, StringComparer.Ordinal)
             .Take(topN)
-            .Select(kv => (IReadOnlyDictionary<string, object?>)new Dictionary<string, object?>
-            {
-                ["systemId"] = kv.Key,
-                ["count"]    = kv.Value,
-                ["jumps"]    = jumpsBySystem[kv.Key],
-            })
+            .Select(kv => new SystemActivity(kv.Key, kv.Value, jumpsBySystem[kv.Key]))
             .ToList();
     }
 

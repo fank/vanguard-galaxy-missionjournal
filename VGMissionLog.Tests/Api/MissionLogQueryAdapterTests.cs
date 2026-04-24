@@ -68,36 +68,36 @@ public class MissionLogQueryAdapterTests
         Assert.Equal(30.0, adapter.NewestAcceptedGameSeconds);
     }
 
-    // --- Mission dict shape ----------------------------------------------
+    // --- MissionRecord shape ---------------------------------------------
 
     [Fact]
-    public void MissionDict_UsesCamelCaseKeys_AndStringEnums()
+    public void GetMission_ReturnsTypedRecord_WithTerminalFields()
     {
         var adapter = new MissionLogQueryAdapter(SampleStore());
 
-        var dict = adapter.GetMission("m1")!;
+        var rec = adapter.GetMission("m1")!;
 
-        Assert.Equal("m1",                dict["missionInstanceId"]);
-        Assert.Equal("story-m1",          dict["storyId"]);
-        Assert.Equal("BountyMission",     dict["missionSubclass"]);
-        Assert.Equal("sys-zoran",         dict["sourceSystemId"]);
-        Assert.Equal("BountyGuild",       dict["sourceFaction"]);
-        Assert.Equal(10.0,                dict["acceptedAtGameSeconds"]);
-        Assert.Equal(20.0,                dict["terminalAtGameSeconds"]);
-        Assert.Equal("Completed",         dict["outcome"]);
-        Assert.Equal(false,               dict["isActive"]);
+        Assert.Equal("m1",               rec.MissionInstanceId);
+        Assert.Equal("story-m1",         rec.StoryId);
+        Assert.Equal("BountyMission",    rec.MissionSubclass);
+        Assert.Equal("sys-zoran",        rec.SourceSystemId);
+        Assert.Equal("BountyGuild",      rec.SourceFaction);
+        Assert.Equal(10.0,               rec.AcceptedAtGameSeconds);
+        Assert.Equal(20.0,               rec.TerminalAtGameSeconds);
+        Assert.Equal(Outcome.Completed,  rec.Outcome);
+        Assert.False(rec.IsActive);
     }
 
     [Fact]
-    public void MissionDict_ActiveMission_HasNullTerminalFields()
+    public void GetMission_ActiveMission_HasNullTerminalFields()
     {
         var adapter = new MissionLogQueryAdapter(SampleStore());
 
-        var dict = adapter.GetMission("m2")!;
+        var rec = adapter.GetMission("m2")!;
 
-        Assert.Equal(true, dict["isActive"]);
-        Assert.Null(dict["terminalAtGameSeconds"]);
-        Assert.Null(dict["outcome"]);
+        Assert.True(rec.IsActive);
+        Assert.Null(rec.TerminalAtGameSeconds);
+        Assert.Null(rec.Outcome);
     }
 
     [Fact]
@@ -115,7 +115,7 @@ public class MissionLogQueryAdapterTests
         var active = adapter.GetActiveMissions();
 
         Assert.Equal(new[] { "m2", "m3" },
-                     active.Select(r => (string)r["missionInstanceId"]!).ToArray());
+                     active.Select(r => r.MissionInstanceId).ToArray());
     }
 
     [Fact]
@@ -126,7 +126,7 @@ public class MissionLogQueryAdapterTests
         var all = adapter.GetAllMissions();
 
         Assert.Equal(new[] { "m1", "m2", "m3" },
-                     all.Select(r => (string)r["missionInstanceId"]!).ToArray());
+                     all.Select(r => r.MissionInstanceId).ToArray());
     }
 
     // --- Filter methods ---------------------------------------------------
@@ -139,7 +139,7 @@ public class MissionLogQueryAdapterTests
         var zoran = adapter.GetMissionsInSystem("sys-zoran");
 
         Assert.Equal(new[] { "m1", "m2" },
-                     zoran.Select(r => (string)r["missionInstanceId"]!).ToArray());
+                     zoran.Select(r => r.MissionInstanceId).ToArray());
     }
 
     [Fact]
@@ -160,7 +160,7 @@ public class MissionLogQueryAdapterTests
         var bounties = adapter.GetMissionsByMissionSubclass("BountyMission");
 
         Assert.Equal(new[] { "m1", "m2" },
-                     bounties.Select(r => (string)r["missionInstanceId"]!).ToArray());
+                     bounties.Select(r => r.MissionInstanceId).ToArray());
     }
 
     [Fact]
@@ -172,21 +172,22 @@ public class MissionLogQueryAdapterTests
     }
 
     [Fact]
-    public void GetMissionsByOutcome_StringParses_ToEnum()
+    public void GetMissionsByOutcome_FiltersByEnum()
     {
         var adapter = new MissionLogQueryAdapter(SampleStore());
 
-        var completed = adapter.GetMissionsByOutcome("Completed");
+        var completed = adapter.GetMissionsByOutcome(Outcome.Completed);
         Assert.Single(completed);
-        Assert.Equal("m1", completed[0]["missionInstanceId"]);
+        Assert.Equal("m1", completed[0].MissionInstanceId);
     }
 
     [Fact]
-    public void GetMissionsByOutcome_InvalidString_ReturnsEmpty_NotThrow()
+    public void GetMissionsByOutcome_NoMatches_ReturnsEmpty()
     {
         var adapter = new MissionLogQueryAdapter(SampleStore());
 
-        Assert.Empty(adapter.GetMissionsByOutcome("Nonsense"));
+        Assert.Empty(adapter.GetMissionsByOutcome(Outcome.Failed));
+        Assert.Empty(adapter.GetMissionsByOutcome(Outcome.Abandoned));
     }
 
     [Fact]
@@ -197,7 +198,7 @@ public class MissionLogQueryAdapterTests
         var found = adapter.GetMissionsForStoryId("story-m1");
 
         Assert.Single(found);
-        Assert.Equal("m1", found[0]["missionInstanceId"]);
+        Assert.Equal("m1", found[0].MissionInstanceId);
     }
 
     [Fact]
@@ -218,7 +219,7 @@ public class MissionLogQueryAdapterTests
         var adapter = new MissionLogQueryAdapter(store);
 
         var kills = adapter.GetMissionsWithObjective("KillEnemies");
-        Assert.Equal(new[] { "k1" }, kills.Select(r => (string)r["missionInstanceId"]!));
+        Assert.Equal(new[] { "k1" }, kills.Select(r => r.MissionInstanceId));
         Assert.Empty(adapter.GetMissionsWithObjective("NoSuchObjective"));
     }
 
@@ -230,7 +231,7 @@ public class MissionLogQueryAdapterTests
         var recent = adapter.GetRecentMissions(2);
 
         Assert.Equal(new[] { "m3", "m2" },
-                     recent.Select(r => (string)r["missionInstanceId"]!).ToArray());
+                     recent.Select(r => r.MissionInstanceId).ToArray());
     }
 
     // --- Proximity + aggregates ------------------------------------------
@@ -270,9 +271,33 @@ public class MissionLogQueryAdapterTests
 
         var counts = adapter.CountByOutcome();
 
-        Assert.Equal(1, counts["Completed"]);
-        Assert.False(counts.ContainsKey("Failed"));
-        Assert.False(counts.ContainsKey("Abandoned"));
+        Assert.Equal(1, counts[Outcome.Completed]);
+        Assert.False(counts.ContainsKey(Outcome.Failed));
+        Assert.False(counts.ContainsKey(Outcome.Abandoned));
+    }
+
+    [Fact]
+    public void MostActiveSystemsInRange_ReturnsTypedSystemActivity()
+    {
+        var adapter = new MissionLogQueryAdapter(SampleStore());
+        var edges = new Dictionary<(string, string), int>
+        {
+            { ("sys-zoran", "sys-zoran"),  0 },
+            { ("sys-zoran", "sys-helion"), 1 },
+        };
+        int JumpDistance(string a, string b) =>
+            edges.TryGetValue((a, b), out var d) ? d : -1;
+
+        var top = adapter.MostActiveSystemsInRange(
+            "sys-zoran", JumpDistance, maxJumps: 1, topN: 5);
+
+        Assert.Equal(2, top.Count);
+        Assert.Equal("sys-zoran", top[0].SystemId);
+        Assert.Equal(2,           top[0].Count);
+        Assert.Equal(0,           top[0].Jumps);
+        Assert.Equal("sys-helion", top[1].SystemId);
+        Assert.Equal(1,            top[1].Count);
+        Assert.Equal(1,            top[1].Jumps);
     }
 
     [Fact]

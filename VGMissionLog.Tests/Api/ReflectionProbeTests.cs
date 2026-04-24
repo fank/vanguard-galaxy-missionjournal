@@ -16,6 +16,11 @@ namespace VGMissionLog.Tests.Api;
 /// VGMissionLog type by direct name in the assertions below (only in
 /// setup to seed the store) — if a consumer mod does the same, it can
 /// interop without a hard dependency on VGMissionLog.dll.
+///
+/// <para>Returns are now typed <c>MissionRecord</c> aggregates instead
+/// of dicts. Reflection consumers read fields via PropertyInfo; the cost
+/// is identical to indexing a dict and the failure mode (missing
+/// property) is clearer.</para>
 /// </summary>
 [Collection("MissionLogApi.Current")]
 public class ReflectionProbeTests : IDisposable
@@ -68,7 +73,7 @@ public class ReflectionProbeTests : IDisposable
     }
 
     [Fact]
-    public void GetMissionsInSystem_ReturnsListOfPrimitiveDict_ViaReflection()
+    public void GetMissionsInSystem_ReturnsListOfMissionRecord_ViaReflection()
     {
         var current = GetCurrentViaReflection()!;
         var method = current.GetType().GetMethod(
@@ -78,17 +83,19 @@ public class ReflectionProbeTests : IDisposable
         var result = method!.Invoke(current, new object[] { "sys-zoran", 0.0, double.MaxValue });
         Assert.NotNull(result);
 
-        // The result is IReadOnlyList<IReadOnlyDictionary<string, object?>> —
-        // iterate without casting to any VGMissionLog type.
+        // Iterate without casting to any VGMissionLog type — properties
+        // are read off each element via PropertyInfo.
         var list = (IEnumerable)result!;
-        var firstDict = FirstOrDefault<IReadOnlyDictionary<string, object?>>(list);
-        Assert.NotNull(firstDict);
+        object? first = null;
+        foreach (var item in list) { first = item; break; }
+        Assert.NotNull(first);
 
-        Assert.Equal("inst-1",         firstDict!["missionInstanceId"]);
-        Assert.Equal("m-probe",        firstDict["storyId"]);
-        Assert.Equal("BountyMission",  firstDict["missionSubclass"]);
-        Assert.Equal("sys-zoran",      firstDict["sourceSystemId"]);
-        Assert.Equal(42.0,             firstDict["acceptedAtGameSeconds"]);
+        var recType = first!.GetType();
+        Assert.Equal("inst-1",        recType.GetProperty("MissionInstanceId")!.GetValue(first));
+        Assert.Equal("m-probe",       recType.GetProperty("StoryId")!.GetValue(first));
+        Assert.Equal("BountyMission", recType.GetProperty("MissionSubclass")!.GetValue(first));
+        Assert.Equal("sys-zoran",     recType.GetProperty("SourceSystemId")!.GetValue(first));
+        Assert.Equal(42.0,            recType.GetProperty("AcceptedAtGameSeconds")!.GetValue(first));
     }
 
     [Fact]
@@ -110,10 +117,4 @@ public class ReflectionProbeTests : IDisposable
         Type.GetType("VGMissionLog.Api.MissionLogApi, VGMissionLog")!
             .GetProperty("Current")!
             .GetValue(null);
-
-    private static T? FirstOrDefault<T>(IEnumerable source) where T : class
-    {
-        foreach (var item in source) return item as T;
-        return null;
-    }
 }

@@ -47,10 +47,11 @@ Querying mission history from your own plugin takes about ten lines. Quick sketc
 
 ```csharp
 using VGMissionLog.Api;
+using VGMissionLog.Logging;  // MissionRecord + Outcome live here
 
 if (MissionLogApi.Current is { } api)
     foreach (var m in api.GetRecentMissions(10))
-        Logger.LogInfo($"{m["missionSubclass"]} {m["outcome"] ?? "active"}");
+        Logger.LogInfo($"{m.MissionSubclass} {m.Outcome?.ToString() ?? "active"}");
 ```
 
 Full integration guide (typed reference, reflection fallback, soft-dep guard), method reference, mission field schema, and sidecar format: **[`docs/api.md`](docs/api.md)**.

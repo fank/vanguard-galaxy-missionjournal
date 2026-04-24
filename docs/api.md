@@ -8,12 +8,20 @@ Two paths, same behaviour. Pick one.
 
 ### Typed reference (recommended)
 
-Drop `VGMissionLog.dll` into your plugin's `libs/` folder and add a `<Reference>` in your csproj. Then soft-dep on the plugin GUID and put API usage behind a presence-check so your mod still loads when VGMissionLog isn't installed:
+Drop `VGMissionLog.dll` into your plugin's `libs/` folder and add a `<Reference>` in your csproj. Then soft-dep on the plugin GUID and put API usage behind a presence-check so your mod still loads when VGMissionLog isn't installed.
+
+Public API surface spans two namespaces:
+
+- `VGMissionLog.Api` — the facade (`MissionLogApi`), the query interface (`IMissionLogQuery`), and `SystemActivity`.
+- `VGMissionLog.Logging` — the record types returned by the query methods (`MissionRecord`, `MissionStepDefinition`, `MissionObjectiveDefinition`, `MissionRewardSnapshot`, `TimelineEntry`, `TimelineState`, `Outcome`).
+
+Consumers typically `using` both.
 
 ```csharp
 using BepInEx;
 using BepInEx.Bootstrap;
 using VGMissionLog.Api;
+using VGMissionLog.Logging;
 
 [BepInPlugin("my.consumer", "My Consumer", "1.0.0")]
 [BepInDependency("vgmissionlog", BepInDependency.DependencyFlags.SoftDependency)]
@@ -32,14 +40,16 @@ public class MyPlugin : BaseUnityPlugin
     {
         if (MissionLogApi.Current is not { } api) return;
         foreach (var m in api.GetRecentMissions(10))
-            Logger.LogInfo($"{m["missionSubclass"]} {m["outcome"] ?? "active"}");
+            Logger.LogInfo($"{m.MissionSubclass} {m.Outcome?.ToString() ?? "active"}");
     }
 }
 ```
 
+Field renames on `MissionRecord` are compile-time errors — you learn about schema drift at build time, not at runtime.
+
 ### Reflection fallback
 
-For scripting-style mods that can't add a compile-time reference:
+For scripting-style mods that can't add a compile-time reference. Query methods now return `MissionRecord` (and sub-record) instances instead of dictionaries — read fields off each record via `PropertyInfo`. The lookup cost is the same as dict indexing and the failure mode (missing property) is clearer.
 
 ```csharp
 var facade = Type.GetType("VGMissionLog.Api.MissionLogApi, VGMissionLog");
@@ -47,11 +57,18 @@ var api    = facade?.GetProperty("Current")?.GetValue(null);
 if (api is null) return;  // plugin not installed
 
 var method   = api.GetType().GetMethod("GetRecentMissions", new[] { typeof(int) });
-var missions = (IReadOnlyList<IReadOnlyDictionary<string, object?>>)
-    method!.Invoke(api, new object[] { 10 })!;
+var missions = (System.Collections.IEnumerable)method!.Invoke(api, new object[] { 10 })!;
+
+foreach (var m in missions)
+{
+    var t        = m.GetType();
+    var subclass = (string)t.GetProperty("MissionSubclass")!.GetValue(m)!;
+    var outcome  = t.GetProperty("Outcome")!.GetValue(m);  // null when active
+    // ...
+}
 ```
 
-Both paths hand back the same dictionary shape described under [Mission schema](#mission-schema) below.
+Both paths hand back the same `MissionRecord` shape described under [MissionRecord](#missionrecord) below.
 
 ## `MissionLogApi.Current`
 
@@ -65,7 +82,7 @@ Always null-check.
 
 ## `IMissionLogQuery`
 
-All query methods return primitive shapes — either dictionaries keyed by camelCase strings, or `IReadOnlyDictionary<string, int>` for counts. No internal record types leak through the interface, so reflection consumers never need to touch VGMissionLog types.
+All query methods return typed `MissionRecord` aggregates (or small typed records like `SystemActivity`). Consumers get IntelliSense, nullable flow-analysis, and compile-time errors on field renames.
 
 ### Properties
 
@@ -78,20 +95,20 @@ All query methods return primitive shapes — either dictionaries keyed by camel
 
 ### Filter methods
 
-All filters that accept a time window (`sinceGameSeconds`, `untilGameSeconds`) anchor on a mission's **accept time** (`timeline[0].gameSeconds`). Default window is `0` to `double.MaxValue` (entire log). Returns are fresh lists — safe to iterate without defensive copies.
+All filters that accept a time window (`sinceGameSeconds`, `untilGameSeconds`) anchor on a mission's **accept time** (`Timeline[0].GameSeconds`). Default window is `0` to `double.MaxValue` (entire log). Returns are fresh lists — safe to iterate without defensive copies.
 
-| Method | Purpose |
-|---|---|
-| `GetMission(missionInstanceId)` | Single mission dict by its instance id, or `null` when not found. |
-| `GetActiveMissions()` | Missions that have not yet reached a terminal state (Completed / Failed / Abandoned). |
-| `GetAllMissions()` | All missions in the log, no filter. |
-| `GetMissionsInSystem(systemId, since?, until?)` | Missions whose `sourceSystemId` matches. Missions without a source system (synthesized archive backstops) are excluded. |
-| `GetMissionsByFaction(factionId, since?, until?)` | Missions whose `sourceFaction` matches. |
-| `GetMissionsByMissionSubclass(subclass, since?, until?)` | Exact match on `mission.GetType().Name` — e.g. `"BountyMission"`, `"PatrolMission"`, `"IndustryMission"`, `"Mission"`. Case-sensitive. |
-| `GetMissionsByOutcome(outcome, since?, until?)` | `outcome` is `"Completed"` / `"Failed"` / `"Abandoned"`. Active missions never match. Invalid string → empty (no throw). |
-| `GetMissionsForStoryId(storyId)` | All mission records sharing a `storyId` (authored story arcs may span multiple mission instances). |
-| `GetMissionsWithObjective(objectiveType, since?, until?)` | Missions whose `steps[].objectives[].type` contains the given objective type name — e.g. `"KillEnemies"`, `"TravelToPOI"`, `"CollectItemTypes"`, `"Mining"`. Case-sensitive. |
-| `GetRecentMissions(count)` | Up to `count` missions, most-recently-accepted first. |
+| Method | Return | Purpose |
+|---|---|---|
+| `GetMission(missionInstanceId)` | `MissionRecord?` | Single mission by its instance id, or `null` when not found. |
+| `GetActiveMissions()` | `IReadOnlyList<MissionRecord>` | Missions that have not yet reached a terminal state (Completed / Failed / Abandoned). |
+| `GetAllMissions()` | `IReadOnlyList<MissionRecord>` | All missions in the log, no filter. |
+| `GetMissionsInSystem(systemId, since?, until?)` | `IReadOnlyList<MissionRecord>` | Missions whose `SourceSystemId` matches. Missions without a source system (synthesized archive backstops) are excluded. |
+| `GetMissionsByFaction(factionId, since?, until?)` | `IReadOnlyList<MissionRecord>` | Missions whose `SourceFaction` matches. |
+| `GetMissionsByMissionSubclass(subclass, since?, until?)` | `IReadOnlyList<MissionRecord>` | Exact match on `MissionSubclass` (= `mission.GetType().Name`) — e.g. `"BountyMission"`, `"PatrolMission"`, `"IndustryMission"`, `"Mission"`. Case-sensitive. |
+| `GetMissionsByOutcome(outcome, since?, until?)` | `IReadOnlyList<MissionRecord>` | `outcome` is an `Outcome` enum value (`Outcome.Completed` / `Outcome.Failed` / `Outcome.Abandoned`). Active missions never match. |
+| `GetMissionsForStoryId(storyId)` | `IReadOnlyList<MissionRecord>` | All mission records sharing a `StoryId` (authored story arcs may span multiple mission instances). |
+| `GetMissionsWithObjective(objectiveType, since?, until?)` | `IReadOnlyList<MissionRecord>` | Missions whose `Steps[].Objectives[].Type` contains the given objective type name — e.g. `"KillEnemies"`, `"TravelToPOI"`, `"CollectItemTypes"`, `"Mining"`. Case-sensitive. |
+| `GetRecentMissions(count)` | `IReadOnlyList<MissionRecord>` | Up to `count` missions, most-recently-accepted first. |
 
 ### Proximity
 
@@ -99,106 +116,116 @@ VGMissionLog doesn't walk the galaxy graph itself — you pass a delegate that r
 
 ```csharp
 int JumpDistance(string fromSystemId, string toSystemId) => /* -1 if unreachable */;
-var nearby = api.GetMissionsWithinJumps("sys-zoran", maxJumps: 3, JumpDistance);
+IReadOnlyList<MissionRecord> nearby =
+    api.GetMissionsWithinJumps("sys-zoran", maxJumps: 3, JumpDistance);
 ```
 
 `GetMissionsWithinJumps(pivotSystemId, maxJumps, jumpDistance, since?, until?)` returns missions whose source system is within `maxJumps` of the pivot. Sourceless and unreachable missions are excluded.
 
 ### Aggregates
 
-| Method | Keys | Values |
+| Method | Return | Notes |
 |---|---|---|
-| `CountByMissionSubclass(since?, until?)` | Raw subclass name (`"BountyMission"` etc.) | Mission count |
-| `CountByOutcome(since?, until?)` | `"Completed"` / `"Failed"` / `"Abandoned"` | Mission count (active missions not counted) |
-| `CountBySystem(since?, until?)` | System id | Mission count (sourceless missions excluded) |
-| `CountByFaction(since?, until?)` | Faction id | Mission count (factionless missions excluded) |
-| `MostActiveSystemsInRange(pivotSystemId, jumpDistance, maxJumps, topN, since?, until?)` | — | List of `{ systemId, count, jumps }` dicts, sorted by count desc with system-id ordinal tiebreaker. |
+| `CountByMissionSubclass(since?, until?)` | `IReadOnlyDictionary<string, int>` | Key: raw subclass name (`"BountyMission"` etc.). |
+| `CountByOutcome(since?, until?)` | `IReadOnlyDictionary<Outcome, int>` | Key: `Outcome` enum. Active missions are not counted. |
+| `CountBySystem(since?, until?)` | `IReadOnlyDictionary<string, int>` | Key: system id. Sourceless missions excluded. |
+| `CountByFaction(since?, until?)` | `IReadOnlyDictionary<string, int>` | Key: faction id. Factionless missions excluded. |
+| `MostActiveSystemsInRange(pivotSystemId, jumpDistance, maxJumps, topN, since?, until?)` | `IReadOnlyList<SystemActivity>` | Entries are `SystemActivity(SystemId, Count, Jumps)`, sorted by `Count` desc with `SystemId` ordinal tiebreaker. |
 
-## Mission schema
+## `MissionRecord`
 
-Every mission comes back as `IReadOnlyDictionary<string, object?>`. Keys are camelCase. Null-valued keys are **always present** in the dict (the mapper includes every key); cast with a null-guard or use `ContainsKey` before casting optional fields that may be null.
+Returned by every non-aggregate query method. Sidecar JSON keys are the same names, camelCased — e.g. the `MissionSubclass` C# property serializes as `missionSubclass`. Nullable reference properties may hold `null`.
 
 ### Identity fields
 
 Captured once on acceptance and never mutate — vanilla doesn't change a mission after generation.
 
-| Key | Type | Notes |
+| Property | Type | Notes |
 |---|---|---|
-| `storyId` | `string` | Vanilla `Mission.storyId`. **Empty for most missions** — vanilla only populates it for authored story arcs (Tutorial, Puppeteers). Use `missionInstanceId` for correlating across the accept→complete lifecycle when `storyId` is empty. |
-| `missionInstanceId` | `string` | Session-local GUID synthesized per `Mission` instance. Stable within a session; does *not* survive save/load — vanilla rebuilds mission objects on load, so a mission accepted in one session and finished in another carries different ids. |
-| `missionName` | `string?` | Display name when the mission has one; `null` otherwise. |
-| `missionSubclass` | `string` | Raw `mission.GetType().Name`. One of `"Mission"` (parametric missions — salvage, courier, trade, etc.), `"BountyMission"`, `"IndustryMission"`, `"PatrolMission"`, `"StoryMission"`. |
-| `missionLevel` | `int` | Currently always `0` — see [Known gaps](#known-gaps). |
-| `sourceStationId` | `string?` | Source POI GUID, when the mission has a source station. |
-| `sourceStationName` | `string?` | Snapshot at accept time — won't change if vanilla later renames it. |
-| `sourceSystemId` | `string?` | System containing the source station. |
-| `sourceSystemName` | `string?` | Snapshot at accept time. |
-| `sourceSectorId` | `string?` | *Not yet populated — see [Known gaps](#known-gaps).* |
-| `sourceSectorName` | `string?` | *Not yet populated.* |
-| `sourceFaction` | `string?` | Faction identifier (e.g. `"BountyGuild"`). |
-| `targetStationId` | `string?` | *Not yet populated — see [Known gaps](#known-gaps).* |
-| `targetStationName` | `string?` | *Not yet populated.* |
-| `targetSystemId` | `string?` | *Not yet populated.* |
-| `playerLevel` | `int` | Commander level at accept time. `0` in tests / when `GamePlayer.current` is null. |
-| `playerShipName` | `string?` | *Not yet populated.* |
-| `playerShipLevel` | `int?` | *Not yet populated.* |
-| `playerCurrentSystemId` | `string?` | Where the player was when the mission was accepted — may differ from `sourceSystemId`. |
+| `StoryId` | `string` | Vanilla `Mission.storyId`. **Empty for most missions** — vanilla only populates it for authored story arcs (Tutorial, Puppeteers). Use `MissionInstanceId` for correlating across the accept→complete lifecycle when `StoryId` is empty. |
+| `MissionInstanceId` | `string` | Session-local GUID synthesized per `Mission` instance. Stable within a session; does *not* survive save/load — vanilla rebuilds mission objects on load, so a mission accepted in one session and finished in another carries different ids. |
+| `MissionName` | `string?` | Display name when the mission has one; `null` otherwise. |
+| `MissionSubclass` | `string` | Raw `mission.GetType().Name`. One of `"Mission"` (parametric missions — salvage, courier, trade, etc.), `"BountyMission"`, `"IndustryMission"`, `"PatrolMission"`, `"StoryMission"`. |
+| `MissionLevel` | `int` | Currently always `0` — see [Known gaps](#known-gaps). |
+| `SourceStationId` | `string?` | Source POI GUID, when the mission has a source station. |
+| `SourceStationName` | `string?` | Snapshot at accept time — won't change if vanilla later renames it. |
+| `SourceSystemId` | `string?` | System containing the source station. |
+| `SourceSystemName` | `string?` | Snapshot at accept time. |
+| `SourceSectorId` | `string?` | *Not yet populated — see [Known gaps](#known-gaps).* |
+| `SourceSectorName` | `string?` | *Not yet populated.* |
+| `SourceFaction` | `string?` | Faction identifier (e.g. `"BountyGuild"`). |
+| `TargetStationId` | `string?` | *Not yet populated — see [Known gaps](#known-gaps).* |
+| `TargetStationName` | `string?` | *Not yet populated.* |
+| `TargetSystemId` | `string?` | *Not yet populated.* |
+| `PlayerLevel` | `int` | Commander level at accept time. `0` in tests / when `GamePlayer.current` is null. |
+| `PlayerShipName` | `string?` | *Not yet populated.* |
+| `PlayerShipLevel` | `int?` | *Not yet populated.* |
+| `PlayerCurrentSystemId` | `string?` | Where the player was when the mission was accepted — may differ from `SourceSystemId`. |
 
 ### Steps and objectives
 
-`steps[]` is the mission's step/objective tree captured once at acceptance. Steps are definition-only (no runtime progress counters); each is a dict:
+`Steps` (`IReadOnlyList<MissionStepDefinition>`) is the mission's step/objective tree captured once at acceptance. Steps are definition-only (no runtime progress counters).
 
-| Key | Type | Meaning |
+`MissionStepDefinition`:
+
+| Property | Type | Meaning |
 |---|---|---|
-| `description` | `string?` | Vanilla's display description (null when the step has none). |
-| `requireAllObjectives` | `bool` | `true` → every objective must complete; `false` → any one does. |
-| `hidden` | `bool` | Vanilla flag for branch-stub / guard steps the UI hides. Consumers usually skip these. |
-| `objectives` | list | See below. |
+| `Description` | `string?` | Vanilla's display description (null when the step has none). |
+| `RequireAllObjectives` | `bool` | `true` → every objective must complete; `false` → any one does. |
+| `Hidden` | `bool` | Vanilla flag for branch-stub / guard steps the UI hides. Consumers usually skip these. |
+| `Objectives` | `IReadOnlyList<MissionObjectiveDefinition>` | See below. |
 
-Each objective is a dict:
+`MissionObjectiveDefinition`:
 
-| Key | Type | Meaning |
+| Property | Type | Meaning |
 |---|---|---|
-| `type` | `string` | Raw `objective.GetType().Name` — e.g. `"KillEnemies"`, `"TravelToPOI"`, `"Mining"`, `"TradeOffer"`, `"CollectCredits"`, `"CollectItemTypes"`, `"Crafting"`, `"Reputation"`, `"ProtectUnit"`, `"Salvage"`, `"TriggerObjective"`, `"StationsInfected"`, `"SystemsConquered"`, `"ConquestFactionEliminated"`, `"ConquestFleetStrength"`, `"CreditOffer"`, `"DroneTrigger"`, `"Item"`. |
-| `fields` | dict? | Best-effort primitive field dump (camelCase keys). For `KillEnemies`: `requiredAmount`, `shipType`, `enemyFaction` (faction identifier). For `TravelToPOI`: `targetPOI`. For `Mining`: `requiredAmount`, `itemType` (identifier), `miningFaction`. What you get depends on what the concrete subclass exposes — anything non-primitive / non-Faction / non-InventoryItemType / non-MapElement is skipped. `null` when extraction yields nothing. |
+| `Type` | `string` | Raw `objective.GetType().Name` — e.g. `"KillEnemies"`, `"TravelToPOI"`, `"Mining"`, `"TradeOffer"`, `"CollectCredits"`, `"CollectItemTypes"`, `"Crafting"`, `"Reputation"`, `"ProtectUnit"`, `"Salvage"`, `"TriggerObjective"`, `"StationsInfected"`, `"SystemsConquered"`, `"ConquestFactionEliminated"`, `"ConquestFleetStrength"`, `"CreditOffer"`, `"DroneTrigger"`, `"Item"`. |
+| `Fields` | `IReadOnlyDictionary<string, object?>?` | Best-effort primitive field dump (camelCase keys). For `KillEnemies`: `requiredAmount`, `shipType`, `enemyFaction` (faction identifier). For `TravelToPOI`: `targetPOI`. For `Mining`: `requiredAmount`, `itemType` (identifier), `miningFaction`. What you get depends on what the concrete subclass exposes — anything non-primitive / non-Faction / non-InventoryItemType / non-MapElement is skipped. `null` when extraction yields nothing. |
 
-### Rewards list
+### Rewards
 
-`rewards[]` carries one entry per `MissionReward` on the mission. Rewards are extracted at accept time and re-extracted at completion (when vanilla populates the final reward set). Each entry:
+`Rewards` (`IReadOnlyList<MissionRewardSnapshot>`) carries one entry per `MissionReward` on the mission. Rewards are extracted at accept time and re-extracted at completion (when vanilla populates the final reward set).
 
-| Key | Type | Meaning |
+`MissionRewardSnapshot`:
+
+| Property | Type | Meaning |
 |---|---|---|
-| `type` | `string` | Raw `reward.GetType().Name` — one of `"Credits"`, `"Experience"`, `"Reputation"`, `"Item"`, `"Ship"`, `"Crew"`, `"Skilltree"`, `"Skillpoint"`, `"WorkshopCredit"`, `"StoryMission"`, `"MissionFollowUp"`, `"POICoordinates"`, `"UmbralControl"`, `"ConquestStrength"`. |
-| `fields` | dict? | Best-effort primitive field dump. `Credits` / `Experience` / `Skillpoint` / `WorkshopCredit` / `UmbralControl` / `ConquestStrength` → `amount`. `Item` → `item` (identifier) + `amount`. `Ship` → `ship` (identifier). `Skilltree` → `treeName`. `StoryMission` → `missionId`. `Reputation` → `amount` + `faction` (identifier). `null` when extraction yields nothing. |
+| `Type` | `string` | Raw `reward.GetType().Name` — one of `"Credits"`, `"Experience"`, `"Reputation"`, `"Item"`, `"Ship"`, `"Crew"`, `"Skilltree"`, `"Skillpoint"`, `"WorkshopCredit"`, `"StoryMission"`, `"MissionFollowUp"`, `"POICoordinates"`, `"UmbralControl"`, `"ConquestStrength"`. |
+| `Fields` | `IReadOnlyDictionary<string, object?>?` | Best-effort primitive field dump. `Credits` / `Experience` / `Skillpoint` / `WorkshopCredit` / `UmbralControl` / `ConquestStrength` → `amount`. `Item` → `item` (identifier) + `amount`. `Ship` → `ship` (identifier). `Skilltree` → `treeName`. `StoryMission` → `missionId`. `Reputation` → `amount` + `faction` (identifier). `null` when extraction yields nothing. |
 
-The typed top-level fields from v1 (`rewardsCredits`, `rewardsExperience`, `rewardsReputation`) are **removed** in v3. Read all rewards off `rewards[]` by `type`.
+The typed top-level fields from v1 (`rewardsCredits`, `rewardsExperience`, `rewardsReputation`) are **removed** in v3. Read all rewards off `Rewards` by `Type`.
 
-**Identifier rule.** Every resolved reference in `fields` — `enemyFaction`, `miningFaction`, `faction`, `itemType`, `item`, `deliverTo`, `targetPOI`, etc. — is the stable **system identifier** (what vanilla's `Faction.Get(id)` / `InventoryItemType.Get(id)` accept), never the translated `displayName` / `name`. For `InventoryItemType` references on runtime-cloned reward instances (where vanilla's own `identifier` field isn't serialized) we fall back to the Unity object's `name` with the `(Clone)` suffix stripped — still a valid registry key. Consumers can round-trip every id back to the vanilla object.
+**Identifier rule.** Every resolved reference in `Fields` — `enemyFaction`, `miningFaction`, `faction`, `itemType`, `item`, `deliverTo`, `targetPOI`, etc. — is the stable **system identifier** (what vanilla's `Faction.Get(id)` / `InventoryItemType.Get(id)` accept), never the translated `displayName` / `name`. For `InventoryItemType` references on runtime-cloned reward instances (where vanilla's own `identifier` field isn't serialized) we fall back to the Unity object's `name` with the `(Clone)` suffix stripped — still a valid registry key. Consumers can round-trip every id back to the vanilla object.
 
 ### Timeline
 
-`timeline[]` is the explicit state-transition log. It grows by one entry on each lifecycle transition:
+`Timeline` (`IReadOnlyList<TimelineEntry>`) is the explicit state-transition log. It grows by one entry on each lifecycle transition.
 
-| Key | Type | Meaning |
+`TimelineEntry`:
+
+| Property | Type | Meaning |
 |---|---|---|
-| `state` | `string` | One of `"Accepted"`, `"Completed"`, `"Failed"`, `"Abandoned"`. |
-| `gameSeconds` | `double` | In-game clock at the transition. |
-| `realUtc` | `string?` | ISO-8601 wall-clock. Stamped on `Accepted` and terminal entries; `null` on any interior entries that may be added in a future version. |
+| `State` | `TimelineState` enum | One of `Accepted`, `Completed`, `Failed`, `Abandoned`. |
+| `GameSeconds` | `double` | In-game clock at the transition. |
+| `RealUtc` | `string?` | ISO-8601 wall-clock. Stamped on `Accepted` and terminal entries; `null` on any interior entries that may be added in a future version. |
 
 A mission's timeline always starts with exactly one `Accepted` entry and ends with at most one terminal entry (Completed / Failed / Abandoned). An active mission has no terminal entry.
 
-The helper fields derived from the timeline:
+Derived helpers on `MissionRecord`:
 
-| Key | Type | Meaning |
+| Property | Type | Meaning |
 |---|---|---|
-| `acceptedAtGameSeconds` | `double` | Shorthand for `timeline[0].gameSeconds`. |
-| `terminalAtGameSeconds` | `double?` | Game-seconds of the terminal entry; `null` when the mission is still active. |
-| `outcome` | `string?` | `"Completed"` / `"Failed"` / `"Abandoned"`, or `null` when still active. |
-| `isActive` | `bool` | `true` when the mission has no terminal entry yet. |
+| `AcceptedAtGameSeconds` | `double` | Shorthand for `Timeline[0].GameSeconds`. |
+| `TerminalAtGameSeconds` | `double?` | Game-seconds of the terminal entry; `null` when the mission is still active. |
+| `Outcome` | `Outcome?` | `Outcome.Completed` / `Outcome.Failed` / `Outcome.Abandoned`, or `null` when still active. |
+| `IsActive` | `bool` | `true` when the mission has no terminal entry yet. |
+| `AgeSeconds(nowGameSeconds)` | `double` | Duration accept→terminal if terminated; else `nowGameSeconds − AcceptedAtGameSeconds`. |
 
-**Time-window anchoring.** All `since` / `until` filters on query methods use `acceptedAtGameSeconds` as the anchor — not the terminal time. A mission accepted at t=100 that completes at t=200 appears in a `since=50, until=150` window even though it completed outside it.
+**Time-window anchoring.** All `since` / `until` filters on query methods use `AcceptedAtGameSeconds` as the anchor — not the terminal time. A mission accepted at t=100 that completes at t=200 appears in a `since=50, until=150` window even though it completed outside it.
 
-### Example
+### Sidecar JSON example
+
+The sidecar mirrors `MissionRecord` with camelCase keys:
 
 ```json
 {
@@ -272,11 +299,11 @@ v1 sidecars (schema `"version": 1, "events": [...]`) are **automatically migrate
 
 These are documented limitations of the current shipping version. Consumers should treat the affected keys as always-absent for now.
 
-- **`missionLevel` is always `0`.** Vanilla's `Mission.level` getter chains through `GamePlayer.current`, which makes it unsafe to read outside the main thread. A safer accessor is on the roadmap.
+- **`MissionLevel` is always `0`.** Vanilla's `Mission.level` getter chains through `GamePlayer.current`, which makes it unsafe to read outside the main thread. A safer accessor is on the roadmap.
 - **Sector and target-station/system fields are never populated.** Vanilla's accessor graph is deeper than what's currently scouted. Fields are reserved in the schema; additive future.
 - **Player ship fields are never populated.** Same reason.
-- **`missionInstanceId` is session-local.** Resets across save/load because vanilla rebuilds mission instances on load. Accept→Complete in the same session works; across sessions you need `storyId` (if set) or your own joining logic.
-- **No per-step or per-objective transitions in the timeline.** Vanilla exposes no hook for this — `MissionStep.isComplete` is a computed getter over `objectives.All(IsComplete)`, and `Mission.currentStep` just scans for the first non-complete step. Nothing fires when a step or objective flips. The timeline captures mission-level transitions only (Accepted → Completed/Failed/Abandoned); `steps[]` on the Accepted snapshot describes the mission's structure, not its progress.
+- **`MissionInstanceId` is session-local.** Resets across save/load because vanilla rebuilds mission instances on load. Accept→Complete in the same session works; across sessions you need `StoryId` (if set) or your own joining logic.
+- **No per-step or per-objective transitions in the timeline.** Vanilla exposes no hook for this — `MissionStep.isComplete` is a computed getter over `objectives.All(IsComplete)`, and `Mission.currentStep` just scans for the first non-complete step. Nothing fires when a step or objective flips. The timeline captures mission-level transitions only (Accepted → Completed/Failed/Abandoned); `Steps` on the Accepted snapshot describes the mission's structure, not its progress.
 - **No Offered tracking.** Not captured. Additive if consumers ever need it.
 
 ## Retention
@@ -289,5 +316,5 @@ The cap is configurable via `Logging.MaxMissions` in `vgmissionlog.cfg`. Setting
 
 - **Method signatures on `IMissionLogQuery`** are part of the public API contract. Breaking changes require a major-version bump and release notes.
 - **New methods are additive** — adding a method doesn't bump major. Gate on `SchemaVersion` if you want to call a newer method conditionally.
-- **Mission dictionary keys** follow the same rules: additions are non-breaking, renames / removals are breaking.
+- **`MissionRecord`'s property set** follows the same rules: additions are non-breaking; renames / removals are breaking.
 - **The sidecar `version` field** tracks only on-disk format changes. An additive API change doesn't necessarily bump it.
