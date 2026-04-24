@@ -22,28 +22,26 @@ Config lives at `<GameDir>/BepInEx/config/vgmissionlog.cfg` after first run:
 # Default: false
 Verbose = false
 
-[Persistence]
-## Soft cap on retained events per save (FIFO eviction). Each event is ~500 bytes serialised.
-## Set to 0 to disable the cap entirely — sidecar size then grows without bound for the save's lifetime.
+## Soft cap on retained missions per save (FIFO eviction, oldest-accepted first). 0 = unbounded.
 # Default: 2000
-MaxEvents = 2000
+MaxMissions = 2000
 ```
 
 ## What's captured
 
-| Lifecycle event | Emitted when | Confidence |
+| Timeline state | Recorded when | Confidence |
 |---|---|---|
 | **Accepted**  | Player accepts a mission (vanilla's `GamePlayer.AddMissionWithLog`)              | load-bearing |
 | **Completed** | Player turns in a mission (vanilla's `GamePlayer.CompleteMission`) + rewards    | load-bearing |
 | **Failed**    | Mission fail condition triggers (vanilla's `Mission.MissionFailed`)             | load-bearing |
 | **Abandoned** | Player drops a mission (vanilla's `RemoveMission(_, completed:false)`)          | load-bearing |
-| **Archived**  | Backstop — synthesized Completed for unusual paths (dev cheats, swallow errors) | backstop     |
+| *(Archived backstop)* | Synthesized Completed for unusual paths (dev cheats, swallow errors) | backstop |
 | **Offered**   | —                                                                               | **deferred** — post-MVP; Accepted covers the signal consumers actually want |
 | **ObjectiveProgressed** | —                                                                     | **deferred** — post-MVP; additive schema extension |
 
-Every captured event carries: event id, in-game timestamp + wall-clock, storyId, a session-local mission instance id (for correlating events across the accept→complete lifecycle when `storyId` is empty), mission name + raw subclass name (`mission.GetType().Name`), outcome (for terminals), source station / system / faction, a full snapshot of the step/objective tree (type + progress per objective), rewards (typed credits/XP/rep sums plus a unified list covering all 14 vanilla reward subtypes on Completed), and a player-state snapshot. Consumers bucket by subclass / objective type if they want categories; VGMissionLog does not classify.
+Every captured mission carries: in-game accept timestamp + wall-clock, storyId, a session-local mission instance id (for correlating across the accept→complete lifecycle when `storyId` is empty), mission name + raw subclass name (`mission.GetType().Name`), source station / system / faction, a full snapshot of the step/objective tree (type per objective), a unified rewards list covering all 14 vanilla reward subtypes, a timeline of state transitions (Accepted → Completed/Failed/Abandoned), and a player-state snapshot. Consumers bucket by subclass / objective type if they want categories; VGMissionLog does not classify.
 
-See [`docs/api.md`](docs/api.md) for the full event schema and method reference.
+See [`docs/api.md`](docs/api.md) for the full mission schema and method reference.
 
 ## For modders
 
@@ -53,11 +51,11 @@ Querying mission history from your own plugin takes about ten lines. Quick sketc
 using VGMissionLog.Api;
 
 if (MissionLogApi.Current is { } api)
-    foreach (var evt in api.GetRecentEvents(10))
-        Logger.LogInfo($"{evt["type"]} {evt["missionSubclass"]}");
+    foreach (var m in api.GetRecentMissions(10))
+        Logger.LogInfo($"{m["missionSubclass"]} {m["outcome"] ?? "active"}");
 ```
 
-Full integration guide (typed reference, reflection fallback, soft-dep guard), method reference, event field schema, and sidecar format: **[`docs/api.md`](docs/api.md)**.
+Full integration guide (typed reference, reflection fallback, soft-dep guard), method reference, mission field schema, and sidecar format: **[`docs/api.md`](docs/api.md)**.
 
 ## Known gaps
 
