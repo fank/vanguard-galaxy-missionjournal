@@ -49,6 +49,12 @@ internal sealed class MissionLogQueryAdapter : IMissionLogQuery
     public IReadOnlyList<IReadOnlyDictionary<string, object?>> GetEventsForStoryId(string storyId) =>
         ActivityEventMapper.ToDicts(_log.GetEventsForStoryId(storyId));
 
+    public IReadOnlyList<IReadOnlyDictionary<string, object?>> GetEventsWithObjective(
+        string objectiveType,
+        double sinceGameSeconds = 0.0, double untilGameSeconds = double.MaxValue) =>
+        ActivityEventMapper.ToDicts(_log.GetEventsWithObjective(
+            objectiveType, sinceGameSeconds, untilGameSeconds));
+
     public IReadOnlyList<IReadOnlyDictionary<string, object?>> GetRecentEvents(int count) =>
         ActivityEventMapper.ToDicts(_log.GetRecentEvents(count));
 

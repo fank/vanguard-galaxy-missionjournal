@@ -87,6 +87,7 @@ All filters support an optional time window on `gameSeconds` (default: entire lo
 | `GetEventsByMissionSubclass(subclass, since?, until?)` | Exact match on raw `mission.GetType().Name` — e.g. `"BountyMission"`, `"PatrolMission"`, `"IndustryMission"`, `"Mission"`. Case-sensitive. |
 | `GetEventsByOutcome(outcome, since?, until?)` | `outcome` is `"Completed"` / `"Failed"` / `"Abandoned"`. Non-terminal events never match. Invalid string → empty (no throw). |
 | `GetEventsForStoryId(storyId)` | Full per-mission timeline in insertion order (typically Accepted → Completed/Failed/Abandoned). |
+| `GetEventsWithObjective(objectiveType, since?, until?)` | Events whose `steps[].objectives[].type` contains the given objective type name — raw `objective.GetType().Name`, e.g. `"KillEnemies"`, `"TravelToPOI"`, `"CollectItemTypes"`, `"Mining"`. Case-sensitive. Events without a steps snapshot (non-terminal progress events) never match. |
 | `GetRecentEvents(count)` | Up to `count` events, most-recent first. |
 
 ### Proximity

@@ -69,6 +69,17 @@ public interface IMissionLogQuery
 
     IReadOnlyList<IReadOnlyDictionary<string, object?>> GetEventsForStoryId(string storyId);
 
+    /// <summary>Events whose <c>steps[].objectives[].type</c> contains
+    /// <paramref name="objectiveType"/>. The type string is the raw
+    /// <c>objective.GetType().Name</c> (e.g. <c>"KillEnemies"</c>,
+    /// <c>"TravelToPOI"</c>, <c>"CollectItemTypes"</c>) captured at event
+    /// build time. Match is ordinal / case-sensitive. Events without a
+    /// steps snapshot (non-terminal progress events) never match.</summary>
+    IReadOnlyList<IReadOnlyDictionary<string, object?>> GetEventsWithObjective(
+        string objectiveType,
+        double sinceGameSeconds = 0.0,
+        double untilGameSeconds = double.MaxValue);
+
     IReadOnlyList<IReadOnlyDictionary<string, object?>> GetRecentEvents(int count);
 
     // --- R2.2 proximity --------------------------------------------------

@@ -144,6 +144,26 @@ public class MissionLogQueryAdapterTests
     }
 
     [Fact]
+    public void GetEventsWithObjective_FiltersByObjectiveTypeName()
+    {
+        var log = new ActivityLog();
+        var step = new MissionStepSnapshot(
+            Description: null, IsComplete: false, RequireAllObjectives: true, Hidden: false,
+            Objectives: new[]
+            {
+                new MissionObjectiveSnapshot("KillEnemies", IsComplete: false, StatusText: null, Fields: null),
+            });
+        log.Append(TestEvents.Baseline(eventId: "k1", storyId: "m-k", gameSeconds: 10)
+            with { Steps = new[] { step } });
+        log.Append(TestEvents.Baseline(eventId: "n1", storyId: "m-n", gameSeconds: 20));
+        var adapter = new MissionLogQueryAdapter(log);
+
+        var kills = adapter.GetEventsWithObjective("KillEnemies");
+        Assert.Equal(new[] { "k1" }, kills.Select(r => (string)r["eventId"]!));
+        Assert.Empty(adapter.GetEventsWithObjective("NoSuchObjective"));
+    }
+
+    [Fact]
     public void GetRecentEvents_MostRecentFirst()
     {
         var adapter = new MissionLogQueryAdapter(SampleLog());

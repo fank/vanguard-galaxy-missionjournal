@@ -111,6 +111,60 @@ public class ActivityLogQueryTests
     }
 
     [Fact]
+    public void GetEventsWithObjective_MatchesAnyStepAndObjective()
+    {
+        var log = new ActivityLog();
+
+        var killStep = new MissionStepSnapshot(
+            Description: null, IsComplete: false, RequireAllObjectives: true, Hidden: false,
+            Objectives: new[]
+            {
+                new MissionObjectiveSnapshot("KillEnemies",  IsComplete: false, StatusText: null, Fields: null),
+                new MissionObjectiveSnapshot("TravelToPOI",  IsComplete: false, StatusText: null, Fields: null),
+            });
+        var collectStep = new MissionStepSnapshot(
+            Description: null, IsComplete: false, RequireAllObjectives: true, Hidden: false,
+            Objectives: new[]
+            {
+                new MissionObjectiveSnapshot("CollectItemTypes", IsComplete: false, StatusText: null, Fields: null),
+            });
+
+        log.Append(TestEvents.Baseline(eventId: "kill-only", gameSeconds: 10)
+            with { Steps = new[] { killStep } });
+        log.Append(TestEvents.Baseline(eventId: "collect-only", gameSeconds: 20)
+            with { Steps = new[] { collectStep } });
+        log.Append(TestEvents.Baseline(eventId: "multi-step", gameSeconds: 30)
+            with { Steps = new[] { killStep, collectStep } });
+        log.Append(TestEvents.Baseline(eventId: "no-steps", gameSeconds: 40));    // Steps = null
+
+        Assert.Equal(new[] { "kill-only", "multi-step" },
+                     log.GetEventsWithObjective("KillEnemies").Select(e => e.EventId));
+        Assert.Equal(new[] { "collect-only", "multi-step" },
+                     log.GetEventsWithObjective("CollectItemTypes").Select(e => e.EventId));
+        Assert.Empty(log.GetEventsWithObjective("kill_enemies"));        // case-sensitive
+        Assert.Empty(log.GetEventsWithObjective("NoSuchObjective"));
+        Assert.Empty(log.GetEventsWithObjective(""));
+    }
+
+    [Fact]
+    public void GetEventsWithObjective_RespectsTimeWindow()
+    {
+        var log = new ActivityLog();
+        var step = new MissionStepSnapshot(
+            Description: null, IsComplete: false, RequireAllObjectives: true, Hidden: false,
+            Objectives: new[]
+            {
+                new MissionObjectiveSnapshot("KillEnemies", IsComplete: false, StatusText: null, Fields: null),
+            });
+        log.Append(TestEvents.Baseline(eventId: "early", gameSeconds: 10) with { Steps = new[] { step } });
+        log.Append(TestEvents.Baseline(eventId: "late",  gameSeconds: 50) with { Steps = new[] { step } });
+
+        Assert.Equal(new[] { "late" },
+                     log.GetEventsWithObjective("KillEnemies", sinceGameSeconds: 30)
+                        .Select(e => e.EventId));
+    }
+
+    [Fact]
     public void GetEventsForStoryId_ReturnsOrderedTimeline()
     {
         var log = BuildSample();

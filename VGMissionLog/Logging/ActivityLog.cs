@@ -138,6 +138,47 @@ internal sealed class ActivityLog
     }
 
     /// <summary>
+    /// Events whose <see cref="ActivityEvent.Steps"/> contain at least one
+    /// objective whose raw <c>Type</c> matches <paramref name="objectiveType"/>
+    /// (ordinal / case-sensitive). The type string is the unqualified
+    /// <c>objective.GetType().Name</c> captured at event build time —
+    /// e.g. <c>"KillEnemies"</c>, <c>"TravelToPOI"</c>,
+    /// <c>"CollectItemTypes"</c>, <c>"Mining"</c>. Events with null
+    /// <c>Steps</c> (progress / non-terminal lifecycle events that
+    /// don't snapshot the step list) never match.
+    /// </summary>
+    public IReadOnlyList<ActivityEvent> GetEventsWithObjective(
+        string objectiveType,
+        double sinceGameSeconds = 0.0,
+        double untilGameSeconds = double.MaxValue)
+    {
+        if (string.IsNullOrEmpty(objectiveType))
+            return Array.Empty<ActivityEvent>();
+
+        var result = new List<ActivityEvent>();
+        foreach (var evt in _events)
+        {
+            if (evt.Steps is null) continue;
+            if (!InTimeWindow(evt.GameSeconds, sinceGameSeconds, untilGameSeconds)) continue;
+            if (EventHasObjectiveType(evt, objectiveType)) result.Add(evt);
+        }
+        return result;
+    }
+
+    private static bool EventHasObjectiveType(ActivityEvent evt, string objectiveType)
+    {
+        foreach (var step in evt.Steps!)
+        {
+            foreach (var obj in step.Objectives)
+            {
+                if (string.Equals(obj.Type, objectiveType, StringComparison.Ordinal))
+                    return true;
+            }
+        }
+        return false;
+    }
+
+    /// <summary>
     /// Full per-mission timeline in insertion order (typically
     /// Offered → Accepted → ObjectiveProgressed* → Completed/Failed/Abandoned).
     /// </summary>
